@@ -58,6 +58,33 @@ public class StarGateV1 extends CellAdapter  {
        pin( "ERROR : "+msg ) ;
        super.say( msg ) ;
    }
+    public class BfRecordV1 implements BfRecordable {
+       private String _bfid  = null ;
+       private String _group = "" ;
+       private long   _size  = 0 ;
+       private String _volume = null ;
+       private String _filePosition = null ;
+       private String _parameter    = null ;
+       private Date   _lastDate     = null ;
+       private Date   _creationDate = null ;
+       private int    _counter      =  0 ;
+       private String _status       = null ;
+       
+       private BfRecordV1( String bfid ){ _bfid = bfid ; }
+       public String getBfid(){ return _bfid ; }
+       public String getStorageGroup(){ return _group ; }
+       public long   getFileSize(){ return _size ; }
+       public String getVolume(){ return _volume ; }
+       public String getFilePosition(){ return _filePosition ; }
+       public String getParameter(){ return _parameter ; }
+
+       public Date   getLastAccessDate(){ return _lastDate ; }
+       public Date   getCreationDate(){ return _creationDate ; }
+       public int    getAccessCounter(){ return _counter ; }
+
+       public String getStatus(){ return _status ; }
+    
+    }
    public void messageArrived( CellMessage msg ){
        Object obj = msg.getMessageObject() ;
        if( obj instanceof RequestImpl ){
@@ -68,7 +95,18 @@ public class StarGateV1 extends CellAdapter  {
            StoreRequest sr = (StoreRequest)obj ;
            if( sr.getCommand().equals( "get-bfid" ) ){
               try{
-                 sr.setBitfileId( _dataBase.getBitfileId(sr.getBfid()) ) ;
+                 BitfileId bitfile = _dataBase.getBitfileId(sr.getBfid()) ;
+                 BfRecordV1 bfr    = new BfRecordV1(sr.getBfid()) ;
+                 bfr._group        = "unknown" ; 
+                 bfr._size         = bitfile.getSize() ;
+                 bfr._volume       = bitfile.getVolume() ;
+                 bfr._filePosition = bitfile.getPosition() ;
+                 bfr._parameter    = bitfile.getParameter() ;
+                 bfr._status       = bitfile.getMode() ;
+                 bfr._lastDate     = bitfile.getLastAccessDate() ;
+                 bfr._creationDate = bitfile.getCreationDate() ;
+                 bfr._counter      = bitfile.getAccessCount() ;
+                 sr.setBitfileId( bfr ) ;
               }catch( DatabaseException dbe ){
                  sr.setBitfileId(null);
               }
