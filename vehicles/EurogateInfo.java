@@ -47,7 +47,7 @@ public class EurogateInfo implements HsmInfo {
           if( _group.length() < 1 )  
              throw new 
              IllegalArgumentException( 
-             "Not a valid Eurogate direcotry (Invalid sGroup tag)" ) ;
+             "Not a valid Eurogate directory (Invalid sGroup tag)" ) ;
           
           _info  = "eg:dir:"+_store+":"+_group ;
           _class = _store+":"+_group ;
@@ -77,6 +77,7 @@ public class EurogateInfo implements HsmInfo {
           _info  = "eg:file:"+_store+":"+_group+":"+_bfid ;
           _class = _store+":"+_group ;
       }
+      _pnfs = null ; // this is a vehicle ( reduce the payload ) 
    }
    public String getStorageClass(){ return _class ; }
    public String getHsmInfo(){ return _info ;}
