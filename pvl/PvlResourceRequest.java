@@ -51,6 +51,14 @@ public class PvlResourceRequest extends PvlResourceModifier {
     public String getVolumeSet(){  return _request.getVolumeSet() ; }
     public long   getFileSize(){   return _request.getFileSize() ; }
     public int    getSerialId(){   return _request.getSerialId() ; }
+    
+    public String getParameter(){
+       if( _request instanceof MoverRequest   ){
+           return ((MoverRequest)_request).getParameter() ;
+       }else{
+           return "<unkown>" ;
+       }
+    }
     public void   setVolumeId( String volId ){
         _request.setVolumeId( volId ) ;
     }
@@ -81,7 +89,8 @@ public class PvlResourceRequest extends PvlResourceModifier {
          Formats.field( volume           , 8 , Formats.LEFT ) +
          Formats.field( cartridge        , 8 , Formats.LEFT ) +
          Formats.field( volumeSet        ,10 , Formats.LEFT ) +
-         Formats.field( ""+getFileSize() , 8 , Formats.LEFT ) ;
+         Formats.field( ""+getFileSize() , 8 , Formats.LEFT ) +
+         "  "+getParameter() ;
       }else if( getDirection().equals( "put" ) ){
          return 
          Formats.field( ""+getSerialId() , 7 , Formats.LEFT ) +
@@ -90,7 +99,8 @@ public class PvlResourceRequest extends PvlResourceModifier {
          Formats.field( volume           , 8 , Formats.LEFT ) +
          Formats.field( cartridge        , 8 , Formats.LEFT ) +
          Formats.field( volumeSet        ,10 , Formats.LEFT ) +
-         Formats.field( ""+getFileSize() , 8 , Formats.LEFT ) ;
+         Formats.field( ""+getFileSize() , 8 , Formats.LEFT ) +
+         "  "+getParameter() ;
       }
       return "Invalid direction (PANIC)" ;
     }
