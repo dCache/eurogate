@@ -1,0 +1,117 @@
+<html>
+
+<head><title>EuroGate start/stop</title></head>
+
+<body bgcolor=white>
+<h1>The Basics</h1>
+<h3>How to configure Eurostore HSM (CERN version only)</h3>
+<blockquote>
+The most recent version of the Eurostore HSM is located
+in <strong>/opt/EurogateIII</strong> on <i>eustore1</i> and <i>eustore2</i>.
+All directory specifications within the documentation will 
+be relative to this directory. 
+Configuration files and administration scripts can be
+found in ./jobs.<br>
+There should be no need to change the configuration because
+it has been tuned to fit the CERN needs.<br>
+<h4>Some details</h4>
+<blockquote>
+Nearly all possible variants of the Eurostore HSM can be
+created by modifing the config files 
+eurogateSetup-eustore1 and eurogateSetup-eustore2.
+They are actually links to the cernSetup and cernMoverSetup.
+The first one is responsible for the <i>stk csc</i>, the 
+<i>pvr</i> and the <i>Master Eurogate Server</i>. The second
+config file defines the two movers on eustore2.
+</blockquote>
+</blockquote>
+<hr>
+<h3>Preparing for the first startup</h3>
+<blockquote>
+   Before <font color=blue>Eurogate</font> is started for the
+   first time, the directory entry for the databases must have 
+   been created. The entry has to empty. Currently the
+   variable <i>databaseRoot</i> in eurogateSetup-eustore1
+   points to <i>/export/home/patrick/eurogateDb</i>. 
+   If the directory is empty while the system is coming up,
+   it assumes that all entries have to be created from scratch.
+   Consequently, to produce a fresh system :
+   <ul>
+   <li>shutdown eurogate (see below)
+   <li>rm -rf /export/home/patrick/eurogateDb/*
+   <li>startup eurogate (see below)
+   </ul>
+</blockquote>
+<hr>
+<h3>Starting <font color=blue>Eurogate</font> </h3>
+<blockquote>
+   <strong>The stk robot software</strong><br>
+   At cern the only available robot system is the
+   stk powderhorn. To have access to stk robotic systems
+   the local machine has to run two deamons, called 
+   <i>mini_el</i>, the eventlogger and the <i>ssi</i>.
+   Both processes are started by running 
+   <pre>
+   <i>On Eustore1</i>
+   ./jobs/csc start
+   </pre>. These processes only need
+   to be started once after a machine reboot. There is no
+   need to stop them even if Eurogate
+   has been restarted. <i>Start the csc first and don't touch
+   it afterwards.</i>
+   <p><br><strong>The Eurogate Master Deamon (door,store,pvl)</strong><br>
+   The Eurogate Master Deamon, running on eustore1 is launched
+   by 
+   <pre>
+   <i>On Eustore1</i>
+   ./jobs/eurogate start
+   </pre>
+   It contains the entry point for the clients (the PFS), the
+   Store, the Pvl and some related functionality. On startup
+   it prints some informational messages. It it fails to start,
+   it dumps the last lines of the /tmp/euroGate.log logfile.
+   
+   <p><br><strong>The Physical Volume Repository</strong><br>
+   To connect the robot which the eurogate system, a third process
+   needs to be launched on eustore1, the <i>pvr</i>.
+   <pre>
+   <i>On Eustore1</i>
+   ./jobs/pvr start
+   </pre>
+   This process will be terminate on shutdown of the master deamon
+   (see Stopping Eurogate).
+   <p><br><strong>The Data Movers</strong><br>
+   Both data movers are running on eustore2 because the 9840 drives
+   are connected to that machine. The directory structure
+   is identical to the structure of eustore1.
+   The movers are started by
+   <pre>
+   <i>On Eustore2</i>
+   ./jobs/eurogate start
+   </pre>
+   Similar to the pvr, the movers automatically shutdown if the
+   master deamon on eustore1 is terminated.
+</blockquote>
+<hr>
+<h3>Terminating <font color=blue>Eurogate</font> </h3>
+<blockquote>
+To shutdown the active eurogate, only 
+<pre>
+./jobs/eurogate stop
+</pre>
+has to be performed. The movers and the pvr will terminate first and
+the masterserver will try to shutdown afterwards.
+<strong>It may take awhile before the server is actually down ( ~ 20 seconds).
+For a not yet understooden reason, it sometimes happens that the master server
+refuses to terminate. You should check with 'ps -ef' if this
+is the case. Use 'kill ...' to make sure the server has finally stopped.</strong>
+All subsystem can be separately terminated by 
+<pre>
+eustore1 :  ./jobs/pvr stop
+eustore1 :  ./jobs/csc stop ( should never be necessary)
+eustore1 :  ./jobs/eustore stop
+
+eustore2 :  ./jobs/eustore stop
+</pre>
+</blockquote>
+</body>

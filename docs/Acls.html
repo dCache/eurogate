@@ -13,90 +13,72 @@
 <h3>User Administration</h3>
   <blockquote>
      <table border=1 bgcolor=#eeffaa>
-     <tr><th>Command</th><th>Acl</th><th>Comment</th></tr>
+     <tr><th>Command</th><th>Acl</th></tr>
      <tr><td>create user &lt;user&gt;</td>
          <td>user.*.create</td>
-         <td>creates a user entry</td>
      </tr>
      <tr><td>create group &lt;group&gt;</td>
          <td>user.*.create</td>
-         <td>creates a group entry</td>
      </tr>
      <tr><td>destroy principal &lt;principal&gt;</td>
          <td>user.*.create</td>
-         <td>destroys a user/group</td>
      </tr>
      <tr><td>add &lt;principal&gt; to &lt;group&gt;</td>
          <td>user.&lt;group&gt;.access</td>
-         <td>adds a user/group to a group</td>
      </tr>
      <tr><td>set &lt;principal&gt; [&lt;key&gt;=&lt;value&gt; ...]</td>
          <td>user.&lt;principal&gt;.access</td>
-         <td>sets the attributes of a user/group</td>
      </tr>
      <tr><td>show groups</td>
          <td align=center>-</td>
-         <td>shows all groups</td>
      </tr>
      <tr><td>show group &lt;group&gt;</td>
          <td align=center>-</td>
-         <td>shows the members (users/groups) of &lt;group&gt;</td>
      </tr>
      <tr><td>show principal &lt;principal&gt;</td>
          <td align=center>-</td>
-         <td>shows attributes of &lt;group&gt;</td>
      </tr>
      <tr><td>set passwd</td>
          <td align=center>user.&lt;principal&gt;.setpassword</td>
-         <td>shows attributes of &lt;group&gt;</td>
      </tr>
      </table>
   </blockquote>
 <h3>Acl Administration</h3>
   <blockquote>
      <table border=1 bgcolor=#aaee99>
-     <tr><th>Command</th><th>Acl</th><th>Comment</th></tr>
+     <tr><th>Command</th><th>Acl</th></tr>
      <tr><td>create acl &lt;aclName&gt;</td>
          <td>super.access</td>
-         <td>creates an acl entry</td>
      </tr>
      <tr><td>destroy acl &lt;aclName&gt;</td>
          <td>super.access</td>
-         <td>destroys an acl entry</td>
      </tr>
      <tr><td>show acl &lt;aclName&gt;</td>
          <td align=center>-</td>
-         <td>show the members of this acl</td>
      </tr>
      <tr><td>add access [-allowed|-denied] &lt;acl&gt; &lt;principal&gt; </td>
          <td>acl.&lt;acl&gt;.access</td>
-         <td>add a principal to this acl (allow or deny)</td>
      </tr>
      </table>
   </blockquote>
 <h3>Pvl Administration</h3>
   <blockquote>
      <table border=1 bgcolor=#bbee33>
-     <tr><th>Command</th><th>Acl</th><th>Comment</th></tr>
+     <tr><th>Command</th><th>Acl</th></tr>
      <tr><td>create pvr &lt;pvrName&gt;</td>
          <td>pvr.*.create</td>
-         <td bgcolor=red>creates a pvr</td>
      </tr>
      <tr><td>create drive -pvr=&lt;pvrName&gt; &lt;driveName&gt;</td>
          <td>pvr.&lt;pvrName&gt;.modify</td>
-         <td>define a new drive</td>
      </tr>
      <tr><td>set drive -pvr=&lt;pvrName&gt; &lt;driveName&gt; ...</td>
          <td>pvr.&lt;pvrName&gt;.modify</td>
-         <td>define a new drive</td>
      </tr>
      <tr><td>create cartridgeDescriptor &lt;name&gt;</td>
          <td>pvl.*.modify</td>
-         <td>define a new cartridgeDescriptor</td>
      </tr>
      <tr><td>create volumeDescriptor &lt;name&gt;</td>
          <td>pvl.*.modify</td>
-         <td>define a new volumeDescriptor</td>
      </tr>
      </table>
   </blockquote>

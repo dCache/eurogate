@@ -1,0 +1,78 @@
+<html
+<head><title>The Eurogate Authentication</title></head>
+<body bgcolor=white>
+<h1>The Eurogate Authentication</h1>
+<h3>First login</h3>
+<blockquote>
+User, Acl and Pvl administration are only possible 
+through a secure ssh (versionI) connection. The portnumber currently
+defined for the connection is <i>23126</I>.
+As long as no additional user has been defined, only
+the user 'admin' will have access to the system.
+The eurogate ssh server allows the <i>idea</i> and the
+<i>blowfish</i> cipher for the secure communication.
+An example for a login as admin from any host is :
+<pre>
+ssh -p 23126 -c blowfish -l admin eustore1.cern.ch
+</pre>
+On eustore1 itself the following will do as well
+<pre>
+./jobs/eurogate admin -l admin 
+</pre>
+Eurogate will ask for the access password. The initial
+password for the admin user of a newly configured 
+system is 'dickerelch'. The password should be changed
+after the first login.
+<pre>
+AclCell(admin) >> set passwd -old=dickerelch adminx adminx
+</pre>
+The above command will change the password of 'admin' from
+'dickerelch' to 'adminx'.
+To hide the password typed on the screen from being 
+seen by others one may type Ctrl-i before typing
+the new password. The characters are no longer echoed.
+The CRLF will create the state to normal again. The new
+password has to repeated to avoid mistyping.
+</blockquote>
+<h3>Creating additional users.</h3>
+<blockquote>
+Eurogate provides fine grained administration and configuration
+control with the help of <i>Access control lists (ACL's)</i>.
+To make use of this feature, additional users with modified
+access permission can be created.
+<p>
+<strong>Remark :</strong> The 'admin' user lives outside of all
+acls. In other words, the admin account has all possible privileges
+within eurogate. No priviliges can be added or removed to/from
+this account. Therefore, the admin account should
+only be used for the initial configuration, and the admin password 
+should be well beware secret.
+<p>
+A new user is created with the command :
+<pre>
+create user &lt;userName&gt;
+</pre>
+To create users, the acl <i>user.*.create</i> is needed. 
+( See the chapter <i>Acls in Eurogate</i> for the meaning of Acl's ).
+For simplisity, we assume, we are working under the 'admin' account to create the
+first users.
+<p>
+Depending on whether the newly created user already exists as local user
+on the OS (which is eustore1.cern.ch in our case) or not.
+<p><strong>The user already is a local OS user</strong><br>
+In this case creating the user with 'create user ..' is sufficent to
+let guy loggin into Eurogate. The password is identical to the
+OS password. The eurogate 'set passwd' can not be used to change the
+password of such a user.
+<p><strong>The user is unknown to the local OS</strong><br>
+In this case an inital password has to be set.
+<pre>
+set passwd -user=&lt;userName&gt; &lt;newPassword&gt; &lt;newPassword&gt;
+</pre>
+Now the new user can login and may change his password with
+<pre>
+set passwd -old=&lt;oldPassword&gt; &lt;newPassword&gt; &lt;newPassword&gt;
+</pre>
+Remember to type CONTROL-i before type the passwords.
+</blockquote>
+</body>
