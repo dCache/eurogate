@@ -67,9 +67,10 @@ public class      DriveSpy
       add( masterPanel ) ;
       
       connectionActive( false ) ;
-      setSize( 750 , 500 ) ;
+      setLocation( 100  , 100 ) ;
+      setSize( 600 , 300 ) ;
       pack() ;
-      setSize( 750 , 500 ) ;
+      setSize( 600 , 300 ) ;
       setVisible( true ) ;
   
   }
