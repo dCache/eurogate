@@ -308,8 +308,8 @@ public class      AclManagerPanel
      private class   ListPanel 
              extends EventHelper {
              
-         private List _allowedList = new List() ;
-         private List _deniedList  = new List() ;
+         private java.awt.List _allowedList = new java.awt.List() ;
+         private java.awt.List _deniedList  = new java.awt.List() ;
          private ListPanel(){
             super( new GridLayout( 0 , 2 ) , 20 , Color.blue ) ;
             GridLayout gl = new GridLayout( 0 , 2 ) ;

@@ -228,7 +228,7 @@ public class      PrincipalManagerPanel
                       DomainConnectionListener  {
                       
       private String _user = "" ;
-      private List   _parentList = new List() ;
+      private java.awt.List   _parentList = new java.awt.List() ;
       private Label  _titleLabel = new Label( "User Manager",Label.CENTER) ;
       private TextField _emailText = new TextField("") ;
       private TextField _nameText  = new TextField("") ;
@@ -335,8 +335,8 @@ public class      PrincipalManagerPanel
                       DomainConnectionListener  {
       
       private String _group      = "" ;
-      private List   _memberList = new List() ;      
-      private List   _parentList = new List() ;
+      private java.awt.List   _memberList = new java.awt.List() ;      
+      private java.awt.List   _parentList = new java.awt.List() ;
       private Label  _titleLabel = new Label("",Label.CENTER) ; 
       private Button _removeButton = new Button( "Remove" ) ;
       private Button _addButton    = new Button( "Add" ) ;
