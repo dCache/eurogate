@@ -1,5 +1,35 @@
 #!/bin/sh
 #
+progname=`basename $0`
+PRG=`type -p $0` >/dev/null 2>&1
+# If PRG is a symlink, trace it to the real home directory
+
+while [ -L "$PRG" ]
+do
+    newprg=`expr "\`/bin/ls -l "$PRG"\`" : ".*$PRG -> \(.*\)"`
+    expr "$newprg" : / >/dev/null || newprg="`dirname $PRG`/$newprg"
+    PRG="$newprg"
+done
+
+C_HOME=`dirname $PRG`
+IO_PROG=$C_HOME/test
+#
+if [ "$progname" == "eurm" ] ; then
+
+x=`$IO_PROG 2>&1 <<! | grep ES_OP_REMOVEDONE | awk '{ print $NF }'
+init
+remove $1
+quit
+!`
+
+if [ "$x" == "0" ] ; then exit 0 
+else
+   echo "Remove $1 failed"
+   exit 2
+fi
+fi
+#
+#
 if [ $# -ne 2 ] ; then
    echo "Usage : eucp <localfile> <storageGroup>"
    echo "        eucp <bfid>  <localfile>"
@@ -17,19 +47,6 @@ else
   echo "$1 does't exist or $2 already exists"
   exit 5
 fi
-PRG=`type -p $0` >/dev/null 2>&1
-# If PRG is a symlink, trace it to the real home directory
-
-while [ -L "$PRG" ]
-do
-    newprg=`expr "\`/bin/ls -l "$PRG"\`" : ".*$PRG -> \(.*\)"`
-    expr "$newprg" : / >/dev/null || newprg="`dirname $PRG`/$newprg"
-    PRG="$newprg"
-done
-
-C_HOME=`dirname $PRG`
-IO_PROG=$C_HOME/test
-#
 if [ "$dir" == "put" ] ; then
    result=`$IO_PROG write $storeg $localfile  2>/dev/null |\
            grep ES_OP_IOCOMPLETED | \
