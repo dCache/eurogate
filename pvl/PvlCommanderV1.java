@@ -53,21 +53,87 @@ public class PvlCommanderV1 {
       _cell.esay( msg ) ;
    }
    public String ac_interrupted( Args args ){ return "" ; }
-   public String hh_ls_drive = "[-t]" ;
-   public String ac_ls_drive( Args args )throws Exception {
+   private void dumpSingleDrive( String pvrName , 
+                                 String driveName ,
+                                 StringBuffer sb      )
+           throws Exception {
+           
+     if( pvrName == null )
+       throw new 
+       CommandException( "-pvr=<pvr> must be given for <drive>") ;
+     PvrHandle pvr       = _pvlDb.getPvrByName( pvrName ) ;
+     if( pvr == null )
+       throw new
+       IllegalArgumentException( "pvr not found : "+pvrName) ;        
+     DriveHandle drive = pvr.getDriveByName( driveName ) ;
+     if( drive == null )
+       throw new
+       IllegalArgumentException( "drive not found : "+driveName) ;        
+     String status = null , cartridge = null , owner = null ,
+            selection = null , specific = null , device = null ,
+            action    = null ;
+     int    idle   = 0 , minimalBlock = 0 , maximalBlock = 0 ,
+            bestBlock = 0 ;
+     long   time   = 0 ;
+     drive.open( CdbLockable.READ ) ;
+        status    = drive.getStatus() ;
+        cartridge = drive.getCartridge() ;
+        owner     = drive.getOwner() ;
+        selection = drive.getSelectionString() ;
+        idle      = drive.getIdleTime() ;
+        specific  = drive.getSpecificName() ;
+        device    = drive.getDeviceName() ;
+        minimalBlock = drive.getMinimalBlockSize() ;
+        maximalBlock = drive.getMaximalBlockSize() ;
+        bestBlock    = drive.getBestBlockSize() ;
+        action       = drive.getAction() ;
+        time         = drive.getTime() ;
+     drive.close( CdbLockable.COMMIT ) ;
+     DateFormat   df    = new SimpleDateFormat("hh.mm.ss" ) ;
+     sb.append("Invariants\n") ;
+     sb.append("     Drive Name : ").append(driveName).append("\n") ;
+     sb.append("     Robot View : ").append(specific).append("\n") ;
+     sb.append("    Device Name : ").append(device).append("\n") ;
+     sb.append("      Idle Time : ").append(idle).append("\n") ;
+     sb.append("      Selection : ").append(selection).append("\n") ;
+     sb.append("       maxBlock : ").append(maximalBlock).append("\n") ;
+     sb.append("       minBlock : ").append(minimalBlock).append("\n") ;
+     sb.append("      bestBlock : ").append(bestBlock).append("\n") ;
+     sb.append("Variants\n");
+     sb.append("         Status : ").append(status).append("\n") ;
+     sb.append("         Action : ").append(action).append("\n") ;
+     sb.append("      Cartridge : ").append(cartridge).append("\n") ;
+     sb.append("          Owner : ").append(owner).append("\n") ;
+     sb.append("    Last Access : ").
+        append(df.format(new Date(time))).
+        append("\n") ;
+      
+           
+   }
+   public String hh_ls_drive = "[-t] [-s] [-pvr=<pvr> <driveName> [...]]" ;
+   public String ac_ls_drive_$_0_99( Args args )throws Exception {
      String [] pvrNameList = _pvlDb.getPvrNames() ;
-     String pvrName     = null ;
+     String pvrName     = args.getOpt("pvr") ;
      long         time  = 0 ;
      StringBuffer sb    = new StringBuffer() ;
-     boolean      st    = args.getOpt("t") != null ; 
+     boolean      st    = args.isOneCharOption('t') ; 
+     boolean      ss    = args.isOneCharOption('s') ; 
      DateFormat   df    = new SimpleDateFormat("hh.mm.ss" ) ;
+     
+     if( args.argc() > 0 ){
+        for( int i = 0 ; i < args.argc() ; i++ ){
+           dumpSingleDrive( pvrName , args.argv(i) , sb ) ;
+           sb.append("\n") ;
+        }
+        return sb.toString() ;
+     }
      for( int j = 0 ; j < pvrNameList.length ; j++ ){
         pvrName = pvrNameList[j] ;
         PvrHandle    pvr         = _pvlDb.getPvrByName( pvrName ) ;
         String []    driveNames  = pvr.getDriveNames() ;
         DriveHandle  drive       = null ;
         String status = null , cartridge = null ,
-               owner  = null , action    = null ;
+               owner  = null , action    = null , selection = null ;
         for( int i = 0 ; i < driveNames.length ; i++ ){
            drive = pvr.getDriveByName( driveNames[i] ) ;
            drive.open( CdbLockable.READ ) ;
@@ -76,14 +142,23 @@ public class PvlCommanderV1 {
               owner     = drive.getOwner() ;
               action    = drive.getAction() ;
               time      = drive.getTime() ;
+              selection = drive.getSelectionString() ;
            drive.close( CdbLockable.COMMIT ) ;
-           sb.append( Formats.field( driveNames[i]  , 12 ) ).
-              append( Formats.field( status         , 12 ) ).
-              append( Formats.field( cartridge      , 12 ) ).
-              append( Formats.field( pvrNameList[j] , 8  ) ).
-              append( Formats.field( owner          , 8  ) ).
-              append( Formats.field( action         , 12  ) ) ;
-           if(st)sb.append(df.format(new Date(time))) ; 
+           if( ss ){
+              sb.append( Formats.field( driveNames[i]  , 12 ) ).
+                 append( Formats.field( pvrNameList[j] , 8  ) ).
+                 append( "|" ).
+                 append( selection == null ? "none" : selection ).
+                 append( "|" ) ;
+           }else{
+              sb.append( Formats.field( driveNames[i]  , 12 ) ).
+                 append( Formats.field( status         , 12 ) ).
+                 append( Formats.field( cartridge      , 12 ) ).
+                 append( Formats.field( pvrNameList[j] , 8  ) ).
+                 append( Formats.field( owner          , 8  ) ).
+                 append( Formats.field( action         , 12  ) ) ;
+              if(st)sb.append(df.format(new Date(time))) ;
+           } 
            sb.append("\n") ;
         }
      }
