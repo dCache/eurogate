@@ -2,9 +2,127 @@
 <head><title>Access Control Lists</title></head>
 <body bgcolor=white>
 <h1>Access Control Lists</h1>
-Access Control Lists (<i>ACL's</i>) control the access
-to actions of Eurogate Object. ACL are themselfs names
-objects. The name of an ACL can be derived from the
-object which is protected by the acl.
+<h3>Introduction</h3>
+Access Control Lists (<i>ACL's</i>) are a common way to control
+the access of users, groups, processes etc. to resources or
+objects in general. In the case of the Eurogate implementation,
+not the object is protected by the ACL but the actions on the object.
+So each action on an object has its own ACL which is different from
+most other implementations, where only on ACL belongs to an
+object an the individual actions are associated to so called
+<i>Access Control Elements</i>.
+Within eurogate the ACL is a named object with a canonical
+name of <i>&lt;objectClass&gt;.&lt;objectName&gt;.&lt;action&gt;</i>.
+Because of the fact that an ACL is an object as well, ACLs can be
+created to protect actions on other ACL's.
+<p>
+<strong>Example : </strong>Not everybody should be allowed to disable a drive,
+lets say driveX within a robot.
+So the action <i>disable</i> of object <i>driveX</i> of class
+<i>drive</i> needs an ACL which defines who is allowed to
+perform the action.
+The name of the related ACL, in our case, would be
+<i>drive.driveX.disable</i>. This ACL is nothing else but a 
+list of users or groups which are allowed to perform
+the 'disable' action and possibly which are disallowed to do it.
+The ACL to modify this ACL itself, ( e.g. adding an entry )
+would then be <i>acl.drive.driveX.disable.modify</i>.
+This means, the object class is 'acl' the object name
+is 'drive.driveX.disable' and the action is 'modify'.
+This is the ACL one needs to add a user to the ACL
+<i>drive.driveX.disable</i>. This scheme can be extended
+infinitely.
+</p>
+<p>
+Theoretically one could add individual users to the different ACLs 
+to allow or disallow certain actions. But the most common way
+to deligate permissions is to create groups with fixed profiles
+and to add users to these groups which should share these
+permissions.
+<h3>Eurogate ACL rules</h3>
+There is a small set of rules which have to be taken into account.
+<ul>
+<li>'Principal' is  the common name for users and groups as long as
+    there is no need to distiguesh between them.
+<li>Actions, which do not have an ACL associated, are disallowed for
+    everybody, except the <i>admin</i> account and principals possitively
+    listed in the <i>super.access</i> ACL.
+<li>If a principal is neither directly nor indirecty ( through groups )
+    mentioned in a certain ACL, this principal is not allowed to perform 
+    the action associated with this ACL.
+<li>If a principal belongs to more than one group and at least one of these
+    groups is member of the 'allow' list of an ACL, this principal is
+    allowed to perform the related action, independend of the
+    permissions of the other groups.
+<li>Assuming, a principal belongs to a group which themself belongs to a group
+    and so on.
+    <pre>
+      principal-T (belongs to) group-A (belongs to) group-B (.....) group-X
+    </pre>
+    To check whether the principal is allowed or disallowed for
+    an action associated with ACL-Y,
+    one has to check the principals from left to right against
+    this ACL. As soon, as the principal/group is mentioned in ACL Y
+    this ACL is in effect for principal-T. The permission of all
+    groups following (on the right), are no longer of interrest.
+    If the ACL is not mentioned in the chain at all, principal-T
+    is disallowed for the action.
+<li>There exists a single inheritance between ACLs. 
+    A ACL-A with inherits from  ACL-B inherits all its entries.
+    An additional, an entries in ACL-A overwrites a possible entry in ACL-B.
+</ul>
+There is a <a href=Acls.html>list</a> of the ACLs associated with 
+Eurogate commands.
+<h3>Some examples</h3>
+<strong>Two groups, two ACLs</strong>
+<blockquote>
+There are two different ACLs associated with the Eurogate drives.
+<ul>
+<li><i>pvr.&lt;pvrName&gt;.manageDrives</i> which controls the
+       enable, disable and dismount actions on drives belonging
+       to &lt;pvrName&gt;.
+<li><i>pvr.&lt;pvrName&gt;.modify</i> which allows to set 
+       attributes like drive idle time and the selection string of
+       all drives belonging to &lt;pvrName&gt;.
+</ul>
+While the enable/disable/dismount commands are usually needed to operate 
+a robot to allow maintaining periods a.s.o., the different 'set drive' variants
+are used to define the behaviour of the drive. The first command
+set is typically of interrest of the operating team, the 'set drive' command
+set should be restricted to the experts.
+The following commands realize exactly this scheme. Although
+these commands could be delegated to other users, we assume that
+we are currently holding the 'admin' account.
+<pre>
+create group experts
+create group operating
+add access -allowed pvr.stk.manageDrives operating
+add access -allowed pvr.stk.modify  experts
+</pre>
+So, all users added to the group operating will have the pvr.stk.manageDrives
+priviliges and all users added to the experts group will have pvr.stk.modify
+permission. But this is not exactly what we what. The experts group should
+as well be allowed to enable/disable/dismount commands.
+One solution would be to add experts to the pvr.stk.manageDrives ACL or to
+add the experts group to the operating group.
+<pre>
+add experts to operating
+</pre>
+In the latter case the result looks as expected :
+<pre>
+AclCell(admin) >> show acl pvr.stk.modify
+experts -> true
+AclCell(admin) >> show acl pvr.stk.manageDrives
+operating -> true
+AclCell(admin) >> check pvr.stk.manageDrives operating
+<font color=green>Allowed</font>
+AclCell(admin) >> check pvr.stk.manageDrives experts
+<font color=green>Allowed</font>
+AclCell(admin) >> check pvr.stk.modify experts
+<font color=green>Allowed</font>
+AclCell(admin) >> check pvr.stk.modify operating
+<font color=red>Denied</font>
+</pre>
+</blockquote>
 </body>
 </html>
