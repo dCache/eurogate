@@ -20,7 +20,7 @@ public class ObjectivityStore implements EuroStoreable {
   private static ooHelper[] _ssessions;
   private Logable _log = null;
   
-  private static final int numSessions = 1;
+  private static final int numSessions = 5;
   private static final int _dbMajor = 0;
   private static final int _dbMinor = 1;
 

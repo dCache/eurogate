@@ -21,6 +21,7 @@ public class ooTest implements Logable {
   private BitfileRequest _bfr = null;
   private RequestImpl _r = null;
   private StorageSessionable _ses[] = null;
+  public boolean _long = false;
   
   public ooTest() {
     Args arg = new Args("-dbpath=/export/home/martin/es-work/eurogate/store/objectivity52");
@@ -57,11 +58,15 @@ public class ooTest implements Logable {
     r.setVolume(vol);
     r.setPosition("0x0:0x560", "eor");
     
-    printReq(r);
+    if (_long)
+      printReq(r);
 
     _os.finalPutRequest(_ses[0], r);
 
-    log("PUT done bfid: " + r.getBfid());
+    if (_long)
+      log("PUT done bfid: " + r.getBfid());
+    else
+      log(r.getBfid());
   }
 
   public void doGet(String bfid) {
@@ -171,6 +176,11 @@ public class ooTest implements Logable {
       log("Storage-Group: " + (String) ce.nextElement());
   }
 
+  public void doPuts(String group, String vol, long size, int n) {
+    for(int i = 0; i < n; i++) {
+      doPut(group, vol, size);
+    }
+  }
 
   // to implement Logable interface
   public void log(String s) { System.out.println(s); }
@@ -209,9 +219,9 @@ public static void main(String[] args) {
       continue;
     String tok = st.nextToken();
     if (tok.compareTo("put") == 0) {
-      ot.log("PUT");
+      System.out.println("PUT");
       if (st.countTokens() != 3) {
-	ot.log("usage: put <group> <volume> <size>");
+	System.out.println("usage: put <group> <volume> <size>");
 	continue;
       }
       String group = st.nextToken();
@@ -219,50 +229,61 @@ public static void main(String[] args) {
       long size = Long.parseLong(st.nextToken());
       ot.doPut(group, vol, size);
     } else if (tok.compareTo("get") == 0) {
-      ot.log("GET");
+      System.out.println("GET");
       if (st.countTokens() != 1) {
-	ot.log("usage: get <bfid>");
+	System.out.println("usage: get <bfid>");
 	continue;
       }
       String bfid = st.nextToken();
       ot.doGet(bfid);
     } else if (tok.compareTo("remove") == 0) {
-      ot.log("REMOVE");
+      System.out.println("REMOVE");
       if (st.countTokens() != 1) {
-        ot.log("usage: remove <bfid>");
+        System.out.println("usage: remove <bfid>");
         continue;
       }
       String bfid = st.nextToken();
       ot.doRemove(bfid);
     } else if (tok.compareTo("show") == 0) {
-      ot.log("SHOW");
+      System.out.println("SHOW");
       if (st.countTokens() != 1) {
-	ot.log("usage: show <bfid>");
+	System.out.println("usage: show <bfid>");
 	continue;
       }
       String bfid = st.nextToken();
       ot.doShow(bfid);
     } else if (tok.compareTo("listvol") == 0) {
-      ot.log("LISTVOL");
+      System.out.println("LISTVOL");
       if (st.countTokens() < 1) {
-	ot.log("usage: listvol <volume> [<l>]");
+	System.out.println("usage: listvol <volume> [<l>]");
 	continue;
       }
       String vol = st.nextToken();
       ot.doListVol(vol, st.countTokens() > 0);
     } else if (tok.compareTo("listgroup") == 0) {
-      ot.log("LISTGROUP");
+      System.out.println("LISTGROUP");
       if (st.countTokens() < 1) {
-        ot.log("usage: listgroup <storagegroup> [<l>]");
+        System.out.println("usage: listgroup <storagegroup> [<l>]");
         continue;
       }
       String vol = st.nextToken();
       ot.doListGroup(vol, st.countTokens() > 0);
     } else if (tok.compareTo("listgroups") == 0) {
-      ot.log("LISTGROUPS");
+      System.out.println("LISTGROUPS");
       ot.doListGroups();
+    } else if (tok.compareTo("puts") == 0) {
+      System.out.println("PUTS");
+      if (st.countTokens() < 4) {
+	System.out.println("usage: puts <group> <vol> <size> <#files>");
+	continue;
+      }
+      String sg = st.nextToken();
+      String vol = st.nextToken();
+      long size = Long.parseLong(st.nextToken());
+      int nFiles = Integer.parseInt(st.nextToken());
+      ot.doPuts(sg, vol, size, nFiles);
     } else if (tok.compareTo("quit") == 0) {
-      ot.log("bye bye...");
+      System.out.println("bye bye...");
       break;
     }
   }
