@@ -136,7 +136,7 @@ public class InMemoryUserRelation implements UserRelationable {
       item = (ElementItem)_elements.get(element) ;
       if( item == null )return ;
       
-      item.addParent(container);
+      item.removeParent(container);
       
       return ;
    }
