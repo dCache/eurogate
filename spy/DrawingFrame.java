@@ -17,6 +17,9 @@ public class      DrawingFrame
     private Button _button4 = null ;
     private Button _button5 = null ;
     private Button _button6 = null ;
+    private Button _button7 = null ;
+    private Button _button8 = null ;
+    private Button _button9 = null ;
     private TextField _nameText = null ;
     private JumpingPigs _jumpingPigs = null ;
     
@@ -31,7 +34,7 @@ public class      DrawingFrame
         
         Panel centerPanel = new Panel( bl ) ;
             
-        Panel buttonPanel = new Panel( new RowColumnPanel(3) ) ;
+        Panel buttonPanel = new Panel( new RowColumnLayout(4) ) ;
         _button1 = new Button("Add Container") ;
         _button1.addActionListener(this);
         _button2 = new Button("Add Terminal") ;
@@ -102,11 +105,19 @@ public class      DrawingFrame
            }else if( source == _button6 ){
              _jumpingPigs.setProgressBar(Integer.parseInt(_nameText.getText())) ;
            }else if( source == _button7 ){
+             StringTokenizer st = new StringTokenizer(_nameText.getText()) ;
+             String left = st.nextToken() ;
+             String right = st.nextToken() ;
+             _jumpingPigs.addRelation( left , right ) ;
            }else if( source == _button8 ){
+             StringTokenizer st = new StringTokenizer(_nameText.getText()) ;
+             String left = st.nextToken() ;
+             String right = st.nextToken() ;
+             _jumpingPigs.removeRelation( left , right ) ;
            }else if( source == _button9 ){
            }
          }catch(Exception ee ){
-           setMessage( ee.getMessage() ) ;
+           setMessage( ee.toString() ) ;
          }
         _nameText.setText("");
     }
