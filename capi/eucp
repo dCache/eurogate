@@ -1,0 +1,52 @@
+#!/bin/sh
+#
+if [ $# -ne 2 ] ; then
+   echo "Usage : eucp <localfile> <storageGroup>"
+   echo "        eucp <bfid>  <localfile>"
+   exit 4
+fi
+if [ -f $1 ] ; then
+  localfile=$1
+  storeg=$2
+  dir=put
+elif [ ! -f $2 ] ; then
+  localfile=$2
+  bfid=$1
+  dir=get
+else
+  echo "$1 does't exist or $2 already exists"
+  exit 5
+fi
+PRG=`type -p $0` >/dev/null 2>&1
+# If PRG is a symlink, trace it to the real home directory
+
+while [ -L "$PRG" ]
+do
+    newprg=`expr "\`/bin/ls -l "$PRG"\`" : ".*$PRG -> \(.*\)"`
+    expr "$newprg" : / >/dev/null || newprg="`dirname $PRG`/$newprg"
+    PRG="$newprg"
+done
+
+C_HOME=`dirname $PRG`
+IO_PROG=$C_HOME/test
+#
+if [ "$dir" == "put" ] ; then
+   result=`$IO_PROG write $storeg $localfile  2>/dev/null |\
+           grep ES_OP_IOCOMPLETED | \
+           awk '{ printf "%s\n",substr($6,2,length($6)-2) }' 2>/dev/null`
+   if [ -z "$result" ] ; then
+      echo "Copy failed"
+      exit 9
+   fi
+   echo $result
+   exit 0 
+else
+   result=`$IO_PROG read $bfid $localfile  2>/dev/null |\
+           grep ES_OP_IOCOMPLETED | \
+           awk '{ print $6 }' 2>/dev/null`
+   if [ "$result" != "$bfid" ] ; then
+      echo "Copy failed"
+      exit 9
+   fi
+   exit 0
+fi
