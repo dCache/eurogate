@@ -12,7 +12,7 @@ public class UserMetaDb {
        private void addAttribute( String key , String value ){
            _attr.put( key , value ) ;
        }
-       private Enumeration getAttributes(){ return _attr.elements() ; }
+       private Enumeration getAttributes(){ return _attr.keys() ; }
        private void removeAttribute(String key ){
           _attr.remove( key ) ;
        }
