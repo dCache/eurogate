@@ -79,7 +79,7 @@ public class EurogateInfo implements HsmInfo {
       }
    }
    public String getStorageClass(){ return _class ; }
-   public String getHsmInfo(){ return _group ;}
+   public String getHsmInfo(){ return _info ;}
    public static void main( String [] args ){
       if( args.length < 1 ){
          System.err.println( "Usage : ... <pnfFile>|<pnfsDir>" ) ;
@@ -87,7 +87,7 @@ public class EurogateInfo implements HsmInfo {
       }
       try{
          EurogateInfo ei = new EurogateInfo( new PnfsFile( args[0] ) ) ;
-         System.out.println( "Class : "+ei.getClass() ) ;
+         System.out.println( "Class : "+ei.getStorageClass() ) ;
          System.out.println( "Info  : "+ei.getHsmInfo() ) ;
       }catch(IllegalArgumentException  ie ){
          System.err.println( "Problem : "+ie.getMessage() ) ;
