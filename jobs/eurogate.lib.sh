@@ -1,11 +1,96 @@
 #!/bin/sh
+#############################################################
 #
+#   try to find  java
+#
+java=`findBinary java /usr/java/bin /usr/lib/java/bin`
+if [ $? -ne 0 ] ; then "Couldn't find java" ; exit 4 ; fi
 JAVA=${java}
-LOGDIR=/home/eurogateDb/log
-SSH=${bins}/ssh
-keys=${jobs}
-LD_LIBRARY_PATH=${libraryPath}
-export LD_LIBRARY_PATH
+echo "JAVA found at : $JAVA"
+#############################################################
+#
+#   try to find  ssh
+#
+java=`findBinary ssh /usr/bin`
+if [ $? -ne 0 ] ; then "Couldn't find ssh" ; exit 4 ; fi
+SSH=${ssh}
+echo "SSH  found at : $ssh"
+#############################################################
+#
+#   find the logdirectory
+#
+if [ \( -z "${logdir}"   \) -o \
+     \( ! -d "${logdir}" \) -o \
+     \( ! -w "${logdir}" \)      ] ; then
+   LOGDIR=/dev/null
+else
+   LOGDIR=${logdir}
+fi
+echo "Logdirectory : $LOGDIR"
+#############################################################
+#
+#  find the javaclasses
+#
+checkJava
+#
+#############################################################
+#
+#    the database root
+#
+if [ \( -z "${databaseRoot}"   \) -o \
+     \( ! -w "${databaseRoot}/store/dst" \) -o \
+     \( ! -w "${databaseRoot}/store/raw" \) -o \
+     \( ! -w "${databaseRoot}/pvr/stk" \)   -o \
+     \( ! -w "${databaseRoot}/pvl" \)        ] ; then
+   echo " ! The databaseRoot is not defined " 1>&2
+   echo " ! or the directories couldn't be found" 1>&2
+   echo " ! Please read eurogateSetup.template for the neccessary infos !" 1>&2 
+   exit 3
+fi
+#
+#  the ssh keys
+#
+if [ \( -z "${keyBase}"              \) -o \
+     \( ! -f "${keyBase}/server_key" \) -o \
+     \( ! -f "${keyBase}/host_key"   \)    ] ; then
+   echo " ! The keyBase is not defined " 1>&2
+   echo " ! Please read eurogateSetup.template for the neccessary infos !" 1>&2 
+   exit 3
+fi
+#
+#  the mover space
+#
+if [ \( -z "${moverSpace}"     \) -o \
+     \( ! -d "${moverSpace}"   \) -o \
+     \( ! -W "${moverSpace}"   \)    ] ; then
+   echo " ! There is no moverSpace defined " 1>&2
+   echo " ! Please read eurogateSetup.template for the neccessary infos !" 1>&2 
+   exit 3
+fi
+#
+if [ \( -z "${javaOnly}" \) -o \( "${javaOnly}" = "true" \) ] ; then
+   echo " - Chosing javaOnly Movers" 1>&2
+elif [ "${javaOnly}" != "false" ] ; then
+   echo " ! The javaOnly variable needs to be " 2>&1 
+   echo " ! set true of false ( and not ${javaOnly} )" 2>&1
+   exit 5
+else 
+   if [ \( -z "${sharedLibraries}" \) -o
+        \( ! -d "${sharedLibraries}"  \) ] ; then
+      echo " ! javaOnly=false  needs a valid sharedLibrary directory" 1>&2
+      exit 5
+   fi
+   echo " - Chosing 'real Movers in simulation mode'" 1>&2
+   export LD_LIBRARY_PATH
+   LD_LIBRARY_PATH=${sharedLibrary}
+fi
+#
+if [ ! -f "${cellBatch}" ] ; then
+   echo " ! Can't find our cell batchfile  ${cellBatch}" 1>&2
+   exit 4
+fi
+#
+checkVar pvlDbPort sshPort clientPort 
 #
 #
 ##################################################################
@@ -109,8 +194,8 @@ eurogateStart() {
    checkJava || exit $?
    checkSsh  || exit $?
    #
-   if [ \( ! -f "${jobs}/server_key" \) -o \
-        \( ! -f "${jobs}/host_key"   \)     ] ; then
+   if [ \( ! -f "${keyBase}/server_key" \) -o \
+        \( ! -f "${keyBase}/host_key"   \)     ] ; then
         echo "Server or Host RSA Key not found" 1>&2
         echo "ssh-keygen -b  768 -f ./server_key -N \"\""
         echo "ssh-keygen -b 1024 -f ./host_key   -N \"\""
@@ -133,41 +218,31 @@ eurogateStart() {
       domainName=euroGate
       log=$LOGDIR/${domainName}.log
       rm -rf $log >/dev/null 2>/dev/null
+      touch ${log} >/dev/null 2>/dev/null
       if [ $? -ne 0 ] ; then
          echo "Not allowed to write logfile : ${log}. Using dumpster" 1>&2
          log=/dev/null
       fi
       #
-      BATCHFILE=${jobs}/$masterBatch
+      BATCHFILE=${cellBatch}
       if [ ! -f "$BATCHFILE" ] ; then
           echo "Cell Batchfile not found : $BATCHFILE" 1>&2
           exit 4
       fi
       nohup $JAVA  dmg.cells.services.Domain $domainName \
                -param setupFile=$setupFilePath \
-                      keyBase=${keys} \
+                      keyBase=${keyBase} \
                -batch $BATCHFILE  \
-               -tunnel2 ${masterPort} \
                -routed \
                $SPY_IF_REQUESTED  $TELNET_IF_REQUESTED >$log 2>&1 &
 #
       for c in 5 4 3 2 1 0 ; do printf "${c} " ; sleep 1 ; done 
       printf "\n" 
-#      $SSH -p $sshPort -o "FallBackToRsh no" localhost <<!  2>/dev/null | grep Active
-#         ps -f
-##         exit
-#         exit
-#!
-#      if [ $? -ne 0 ] ; then
-#         echo "Eurogate did not startup"
          echo ""
          echo " ------ Infos from Logfile ($log) ---------"
          echo ""
-         tail -3 $log
-         exit 4
-#      else
-#         exit 0
-#      fi
+         tail -5 $log
+         exit 0
    fi
    if [ "${mover}" = "yes" ] ; then
       BATCHFILE=${jobs}/$moverBatch
@@ -216,9 +291,6 @@ eurogateHelp() {
    echo "        eurogate initPvl"
    echo "        eurogate deletePvl"
    echo "        eurogate stop"
-   echo "        eurogate deleteObjy"
-   echo "        eurogate createObjy"
-   echo "        eurogate initObjy"
    return 0
 }
 eurogateSwitch() {
@@ -228,10 +300,6 @@ eurogateSwitch() {
      *login)       eurogateLogin  $* ;;
      *initPvl)     eurogateInitPvl  $* ;;
      *deletePvl)   eurogateDeletePvl  $* ;;
-     *createObjy)  createOODB $* ;;
-     *deleteObjy)  deleteOODB $* ;;
-     *initObjy)    initOODB $* ;;
-     *clearObjy)   clearOODB $* ;;
      *execStore)   shift ; eurogateExecStore $* ;;
      *)            eurogateHelp $* ;;
    esac
