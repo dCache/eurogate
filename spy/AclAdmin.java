@@ -52,8 +52,18 @@ public class      AclAdmin extends CommandInterpreter {
     public String ac_pwd_$_0( Args args )throws Exception {
        return _cellPath.toString() + "\n" ;
     }
-    public Object executeCommand( String str ) throws Exception {
-       String tr = str.trim() ;
+    public Object executeCommand( String obj ) throws Exception {
+        say( "executeCommand : arriving as String : "+obj.toString() ) ;
+        return _executeCommand( obj , false ) ;
+    }
+    public Object executeCommand( Object obj ) throws Exception {
+        say( "executeCommand : arriving as Object : "+obj.toString() ) ;
+        return _executeCommand( obj.toString() , true ) ;
+    }
+    public Object _executeCommand( String obj , boolean wasBinary ) throws Exception {
+    
+       String str = obj.toString() ;
+       String tr  = str.trim() ;
        if( tr.equals("") )return "" ;
        if( tr.equals("logout") )throw new CommandExitException() ;
        if( tr.startsWith(".") ){
@@ -64,16 +74,22 @@ public class      AclAdmin extends CommandInterpreter {
          _nucleus.sendAndWait( 
                 new CellMessage( 
                      _cellPath , 
-                     new AuthorizedString( _user , str ) 
+                     new AuthorizedString( 
+                           _user ,  
+                           str + ( wasBinary ? " -binary" : "" ) ) 
                     ) , 
                 10000 
          ) ;
        if( res == null )throw new Exception("Request timed out" ) ;
        Object resObject = res.getMessageObject() ;
-       if( resObject instanceof Exception )throw (Exception)resObject ;
-       String r = resObject.toString() ;
-       if( r.length() == 0 )return "" ;
-       if( r.substring(r.length()-1).equals("\n" ) )return r ;            
-       else   return r + "\n" ;
+       if( wasBinary ){
+           return resObject ;
+       }else{
+          if( resObject instanceof Exception )throw (Exception)resObject ;
+          String r = resObject.toString() ;
+          if( r.length() == 0 )return "" ;
+          if( r.substring(r.length()-1).equals("\n" ) )return r ;            
+          else   return r + "\n" ;
+       }
     }
 }
