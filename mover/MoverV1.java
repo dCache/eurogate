@@ -107,7 +107,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
       }
       _activeRequest = req ;
       _activeMessage = msg ; 
-      _moverThread = new Thread( this ) ;
+      _moverThread = _nucleus.newThread( this , "request" ) ;
       _moverThread.start() ;
    
    }

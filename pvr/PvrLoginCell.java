@@ -183,9 +183,9 @@ public class      PvrLoginCell
        //
        _finishGate.close() ;
        _recoveryGate.close() ;
-       _listenThread  = new Thread( this , "listenThread" ) ;       
+       _listenThread  = _nucleus.newThread( this , "listenThread" ) ;       
        _listenThread.start() ;
-       _recoveryThread  = new Thread( this , "recoveryThread" ) ;       
+       _recoveryThread  = _nucleus.newThread( this , "recoveryThread" ) ;       
        _recoveryThread.start() ;
        start() ;
   }

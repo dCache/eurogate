@@ -57,7 +57,7 @@ public class EuroGate extends CellAdapter implements Runnable {
            kill() ;
            throw ee ;
         }
-        _readerThread = _nucleus.newThread( this ) ;
+        _readerThread = _nucleus.newThread( this , "reader" ) ;
         _readerThread.start() ;
 	_remotePeer   = engine.getInetAddress().toString()  ;
         start() ;

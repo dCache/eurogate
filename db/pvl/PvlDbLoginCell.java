@@ -38,11 +38,11 @@ public class      PvlDbLoginCell
   private Hashtable      _defaultHash = new Hashtable() ;
   private String         _container = "/home/patrick/eurogate/db/pvl/database" ;
   private PvlDb          _pvlDb     = null ;
-  
+  private CellNucleus    _nucleus   = null ;
   public PvlDbLoginCell( String name , StreamEngine engine ){
      super( name ) ;
      _engine  = engine ;
-     
+     _nucleus = getNucleus() ;
      _reader = engine.getReader() ;
      _in   = new BufferedReader( _reader ) ;
      _out  = new PrintWriter( engine.getWriter() ) ;
@@ -50,10 +50,9 @@ public class      PvlDbLoginCell
      _host = engine.getInetAddress() ;
       
      _destination  = getCellName() ;
-     _workerThread = new Thread( this ) ;         
+     _workerThread = _nucleus.newThread( this ,"worker" ) ;         
      
      _workerThread.start() ;
-     setPrintoutLevel( 11 ) ;
      useInterpreter(false) ;
      //
      // 
@@ -70,7 +69,7 @@ public class      PvlDbLoginCell
   public void run(){
     if( Thread.currentThread() == _workerThread ){
         print( prompt() ) ;
-        while( true ){
+        while( ! Thread.currentThread().interrupted() ){
            try{
                if( ( _lastCommand = _in.readLine() ) == null )break ;
                _commandCounter++ ;
@@ -93,7 +92,7 @@ public class      PvlDbLoginCell
            }
         
         }
-        say( "EOS encountered" ) ;
+        say( "EOS encountered/ thread finished" ) ;
         _readyGate.open() ;
         kill() ;
     

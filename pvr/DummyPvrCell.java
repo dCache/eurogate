@@ -101,7 +101,7 @@ public class      DummyPvrCell
      private CellMessage _message  = null ;
      private long        _waitTime = 0L ;
      private RequestTask( CellMessage msg , long waitTime ){
-        _thread   = _nucleus.newThread(this) ;
+        _thread   = _nucleus.newThread(this,"requestTask") ;
         _message  = msg ;
         _waitTime = waitTime ;
         _thread.start() ;
@@ -116,7 +116,9 @@ public class      DummyPvrCell
              
                  Thread.currentThread().sleep(_waitTime) ;
                  
-             }catch( InterruptedException ie ){}           
+             }catch( InterruptedException ie ){
+                 say( "requestTast interrupted" ) ;
+             }           
            
            }
 

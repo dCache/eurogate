@@ -180,7 +180,7 @@ public class      PvlCoreV2
       PvlResourceModifier [] inList   = new PvlResourceModifier[1] ;      
       PvlResourceModifier [] outList  = null  ; 
       PvlResourceModifier    modifier = null ;   
-      while( true ){
+      while( ! Thread.currentThread().interrupted() ){
       
          //
          // get next event
@@ -252,7 +252,7 @@ public class      PvlCoreV2
 
       
       }
-   
+      say( "Scheduler thread done" ) ;
    }
    public class PvlException extends Exception {
        private int _code = 0 ;
