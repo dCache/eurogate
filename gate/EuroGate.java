@@ -146,6 +146,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        
        }else if( obj instanceof StoreRequest ){
           StoreRequest sr = (StoreRequest)obj ;
+          say( "Store Request Reply : "+obj ) ;
           if( sr.getCommand().equals("list-volume") ){
              String result = null ;
              if( sr.getReturnCode() != 0 ){
@@ -170,12 +171,12 @@ public class EuroGate extends CellAdapter implements Runnable {
                            sr.getBfid()+"\""  ;
              }else{
                 StringBuffer sb = new StringBuffer() ;
-                BitfileId bf = sr.getBitfileId() ;
+                BfRecordable bf = sr.getBitfileId() ;
                 sb.append("ok ").append(sr.getId()).
                    append(" \"").append(sr.getBfid()).
                    append(" ").append(bf.getVolume()).
-                   append(" ").append(bf.getPosition()).
-                   append(" ").append(bf.getSize()).
+                   append(" ").append(bf.getFilePosition()).
+                   append(" ").append(bf.getFileSize()).
                    append("\"") ;
                 result = sb.toString() ; 
              }
