@@ -309,8 +309,12 @@ static int readStream(int fd, void *buf, int bytes) {
   int iread = 0, i, toread = bytes;
 
   while(666) {
-    if ((i = read(fd, ptr, toread)) <= 0)
-      return(i);
+    if ((i = read(fd, ptr, toread)) <= 0) {
+      if (errno == EINTR) /* skip over catched signals */
+	continue;
+      else
+	return(i);
+    }
     iread += i;
     if (iread >= bytes)
       return(iread);
