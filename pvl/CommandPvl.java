@@ -138,7 +138,7 @@ public class      CommandPvl
          throw new CommandException( "Drive not known : "+driveName ) ;
          
      MoverRequestImpl request = new MoverRequestImpl( "position" ) ;
-     request.setPosition( position ) ;
+     request.setFilePosition( position ) ;
      sendMoverRequest( driveName , request ) ;
      return null ; 
   } 

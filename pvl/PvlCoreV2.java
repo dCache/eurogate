@@ -40,7 +40,7 @@ public class      PvlCoreV2
    private Hashtable               _env       = new Hashtable() ;
    private Args                    _args      = null ;
    
-   public PvlCoreV2( String name , String args ){
+   public PvlCoreV2( String name , String args ) throws Exception{
        super( name , args , true ) ;
     
        try{
@@ -79,7 +79,7 @@ public class      PvlCoreV2
        }catch( Exception e ){
           say( "Problem in <init> : "+e ) ;
           kill() ;
-          return ;
+          throw e ;
        }
        _commander = new PvlCommanderV1( this , _pvlDb , _fifo , _queue ) ;
        say( "Commander created" ) ;
@@ -254,6 +254,16 @@ public class      PvlCoreV2
       }
    
    }
+   public class PvlException extends Exception {
+       private int _code = 0 ;
+       public PvlException( int code , String msg ){
+          super( msg ) ;
+          _code = code ;
+       }
+       public int getReturnCode(){ return _code ; }
+       public String getReturnMessage(){ return getMessage() ; }
+       
+   }
    public void messageArrived( CellMessage msg ){
    
        Object obj = msg.getMessageObject() ;
@@ -262,9 +272,13 @@ public class      PvlCoreV2
        
        if( obj instanceof EurogateRequest ){
        
-           EurogateRequest req = (EurogateRequest) obj ;
-           
-           if( req.getActionCommand().equals("i/o") ){
+           EurogateRequest req     = (EurogateRequest) obj ;
+           String          command = req.getActionCommand() ;
+           //
+           //  the io action will initail a client i/o 
+           //  operation .
+           //
+           if( command.equals("i/o") ){
            
               String type = req.getType() ;
               if( type.equals( "get" ) )
@@ -275,41 +289,109 @@ public class      PvlCoreV2
                   processRemove( msg , (PvlRequest)req ) ;
               else
                   esay( "Unsupported Direction : "+type) ;
+              
+              return ;
                   
-           }else if( req.getActionCommand().equals("mount-ready") ){
+           }
+           //
+           //
+           PvlCompanion companion = null ;
+           synchronized( _sendLock ){
+               companion = (PvlCompanion)_pending.remove( msg.getLastUOID() ) ;
+           }
+           if( companion == null ){
+              esay( "PANIC : no companion found for '"+command+"'" ) ;
               //
-              // the mount finished ( ok ? ) ;
+              //  we should the appropriate cleanups 
               //
-              mountFinished( msg , (PvrRequest)req ) ;
-              
-           }else if( req.getActionCommand().equals("dismount-ready") ){
+              return ;
+           }
+           if( companion instanceof IoCompanion ){
               //
-              // the dismount finished ( ok ? ) ;
+              // this is a regular IoRequest
               //
-              dismountFinished( msg , (PvrRequest)req ) ;
-              
-           }else if( req.getActionCommand().equals("load-ready") ){
-              //
-              // the load finished ( ok ? ) ;
-              //
-              loadFinished( msg , (MoverRequest)req ) ;
-              
-           }else if( req.getActionCommand().equals("unload-ready") ){
-              //
-              // the unload finished ( ok ? ) ;
-              //
-              unloadFinished( msg , (MoverRequest)req ) ;
-              
-           }else if( req.getActionCommand().equals("checkLabel-ready") ||
-                     req.getActionCommand().equals("writeLabel-ready")   ){
-              //
-              // the check/write finished ( ok ? ) ;
-              //
-              labelFinished( msg , (MoverRequest)req ) ;
-              
-           }else
-              esay( "Unsupported action command : "+req.getActionCommand() ) ;
-              
+              IoCompanion ioComp  = (IoCompanion)companion ;
+              try{
+                 if( req.getReturnCode() != 0 ){
+                    ioComp.setRequest( req ) ;
+                    throw new PvlException( req.getReturnCode() ,
+                                            req.getReturnMessage() ) ;
+                 }
+                 try{
+                     _dbGate.open(GateKeeper.LOW) ;
+                 }catch( InterruptedException ie ){
+                     throw new PvlException( 55 , "sendMessage was interruped" ) ;
+                 }
+                 if( command.equals("mount-ready") ){
+
+                    mountFinished( ioComp , msg , (PvrRequest)req ) ;
+
+                 }else if( command.equals("load-ready") ){
+
+                    loadFinished( ioComp , msg , (MoverRequest)req ) ;
+
+                 }else if( command.equals("checkLabel-ready") ||
+                           command.equals("writeLabel-ready")   ){
+
+                    labelFinished( ioComp , msg , (MoverRequest)req ) ;
+
+                 }else{
+                    String error = "PANIC : '"+command+
+                                   "' found for companion : "+
+                                   companion.getClass().getName() ;
+                    throw new PvlException( 5 , error ) ;
+                 }
+                 synchronized( _sendLock ){
+                      CellMessage m = companion.getNextMessage() ;
+                      sendMessage( m ) ;
+                      _pending.put( m.getUOID() , companion ) ;
+                 }
+              }catch( Throwable t ){
+                 int    code = 66 ;
+                 if( t instanceof PvlException ){
+                      code = ((PvlException)t).getReturnCode() ;
+                 }
+                 esay( "Problem in messageArrived : "+t ) ;
+                 esay( t ) ;
+                 sendProblem( ioComp.getMessage() , code , t.getMessage() ) ;
+                 //
+                 // do the system cleanups
+                 // ??
+                 
+              }finally{
+                 try{ _dbGate.close() ; }catch(IllegalArgumentException iae ){}
+              }
+              return ;
+           }else if( companion instanceof DismountCompanion ){
+              DismountCompanion disComp = (DismountCompanion)companion ;
+              try{
+                  _dbGate.open(GateKeeper.LOW) ;
+              }catch( InterruptedException ie ){
+//                  throw new PvlException( 56 , "sendMessage was interruped" ) ;
+                  esay( "Panic : "+"sendMessage was interruped"  ) ;
+                  return ;
+              }
+              try{
+                 if( command.equals("dismount-ready") ){
+
+                    dismountFinished( disComp ,
+                                      msg     ,
+                                     (PvrRequest)req ) ;
+
+                 }else if( command.equals("unload-ready") ){
+                    //
+                    // the unload finished ( ok ? ) ;
+                    //
+                    unloadFinished( disComp,
+                                    msg , 
+                                    (MoverRequest)req ) ;
+
+                 }else
+                    esay( "Unsupported action command : "+req.getActionCommand() ) ;
+              }finally{
+                 _dbGate.close() ;
+              }
+           }  
        }else{
            esay( "Unknown message object arrived : "+obj.getClass().getName() ) ;
        }
@@ -325,17 +407,30 @@ public class      PvlCoreV2
            String actionCommand = req.getActionCommand() ;
            
            if( actionCommand.equals("i/o-ready") ){
-           
-              String type = req.getType() ;
-              if( type.equals( "get" ) ){
-                  processGetReply( msg , (PvrRequest)req ) ;
-              }else if( type.equals( "put" ) ){
-                  processPutReply( msg , (PvrRequest)req ) ;
-              }else if( type.equals( "remove" ) ){
-//                  processRemoveReply( msg , (PvlRequest)req ) ;
-              }else
-                  esay( "Unsupported Direction : "+type) ;
-                  
+              //
+              PvlCompanion companion = null ;
+              synchronized( _sendLock ){
+                  companion = (PvlCompanion)_pending.remove( msg.getLastUOID() ) ;
+              }
+              if( companion == null ){
+                 esay( "PANIC : no companion found for '"+actionCommand+"'" ) ;
+                 //
+                 //  we should the appropriate cleanups 
+                 //
+                 return ;
+              }
+              if( companion instanceof IoCompanion ){
+                 IoCompanion ioComp = (IoCompanion)companion ;
+                 String type = req.getType() ;
+                 if( type.equals( "get" ) ){
+                     processGetReply( ioComp , msg , (PvrRequest)req ) ;
+                 }else if( type.equals( "put" ) ){
+                     processPutReply( ioComp , msg , (PvrRequest)req ) ;
+                 }else if( type.equals( "remove" ) ){
+   //                  processRemoveReply( ioComp , msg , (PvlRequest)req ) ;
+                 }else
+                     esay( "Unsupported Direction : "+type) ;
+              }    
            }else if( actionCommand.equals("dismount-ready") ){
               processDismountReady( msg , (PvrRequest)req ) ;
            }else if( actionCommand.equals("mount-ready") ){
@@ -550,6 +645,8 @@ public class      PvlCoreV2
       // assign it to the drive and set the owner.
       //
       drive.open( CdbLockable.WRITE ) ;
+        say( "Selected cartridge : "+cart ) ;
+        say( "Cartridge in drive : "+drive.getCartridge() ) ;
         wasInDrive = drive.getCartridge().equals( cart ) ;
         if( ! wasInDrive )drive.setCartridge( cart  ) ;
         specific   = drive.getSpecificName() ;
@@ -604,19 +701,24 @@ public class      PvlCoreV2
       pvrReq.setPvr(req.getPvr() ) ; // looks strange, but is needed.
 
       String  path , command ;
-
+      CellMessage msg = null ;
       if( wasInDrive ){
          path        = driveName ;
          command     = "i/o" ;
          drive.open( CdbLockable.WRITE ) ;
            drive.setAction( "i/o" ) ;
          drive.close( CdbLockable.COMMIT ) ;
+         msg = req.getMessage() ;
+         msg.setMessageObject( pvlRequest ) ;
+         msg.getDestinationPath().add( path ) ;
+         msg.nextDestination() ;
       }else{
          path        = req.getPvr() ;
          command     = "mount" ;
          drive.open( CdbLockable.WRITE ) ;
            drive.setAction( "mounting" ) ;
          drive.close( CdbLockable.COMMIT ) ;
+         msg = new CellMessage( new CellPath(path) , pvlRequest ) ;
       }
       say( "Initiating "+command+" : "+pvrReq ) ;
       //
@@ -624,14 +726,10 @@ public class      PvlCoreV2
       //
       pvlRequest.setActionCommand( command ) ;
       synchronized( _sendLock ){
-         CellMessage msg = null ;
          say( "Sending to "+path+" : "+pvlRequest ) ;
          try{
-            msg = new CellMessage( 
-                        new CellPath( path ) ,
-                        pvlRequest            )  ;
             sendMessage( msg ) ;
-            _pending.put( msg.getUOID() ,req.getMessage()  ) ;
+            _pending.put( msg.getUOID() ,new IoCompanion( req.getMessage() )  ) ;
          }catch(Exception me ){
             String problem = "Can't forward message : "+me  ;
             esay( problem ) ;
@@ -701,7 +799,7 @@ public class      PvlCoreV2
          try{
             synchronized( _sendLock ){
                sendMessage( msg ) ;
-               _pending.put( msg.getUOID() , msg ) ;
+               _pending.put( msg.getUOID() , new DismountCompanion(msg) ) ;
             }
          }catch(Exception eee ){
             esay( "PANIC : internal send problem 54938 : "+eee ) ;
@@ -715,67 +813,37 @@ public class      PvlCoreV2
    //                     | 
    //                     +--->   load
    //
-   private void mountFinished( CellMessage msg , PvrRequest pvrRequest ){
+   private void mountFinished( IoCompanion companion ,
+                               CellMessage msg ,
+                               PvrRequest  pvrRequest )
+           throws PvlException {
    
        say( "mountFinished : "+pvrRequest ) ;
        
-       CellMessage storedMsg = null ;
-       synchronized( _sendLock ){
-           storedMsg = (CellMessage)_pending.remove( msg.getLastUOID() ) ;
-       }
-       if( storedMsg == null ){
-          esay( "PANIC : mount-ready arrived unexpectedly" ) ;
-          //
-          //  we should dismount 
-          //
-          return ;
-       }
-       if(  pvrRequest.getReturnCode() != 0 ){
-          esay( "Mount failed : "+pvrRequest.getReturnMessage() ) ;
-          storedMsg.setMessageObject( pvrRequest ) ;
-          replyMessage( storedMsg ) ;
-          return ;
-       }
        //
-       // try to get the lock
+       // update the drive info
        //
        try{
-          _dbGate.open(GateKeeper.MEDIUM) ;
-       }catch( InterruptedException ie ){
+          updateDriveAction( pvrRequest , "loading" ) ;
+       }catch( Exception dbeee ){
+          esay( "Problem updating drive info : "+dbeee ) ;
           return ;
        }
-       try{
-          //
-          // update the drive info
-          //
-          try{
-             updateDriveAction( pvrRequest , "loading" ) ;
-          }catch( Exception dbeee ){
-             esay( "Problem updating drive info : "+dbeee ) ;
-             return ;
-          }
-          pvrRequest.setActionCommand( "load" ) ;
-          storedMsg.setMessageObject( pvrRequest ) ;
-          msg = new CellMessage( new CellPath( pvrRequest.getGenericDrive() ) ,
-                                 pvrRequest ) ;
-          say( "mountFinished : sending to "+pvrRequest.getGenericDrive()+
-               " : "+pvrRequest ) ;
-          synchronized( _sendLock ){
-             try{
+       pvrRequest.setActionCommand( "load" ) ;
+       companion.getMessage().setMessageObject( pvrRequest ) ;
+       //
+       // create the message to proceed with
+       //
+       msg = new CellMessage( 
+                     new CellPath( pvrRequest.getGenericDrive() ) ,
+                     pvrRequest 
+                            ) ;
 
-                 sendMessage( msg ) ;
-                 _pending.put( msg.getUOID() , storedMsg ) ;
+       companion.setNextMessage( msg ) ;
 
-             }catch( Exception ee ){
-                String problem = "Can't pvr not available : "+ee  ;
-                esay( problem ) ; 
-                pvrRequest.setReturnValue( 124 , problem ) ;
-                replyMessage( storedMsg ) ;
-             }
-          }
-       }finally{
-          _dbGate.close() ;
-       }
+       say( "mountFinished : sending to "+
+            pvrRequest.getGenericDrive()+
+            " : "+pvrRequest ) ;
    }
    ///////////////////////////////////////////////////////////////////////
    //
@@ -784,35 +852,17 @@ public class      PvlCoreV2
    //                     +--->   checkLabel
    //                     +--->   writeLabel
    //
-   private void loadFinished( CellMessage msg , MoverRequest moverReq ){
-   
-       CellMessage storedMsg = null ;
+   private void loadFinished( IoCompanion companion ,
+                              CellMessage msg , 
+                              MoverRequest moverReq )
+       throws Exception {
+       
        say( "loadFinished : "+moverReq ) ;
-       synchronized( _sendLock ){
-           storedMsg = (CellMessage)_pending.remove( msg.getLastUOID() ) ;
-       }
-       if( storedMsg == null ){
-          esay( "PANIC : load-ready arrived unexpectedly" ) ;
-          return ;
-       }
-       if(  moverReq.getReturnCode() != 0 ){
-          esay( "Load failed : "+moverReq.getReturnMessage() ) ;
-          storedMsg.setMessageObject( moverReq ) ;
-          replyMessage( storedMsg ) ;
-          return ;
-       }
+       
        PvrRequest  pvrReq = (PvrRequest)moverReq ;
        PvrHandle   pvr    = null ;
        int     usageCount = 0 ;
        CartridgeHandle cartridge  = null ;
-       //
-       // try to get the lock
-       //
-       try{
-          _dbGate.open(GateKeeper.MEDIUM) ;
-       }catch( InterruptedException ie ){
-          return ;
-       }
        try{
            pvr        = _pvlDb.getPvrByName( pvrReq.getPvr() ) ;
            cartridge  = pvr.getCartridgeByName( pvrReq.getCartridge() ) ;
@@ -821,43 +871,28 @@ public class      PvlCoreV2
            cartridge.close( CdbLockable.COMMIT ) ;
        }catch(Exception ee ){
            esay( "PANIC : internal problem 23643 : "+ee ) ;
-           return ;
+           throw ee ;
        }
-       try{
        
-          String newAction = usageCount > 0 ? "checkLabel" : "writeLabel" ;
-          moverReq.setActionCommand( newAction ) ;
-          storedMsg.setMessageObject( moverReq ) ;
-          msg = new CellMessage( 
-                          new CellPath( pvrReq.getGenericDrive() ) ,
-                          pvrReq ) ;
+       String newAction = usageCount > 0 ? "checkLabel" : "writeLabel" ;
+       moverReq.setActionCommand( newAction ) ;
+       companion.getMessage().setMessageObject( moverReq ) ;
+       msg = new CellMessage( 
+                       new CellPath( pvrReq.getGenericDrive() ) ,
+                       pvrReq ) ;
 
-          say( "mountFinished : sending to "+
-               pvrReq.getGenericDrive()+" : "+pvrReq ) ;
+       companion.setNextMessage( msg ) ;
+       
+       say( "mountFinished : sending to "+
+            pvrReq.getGenericDrive()+" : "+pvrReq ) ;
 
-          try{
-             updateDriveAction( pvrReq , newAction ) ;
-          }catch(Exception ee ){
-              esay( "PANIC : internal problem 23733 : "+ee ) ;
-              return ;
-          }
-
-          synchronized( _sendLock ){
-             try{
-
-                 sendMessage( msg ) ;
-                 _pending.put( msg.getUOID() , storedMsg ) ;
-
-             }catch( Exception ee ){
-                String problem = "Can't pvr not available : "+ee  ;
-                esay( problem ) ; 
-                pvrReq.setReturnValue( 124 , problem ) ;
-                replyMessage( storedMsg ) ;
-             }
-          }
-       }finally{
-          _dbGate.close() ;
+       try{
+          updateDriveAction( pvrReq , newAction ) ;
+       }catch(Exception ee ){
+           esay( "PANIC : internal problem 23733 : "+ee ) ;
+           throw ee ;
        }
+
    }
    ///////////////////////////////////////////////////////////////////////
    //
@@ -865,76 +900,48 @@ public class      PvlCoreV2
    //                     | 
    //                     +--->   i/o
    //
-   private void labelFinished( CellMessage msg , MoverRequest moverReq ){
-       CellMessage storedMsg = null ;
+   private void labelFinished( IoCompanion companion ,
+                               CellMessage msg , 
+                               MoverRequest moverReq ){
        say( "labelFinished : "+moverReq ) ;
-       synchronized( _sendLock ){
-           storedMsg = (CellMessage)_pending.remove( msg.getLastUOID() ) ;
-       }
-       if( storedMsg == null ){
-          esay( "PANIC : "+moverReq.getActionCommand()+" arrived unexpectedly" ) ;
-          return ;
-       }
-       if(  moverReq.getReturnCode() != 0 ){
-          esay( "Label failed : "+moverReq.getReturnMessage() ) ;
-          storedMsg.setMessageObject( moverReq ) ;
-          replyMessage( storedMsg ) ;
-          return ;
-       }
-       //
-       // try to get the lock
-       //
-       try{
-          _dbGate.open(GateKeeper.MEDIUM) ;
-       }catch( InterruptedException ie ){
-          return ;
-       }
-       try{
-          PvrRequest  pvrReq = (PvrRequest)moverReq ;
-          if( moverReq.getActionCommand().equals("writeLabel-ready") ){
-              PvlRequest  pvlReq = (PvlRequest)moverReq ;
-              //
-              //   correct the position and EOR
-              //
-              String eor = moverReq.getEorPosition() ; // is eor from mover
-	      moverReq.setPosition( eor , eor ) ;
-              String volumeName = pvlReq.getVolume() ;
-              try{
-                 VolumeHandle volume = _pvlDb.getVolumeByName(volumeName) ;
-                 volume.open( CdbLockable.WRITE );
-                    volume.setEOR( eor ) ;
-                 volume.close( CdbLockable.COMMIT ) ;
-              }catch( Exception eeee ){
-                 esay( "PANIC : internal problem 473734 : "+eeee ) ;
-                 return ;
-              }
-          }
-          try{
-             updateDriveAction( pvrReq , "i/o-"+pvrReq.getType() ) ;
-          }catch(Exception ee ){
-              esay( "PANIC : internal problem 23734 : "+ee ) ;
-              return ;
-          }
-          moverReq.setActionCommand( "i/o" ) ;
-          storedMsg.setMessageObject( moverReq ) ;
-          storedMsg.getDestinationPath().
-                    add(((PvrRequest)moverReq).getGenericDrive() ) ;
-          storedMsg.nextDestination() ;
-          say( "labelFinished : sending to "+storedMsg.getDestinationPath()+
-               " : "+moverReq ) ;
-          try{
-             sendMessage( storedMsg ) ;      
-          }catch(Exception eee  ){
-             String problem = "Can't forward to mover : "+eee  ;
-             esay( problem ) ;
-             moverReq.setReturnValue( 33 , problem ) ;
-             replyMessage(storedMsg) ;
-          }
-       }finally{
        
-           _dbGate.close() ;
-       
-       }
+        PvrRequest  pvrReq = (PvrRequest)moverReq ;
+        if( moverReq.getActionCommand().equals("writeLabel-ready") ){
+            PvlRequest  pvlReq = (PvlRequest)moverReq ;
+            //
+            //   correct the position and EOR
+            //
+            String eor = moverReq.getEorPosition() ; // is eor from mover
+	    moverReq.setPosition( eor , eor ) ;
+            String volumeName = pvlReq.getVolume() ;
+            try{
+               VolumeHandle volume = _pvlDb.getVolumeByName(volumeName) ;
+               volume.open( CdbLockable.WRITE );
+                  volume.setEOR( eor ) ;
+               volume.close( CdbLockable.COMMIT ) ;
+            }catch( Exception eeee ){
+               esay( "PANIC : internal problem 473734 : "+eeee ) ;
+               return ;
+            }
+        }
+        try{
+           updateDriveAction( pvrReq , "i/o-"+pvrReq.getType() ) ;
+        }catch(Exception ee ){
+            esay( "PANIC : internal problem 23734 : "+ee ) ;
+            return ;
+        }
+        moverReq.setActionCommand( "i/o" ) ;
+        
+        CellMessage storedMsg = companion.getMessage() ;
+        storedMsg.setMessageObject( moverReq ) ;
+        storedMsg.getDestinationPath().
+                  add(((PvrRequest)moverReq).getGenericDrive() ) ;
+        storedMsg.nextDestination() ;
+        say( "labelFinished : sending to "+storedMsg.getDestinationPath()+
+             " : "+moverReq ) ;
+             
+        companion.setNextMessage( storedMsg ) ; // myself
+
    }
    ///////////////////////////////////////////////////////////////////////
    //
@@ -946,7 +953,9 @@ public class      PvlCoreV2
    //                     | 
    //                     +--->   unload
    //
-   private void processGetReply( CellMessage msg , PvrRequest pvrReq ){
+   private void processGetReply( IoCompanion companion ,
+                                 CellMessage msg , 
+                                 PvrRequest pvrReq ){
       //
       // set the drive to 'action=none'
       //
@@ -975,7 +984,9 @@ public class      PvlCoreV2
       say( "processGetReply : request added to fifo "+pvrReq ) ;
       _fifo.push( modifier ) ;
    }
-   private void processPutReply( CellMessage msg , PvrRequest pvrReq ){
+   private void processPutReply( IoCompanion companion ,
+                                 CellMessage msg , 
+                                 PvrRequest pvrReq ){
    
       say( "processPutReady <init> : "+pvrReq ) ;
       //
@@ -1059,6 +1070,7 @@ public class      PvlCoreV2
       //
       try{
          updateDriveAction( pvrReq , "none" ) ;
+         updateDriveOwner( pvrReq , "-" ) ;
       }catch(Exception ee ){
           esay( "PANIC : internal problem 23739 : "+ee ) ;
           return ;
@@ -1087,16 +1099,11 @@ public class      PvlCoreV2
    //                     | 
    //                     +--->   dismount
    //
-   private void unloadFinished( CellMessage msg , MoverRequest moverReq ){
-       CellMessage storedMsg = null ;
+   private void unloadFinished( DismountCompanion companion,
+                                CellMessage msg , 
+                                MoverRequest moverReq ){
+
        say( "unloadFinished : "+moverReq ) ;
-       synchronized( _sendLock ){
-           storedMsg = (CellMessage)_pending.remove( msg.getLastUOID() ) ;
-       }
-       if( storedMsg == null ){
-          esay( "PANIC : unload-ready arrived unexpectedly" ) ;
-          return ;
-       }
        if(  moverReq.getReturnCode() != 0 ){
           esay( "Unload failed : "+moverReq.getReturnMessage() ) ;
           //
@@ -1123,7 +1130,7 @@ public class      PvlCoreV2
           try{
                
               sendMessage( msg ) ;
-              _pending.put( msg.getUOID() , msg ) ;
+              _pending.put( msg.getUOID() , companion ) ;
               
           }catch( Exception ee ){
              String problem = "pvr not available : "+ee  ;
@@ -1138,19 +1145,14 @@ public class      PvlCoreV2
    //                     | 
    //                     +--->   scheduler
    //
-   private void dismountFinished( CellMessage msg , PvrRequest pvrRequest ){
-       CellMessage storedMsg = null ;
+   private void dismountFinished( DismountCompanion companion,
+                                  CellMessage msg , 
+                                  PvrRequest pvrRequest ){
+
        say( "dismountFinished : "+pvrRequest ) ;
-       synchronized( _sendLock ){
-           storedMsg = (CellMessage)_pending.remove( msg.getLastUOID() ) ;
-       }
-       if( storedMsg == null ){
-          esay( "PANIC : dismount-ready arrived unexpectedly" ) ;
-          return ;
-       }
-       int problem = pvrRequest.getReturnCode() ;
        
-                              
+       int problem = pvrRequest.getReturnCode() ;
+                                     
        try{
           PvrHandle   pvr   = _pvlDb.getPvrByName( pvrRequest.getPvr() ) ;
           DriveHandle drive = pvr.getDriveByName( pvrRequest.getGenericDrive() ) ;
@@ -1419,6 +1421,22 @@ public class      PvlCoreV2
           say( "resetDrive : "+e ) ;
         }
       }
+   }
+   public String ac_ls_companions( Args args )throws Exception {
+      StringBuffer sb = new StringBuffer() ;
+      Enumeration   e = _pending.keys() ;
+      PvlCompanion  c = null ;
+      Object        k = null ;
+      synchronized( _sendLock ){
+         while( e.hasMoreElements() ){
+            k = e.nextElement() ;
+            c = (PvlCompanion)_pending.get(k) ;
+            sb.append(k.toString()).append("->").
+               append(c.toString()).append("\n") ; 
+         }
+      }
+      return sb.toString() ;
+   
    }
   
 }
