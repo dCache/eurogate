@@ -14,7 +14,7 @@ import dmg.cells.nucleus.* ;
 import dmg.cells.applets.login.* ;
 
 public class      DriveDisplayPanel 
-       extends    Panel      
+       extends    SimpleBorderPanel      
        implements DomainConnectionListener , 
                   DomainEventListener ,
                   ActionListener, 
@@ -28,42 +28,25 @@ public class      DriveDisplayPanel
      private boolean   _initiated = false ;
      private String    _startString = "Start Automatic Update" ;
      private String    _stopString  = "Stop Automatic Update" ;
-     private Label [][]_labels ;
+     private Label [][]_labels = null ;
      private boolean   _autoUpdate = false ;
      private Thread    _updateThread = null ;     
      private Font   _headerFont = 
                        new Font( "SansSerif" , 0 , 18 ) ;
- //                                Font.ITALIC|Font.BOLD , 14 )  ;
      private Font   _itemFont = 
                        new Font( "SansSerif" , 0 , 12 ) ;
- //                                Font.BOLD , 12 )  ;
                                  
      private String [] titles = 
              { "Drive" , "Mode" , "Cartridge" , "Owner" , "Action" } ;
              
-     private int _b = 5 ;
-     public Insets getInsets(){ return new Insets(_b , _b ,_b , _b) ; }
-     public void paint( Graphics g ){
-
-        Dimension   d    = getSize() ;
-        Color base = getBackground() ;
-        g.setColor( Color.white ) ;
-        g.drawRect( _b/2 , _b/2 , d.width-_b , d.height-_b ) ;
-     }
      public Dimension getPreferredSize(){ 
          Dimension ss = super.getMinimumSize() ;
-         System.out.println( "getPreferredSize : "+ss ) ;
          return  ss ; 
      }
      public Dimension getMaximumSize(){ 
          Dimension ss = super.getMinimumSize() ;
-         System.out.println( "getMaximumSize : "+ss ) ;
          return  ss ; 
      }
-     private class DummyListener implements DomainConnectionListener {
-         public void domainAnswerArrived( Object obj , int id ){}     
-     }
-     private DummyListener _dummyListener = new DummyListener() ;
      private class DriveLabel extends Label {
      
         private DriveLabel( String l ){ super(l) ; }
@@ -73,24 +56,17 @@ public class      DriveDisplayPanel
            invalidate() ;
         }
      }
-     private class DriveContainerPanel extends Panel {
-        private DriveContainerPanel( LayoutManager lo ){ super(lo) ; }
-        private int _b = 5 ;
-        public Insets getInsets(){ return new Insets(_b , _b ,_b , _b) ; }
-        public void paint( Graphics g ){
-
-           Dimension   d    = getSize() ;
-           Color base = getBackground() ;
-           g.setColor( Color.black ) ;
-           g.drawRect( _b/2 , _b/2 , d.width-_b , d.height-_b ) ;
-        }
-     
-     
-     }
+     private Panel _driveListPanel = null ;
      public DriveDisplayPanel( DomainConnection connection ){
+        super( new BorderLayout() , 15 , Color.white ) ;
+        
         _connection = connection ;
-        setLayout( new BorderLayout() ) ;
-        _buttons = new Panel( new FlowLayout() ) ;
+        
+        _driveListPanel = new SimpleBorderPanel( new BorderLayout() , 30 ) ;
+        //
+        //   the buttons 
+        //
+        _buttons = new Panel( new GridLayout(0,2) ) ;
         
         _update = new Button( "Update" ) ;
         _auto   = new Button( _startString ) ;
@@ -101,27 +77,30 @@ public class      DriveDisplayPanel
         _update.addActionListener( this ) ;
         _auto.addActionListener( this ) ;
         
-        add( _buttons  , "North"  ) ;
-        
-        _driveList = new DriveContainerPanel( new GridLayout( 0,6 ) ) ;
+        _driveListPanel.add( _buttons  , "North"  ) ;
+        //
+        //   the drive list
+        //
+        RowColumnLayout rcl = new RowColumnLayout( 5 ) ;
+        rcl.setFitsAllSizes(4);
+        _driveList = new SimpleBorderPanel( rcl , 30  ) ;
         _driveList.setBackground( new Color( 200 , 200 ,200 ) ) ;
         
-        Label title = null ;
-        Label sel = new Label( "S" ) ;
-        sel.setFont( _headerFont ) ;
-        _driveList.add( sel ) ;
         for( int i = 0 ; i < titles.length ;  i++ ){
-           title = new Label( titles[i] , Label.CENTER) ;
+           Label title = new Label( titles[i] , Label.CENTER) ;
            title.setFont( _headerFont ) ;
-//           title.setForeground( Color.red ) ;
-//           title.setBackground( Color.yellow ) ;
            _driveList.add( title ) ;
         }
         
-        Panel center = new Panel( new CenterLayout() ) ;
-        center.add( _driveList ) ;
-        add( center , "Center" ) ;
-//        add( _textArea , "Center" ) ;
+        _driveListPanel.add( _driveList , "Center" ) ;
+         
+        add( _driveListPanel , "Center" ) ;
+        
+        Label title = new Label( "Drive Manager" , Label.CENTER ) ;
+        title.setFont( _headerFont ) ;
+        
+        add( title , "North" ) ;
+         
         _connection.addDomainEventListener( this ) ;       
      }      
     public void domainAnswerArrived( Object obj , int id ){
@@ -143,7 +122,16 @@ public class      DriveDisplayPanel
            return ;
         }    
     }
+    private class DriveClick extends MouseAdapter {
+    
+        public void mouseClicked(MouseEvent e){
+        
+           remove( _driveListPanel  ) ;
+        
+        }
+    }
     private void displayDrives( Object [] pvrSet ){
+         System.out.println( "pvrSet : "+pvrSet ) ;
          int m = 0 ;
          if( _initiated ){
              for( int i = 0 ; i < pvrSet.length ; i += 2 ){
@@ -171,29 +159,36 @@ public class      DriveDisplayPanel
                 }
 
              }
-             _labels = new Label[driveCount][] ;
+             System.out.println( "Drive count : "+driveCount ) ;
+             try{
+                _labels = new Label[driveCount][] ;
+             }catch( NullPointerException ee ){
+                System.out.println( "problem in allocating labels : "+ee ) ;
+                _labels = new Label[driveCount][] ;
+             }
              m = 0 ;
 //             Color lc = _driveList.getBackground().brighter()  ;
              Color lc = new Color( 230 , 230 , 230 ) ;
              for( int i = 0 ; i < pvrSet.length ; i += 2 ){
                 String [] [] pvr = (String[][])pvrSet[i+1] ;
                 for( int j = 0 ; j < pvr.length ; j++ ){
-                   _driveList.add( new Checkbox( "" ) ) ;
                    String [] drive = (String [])pvr[j] ;
                    Label  [] lx = new Label[drive.length] ;
                    for( int l = 0 ; l < drive.length ; l ++ ){
-                      
-                      lx[l] = new DriveLabel( l == 0 ? 
-                                         pvrSet[i].toString()+":"+drive[0] :
-                                         drive[l] , Label.CENTER )  ;
-                                         
-//                      lx[l].setForeground( Color.blue ) ;
+                      lx[l] = new DriveLabel( "" , Label.CENTER )  ;
+                      if( l == 0 ){
+                         lx[l].setText( pvrSet[i].toString()+":"+drive[0])  ;
+                         lx[l].addMouseListener( new DriveClick() ) ;
+                      }else{
+                         lx[l].setText( drive[l])  ;
+                      }              
                       lx[l].setBackground( lc ) ;
                       lx[l].setFont( _itemFont ) ;
 
                       _driveList.add( lx[l] ) ;
                    }
                    _labels[m++] = lx ;
+                   lx[0].setForeground(drive[1].equals("disabled" )?Color.red:Color.black) ;
                 }
 
              }
@@ -268,8 +263,22 @@ public class      DriveDisplayPanel
     }
 
   }
+  private SingleDrivePanel extends SimpleBorderPanel {
+  
+     private Label _driveText = null ;
+     private Label _pvrTest   = null ;
+  
+     private SingleDrivePanel(){
+         super( new BorderLayout() , 15 , Color.red ) ;
+     }
+  }
    public void connectionOpened( DomainConnection connection ){
       System.out.println("Connection established" ) ;
+      try{
+         _connection.sendObject( "ls drive -cellPath=pvl" , this , 0 ) ;
+      }catch(Exception ee ){
+      
+      }
    }
    public void connectionClosed( DomainConnection connection ){
       System.out.println("Connection closed" ) ;
