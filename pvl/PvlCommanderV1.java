@@ -111,8 +111,9 @@ public class PvlCommanderV1 {
            
    }
    public String hh_ls_drive = "[-t] [-s] [-pvr=<pvr> <driveName> [...]]" ;
-   public String ac_ls_drive_$_0_99( Args args )throws Exception {
+   public Object ac_ls_drive_$_0_99( Args args )throws Exception {
      String [] pvrNameList = _pvlDb.getPvrNames() ;
+     boolean   isBinary    = args.getOpt("binary") != null ;
      String pvrName     = args.getOpt("pvr") ;
      long         time  = 0 ;
      StringBuffer sb    = new StringBuffer() ;
@@ -127,20 +128,25 @@ public class PvlCommanderV1 {
         }
         return sb.toString() ;
      }
+     Object [] result = new Object[pvrNameList.length*2] ;
      for( int j = 0 ; j < pvrNameList.length ; j++ ){
-        pvrName = pvrNameList[j] ;
+        result[j*2] = pvrName    = pvrNameList[j] ;        
         PvrHandle    pvr         = _pvlDb.getPvrByName( pvrName ) ;
         String []    driveNames  = pvr.getDriveNames() ;
         DriveHandle  drive       = null ;
         String status = null , cartridge = null ,
                owner  = null , action    = null , selection = null ;
+        String [] [] pvrInfo = new String[driveNames.length][] ;
+        result[j*2+1] = pvrInfo ;
         for( int i = 0 ; i < driveNames.length ; i++ ){
-           drive = pvr.getDriveByName( driveNames[i] ) ;
+           String [] driveInfo = new String[5] ;
+           pvrInfo[i] = driveInfo ;
+           drive = pvr.getDriveByName(driveInfo[0] =  driveNames[i] ) ;
            drive.open( CdbLockable.READ ) ;
-              status    = drive.getStatus() ;
-              cartridge = drive.getCartridge() ;
-              owner     = drive.getOwner() ;
-              action    = drive.getAction() ;
+              status    = driveInfo[1] = drive.getStatus() ;
+              cartridge = driveInfo[2] = drive.getCartridge() ;
+              owner     = driveInfo[3] = drive.getOwner() ;
+              action    = driveInfo[4] = drive.getAction() ;
               time      = drive.getTime() ;
               selection = drive.getSelectionString() ;
            drive.close( CdbLockable.COMMIT ) ;
@@ -162,7 +168,7 @@ public class PvlCommanderV1 {
            sb.append("\n") ;
         }
      }
-     return sb.toString() ;
+     return isBinary ? result : (Object)sb.toString() ;
    
    }
    public String hh_update = "" ;
