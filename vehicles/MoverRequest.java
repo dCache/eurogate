@@ -1,5 +1,5 @@
 package eurogate.vehicles ;
-
+import  java.util.* ;
 public interface MoverRequest extends EurogateRequest {
 
 
@@ -13,6 +13,7 @@ public interface MoverRequest extends EurogateRequest {
     public String getStore() ;
     public String getCartridge() ;
     public String getParameter() ;
+    public Dictionary getParameterDictionary() ;
     /**
       *  Sets the position of the new file and the new 
       *  'end of recording' position.

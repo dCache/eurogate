@@ -1,6 +1,6 @@
 package  eurogate.vehicles ;
 
-
+import java.util.* ;
 
 public class      PvlRequestImpl 
        extends    EurogateRequestImpl 
@@ -45,6 +45,7 @@ public class      PvlRequestImpl
     public void   setCartridge( String cartridgeName ) {
        _cartridge = cartridgeName ;
     }
+    public Dictionary getParameterDictionary(){ return new Hashtable() ; }
     public String getCartridge(){ return _cartridge ; }
     public String getPvr(){ return null ; }
     public String getDrive(){ return null ; }
