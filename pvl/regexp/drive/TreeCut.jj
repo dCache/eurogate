@@ -1,0 +1,293 @@
+options{
+  STATIC= false;
+}
+PARSER_BEGIN(TreeCut)
+
+package eurogate.pvl.regexp.drive;
+
+import eurogate.pvl.regexp.UnReplaceAbleString;
+import eurogate.pvl.regexp.DriveExpression;
+import java.util.EmptyStackException;
+import java.util.Stack;
+
+/** class TreeCut checks the syntax of a driveExpression
+ *  and builds an unsolved tree.
+ *  The driveExpression is stored in the class Drive as a String.
+ *  The drive passes a StringReader into TreeCut. 
+ *  The tree is later used by class RegFitCheck.
+ */
+public class TreeCut{
+  private static final Boolean FALSE= Boolean.FALSE; 
+  private static final Boolean TRUE= Boolean.TRUE;
+  private Stack _valueStack= new Stack();
+
+ /** createTree() builds an unsolved tree
+  *  input is gifen to its class. 
+  *  output are stacked DriveExpressions.
+  *  ParseException and TokenMgrError are thrown
+  *  if the expression contains errors.
+  */
+  public DriveExpression createTree() throws ParseException,
+                                             TokenMgrError,
+					     EmptyStackException{
+    while(getToken(1).kind != EOF){ 
+      driveExpression();
+    }
+    return (DriveExpression)_valueStack.pop(); 
+  }
+  
+      
+} // class TreeCut
+PARSER_END(TreeCut)
+
+
+// ignore space characters, tabs, carriage return, and new line characters 
+SKIP :
+{
+  " "
+| "\t"
+| "\r"
+| "\n"
+}
+
+
+TOKEN : 
+{
+  	< AND: "&&" >
+  |	< OR: "||" >
+  |     < PLUS: "+" >
+  |     < MINUS: "-" >
+  |     < MULT: "*" >
+  |     < DIV: "/" > 
+  |	< GE: ">=" >
+  |	< LE: "<=" >
+  |	< EQ: "==" >
+  |	< NE: "!=" >
+  |     < GT: ">" >
+  |     < LT: "<" >
+  |     < NOT: "!" >
+  |     < LPAR: "(" >
+  |     < RPAR: ")" > 
+}
+
+ 
+TOKEN : 
+{
+        < NAME : ["a" - "z" ,"A" - "Z", "#", "$", ".", "@", "_"]
+                 ( ["a" - "z"]
+		  | ["A" - "Z"]
+                  | ["0" - "9"]   
+	          | ["#", "$", ".", "@", "_"] )* >
+} 
+
+
+TOKEN : 
+{                                                        
+        < ANYNAME : "\"" ( [" ", "!", "#" - "~"] )* "\"" >	
+} 
+
+
+TOKEN :                                            
+{
+        < FLOAT: (  (["0"-"9"] )* "." (["0"-"9"] )+ 
+	          | (["0"-"9"] )+ "." (["0"-"9"] )* ) >        
+}
+
+
+TOKEN :
+{
+        < INTEGER: ( ["1"-"9"]  (["0"-"9"])* ) >
+}
+
+
+TOKEN :
+{
+        < ZEROINT: "0" >
+}
+
+
+
+TOKEN :
+{
+        < OCTINTEGER: "0" (["0"-"7"])+ >		   
+}
+
+
+TOKEN :
+{
+        < HEXINTEGER: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+}
+
+
+void driveExpression() :
+{
+}
+{
+		   <LPAR>
+		   
+		   compare(){
+		               try{
+			         Object pRightValue= _valueStack.pop();
+			         Object pOpValue= _valueStack.pop();
+			         Object pLeftValue= _valueStack.pop();
+        		         _valueStack.push(
+				 new DriveExpression( pLeftValue,
+				                      pOpValue,
+						      pRightValue));
+			       }catch(Exception e){
+			       }
+			    }
+
+		   <RPAR>
+}
+
+
+void compare() :
+{                 
+}
+{
+                  left()
+		  operation()
+		  right()
+}
+
+
+void left() :
+{ 
+}
+{
+	      	<ANYNAME>{
+	                    _valueStack.push(
+			                new UnReplaceAbleString(token.image));
+		         }
+			 	  
+	      |	<NAME>{
+	                 _valueStack.push(token.image);
+		      }
+
+              | <ZEROINT>{
+                           _valueStack.push(Integer.valueOf(token.image,10) );
+                         }
+
+		      
+	      | <OCTINTEGER>{
+	                     _valueStack.push(
+			         Integer.valueOf(token.image.substring(1),8));
+		            }
+			    
+              | <HEXINTEGER>{
+	                     _valueStack.push(
+			        Integer.valueOf(token.image.substring(2),16));
+		            }
+			    
+              | signedNumber(){}
+
+	      | driveExpression()
+}
+
+
+void operation() :
+{
+}
+{
+		    <AND>{
+			   _valueStack.push("&&");
+			  }
+			  
+		  | <OR>{ 
+			   _valueStack.push("||");
+			  }
+			   
+		  | <GE>{
+			   _valueStack.push(">=");
+			  }
+			  
+		  | <LE>{ 
+			   _valueStack.push("<=");
+			  }
+			  
+		  | <EQ>{ 
+			   _valueStack.push("==");
+			  }
+			  
+		  | <NE>{ 
+			   _valueStack.push("!=");
+			  }
+			  
+		  | <PLUS>{ 
+			   _valueStack.push("+");
+			  }
+			  
+		  | <MINUS>{
+			   _valueStack.push("-");
+			   }
+			  
+		  | <MULT>{
+			   _valueStack.push("*");
+			  }
+			  
+		  | <DIV>{
+			   _valueStack.push("/");
+			  } 
+}
+
+
+void right() :
+{
+}
+{
+	      	<ANYNAME>{
+	                    _valueStack.push(
+			                new UnReplaceAbleString(token.image));
+		         }
+			 	  
+	      |	<NAME>{
+	                 _valueStack.push(token.image);
+		      }
+
+              | <ZEROINT>{
+                           _valueStack.push(Integer.valueOf(token.image,10) );
+                         }
+
+		      
+	      | <OCTINTEGER>{
+	                     _valueStack.push(
+			         Integer.valueOf(token.image.substring(1),8));
+		            }
+			    
+              | <HEXINTEGER>{
+	                     _valueStack.push(
+			        Integer.valueOf(token.image.substring(2),16));
+		            }
+			    
+              | signedNumber(){}
+
+	      | driveExpression()
+}
+
+
+void signedNumber() :
+{}
+{
+  [<PLUS>](
+       <INTEGER>{
+                  _valueStack.push(Integer.valueOf(token.image,10) );
+                }
+		  
+       | <FLOAT>{
+                  _valueStack.push(Float.valueOf(token.image) );
+                }
+    )
+
+
+  | <MINUS>(
+       <INTEGER>{
+                  _valueStack.push(Integer.valueOf("-"+ token.image,10) );
+                }
+		
+     | <FLOAT>{
+                _valueStack.push(Float.valueOf("-"+ token.image) );
+              }
+		
+    )
+}

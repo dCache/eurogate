@@ -1,0 +1,2626 @@
+<html>
+<head>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+<h1>Some TestData for Regfitcheck.java</h1>
+<p><br>the following table contains the testdata of the argument on righthand&nbsp;side and the result.
+<br>request=null
+<br>&nbsp;
+<br>&nbsp;
+<center><table BORDER COLS=9 WIDTH="100%"NOSAVE">
+<tr>
+<td>left side><br>Operation v</td>
+<td>Name: abcdefg</td>
+<td>UnrN: "a?c*"</td>
+<td>Int: 0</td>
+<td>Hex: 0x1e</td>
+<td>Oct: 012</td>
+<td>Float: -0.33333334</td>
+<td>boolean: (0==0)</td>
+<td>boolean: (1==0)</td>
+</tr>
+<tr>
+<td> == </td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> true
+<br>0-> E(
+abcdefg==0.0 )
+<br>0x1e-> E(
+abcdefg==30.0 )
+<br>012-> E(
+abcdefg==10.0 )
+<br>-0.33333334-> E(
+abcdefg==-0.33333334 )
+<br>(0==0)-> E(
+abcdefg==true )
+<br>(1==0)-> E(
+abcdefg==false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+a?c*==a?c* )
+<br>0-> E(
+a?c*==0.0 )
+<br>0x1e-> E(
+a?c*==30.0 )
+<br>012-> E(
+a?c*==10.0 )
+<br>-0.33333334-> E(
+a?c*==-0.33333334 )
+<br>(0==0)-> E(
+a?c*==true )
+<br>(1==0)-> E(
+a?c*==false )
+</td>
+<td>
+<br>abcdefg-> E(
+0.0==abcdefg )
+<br>"a?c*"-> E(
+0.0==a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+0.0==true )
+<br>(1==0)-> E(
+0.0==false )
+</td>
+<td>
+<br>abcdefg-> E(
+30.0==abcdefg )
+<br>"a?c*"-> E(
+30.0==a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> false
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+30.0==true )
+<br>(1==0)-> E(
+30.0==false )
+</td>
+<td>
+<br>abcdefg-> E(
+10.0==abcdefg )
+<br>"a?c*"-> E(
+10.0==a?c* )
+<br>0-> false
+<br>0x1e-> false
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+10.0==true )
+<br>(1==0)-> E(
+10.0==false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334==abcdefg )
+<br>"a?c*"-> E(
+-0.33333334==a?c* )
+<br>0-> false
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+-0.33333334==true )
+<br>(1==0)-> E(
+-0.33333334==false )
+</td>
+<td>
+<br>abcdefg-> E(
+true==abcdefg )
+<br>"a?c*"-> E(
+true==a?c* )
+<br>0-> E(
+true==0.0 )
+<br>0x1e-> E(
+true==30.0 )
+<br>012-> E(
+true==10.0 )
+<br>-0.33333334-> E(
+true==-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+<td>
+<br>abcdefg-> E(
+false==abcdefg )
+<br>"a?c*"-> E(
+false==a?c* )
+<br>0-> E(
+false==0.0 )
+<br>0x1e-> E(
+false==30.0 )
+<br>012-> E(
+false==10.0 )
+<br>-0.33333334-> E(
+false==-0.33333334 )
+<br>(0==0)-> false
+<br>(1==0)-> true
+</td>
+</tr>
+<tr>
+<td> <= </td>
+<td>
+<br>abcdefg-> E(
+abcdefg<=abcdefg )
+<br>"a?c*"-> E(
+abcdefg<=a?c* )
+<br>0-> E(
+abcdefg<=0.0 )
+<br>0x1e-> E(
+abcdefg<=30.0 )
+<br>012-> E(
+abcdefg<=10.0 )
+<br>-0.33333334-> E(
+abcdefg<=-0.33333334 )
+<br>(0==0)-> E(
+abcdefg<=true )
+<br>(1==0)-> E(
+abcdefg<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*<=abcdefg )
+<br>"a?c*"-> E(
+a?c*<=a?c* )
+<br>0-> E(
+a?c*<=0.0 )
+<br>0x1e-> E(
+a?c*<=30.0 )
+<br>012-> E(
+a?c*<=10.0 )
+<br>-0.33333334-> E(
+a?c*<=-0.33333334 )
+<br>(0==0)-> E(
+a?c*<=true )
+<br>(1==0)-> E(
+a?c*<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+0.0<=abcdefg )
+<br>"a?c*"-> E(
+0.0<=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+0.0<=true )
+<br>(1==0)-> E(
+0.0<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+30.0<=abcdefg )
+<br>"a?c*"-> E(
+30.0<=a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> false
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+30.0<=true )
+<br>(1==0)-> E(
+30.0<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+10.0<=abcdefg )
+<br>"a?c*"-> E(
+10.0<=a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+10.0<=true )
+<br>(1==0)-> E(
+10.0<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334<=abcdefg )
+<br>"a?c*"-> E(
+-0.33333334<=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+-0.33333334<=true )
+<br>(1==0)-> E(
+-0.33333334<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+true<=abcdefg )
+<br>"a?c*"-> E(
+true<=a?c* )
+<br>0-> E(
+true<=0.0 )
+<br>0x1e-> E(
+true<=30.0 )
+<br>012-> E(
+true<=10.0 )
+<br>-0.33333334-> E(
+true<=-0.33333334 )
+<br>(0==0)-> E(
+true<=true )
+<br>(1==0)-> E(
+true<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+false<=abcdefg )
+<br>"a?c*"-> E(
+false<=a?c* )
+<br>0-> E(
+false<=0.0 )
+<br>0x1e-> E(
+false<=30.0 )
+<br>012-> E(
+false<=10.0 )
+<br>-0.33333334-> E(
+false<=-0.33333334 )
+<br>(0==0)-> E(
+false<=true )
+<br>(1==0)-> E(
+false<=false )
+</td>
+</tr>
+<tr>
+<td> >= </td>
+<td>
+<br>abcdefg-> E(
+abcdefg>=abcdefg )
+<br>"a?c*"-> E(
+abcdefg>=a?c* )
+<br>0-> E(
+abcdefg>=0.0 )
+<br>0x1e-> E(
+abcdefg>=30.0 )
+<br>012-> E(
+abcdefg>=10.0 )
+<br>-0.33333334-> E(
+abcdefg>=-0.33333334 )
+<br>(0==0)-> E(
+abcdefg>=true )
+<br>(1==0)-> E(
+abcdefg>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*>=abcdefg )
+<br>"a?c*"-> E(
+a?c*>=a?c* )
+<br>0-> E(
+a?c*>=0.0 )
+<br>0x1e-> E(
+a?c*>=30.0 )
+<br>012-> E(
+a?c*>=10.0 )
+<br>-0.33333334-> E(
+a?c*>=-0.33333334 )
+<br>(0==0)-> E(
+a?c*>=true )
+<br>(1==0)-> E(
+a?c*>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+0.0>=abcdefg )
+<br>"a?c*"-> E(
+0.0>=a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+0.0>=true )
+<br>(1==0)-> E(
+0.0>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+30.0>=abcdefg )
+<br>"a?c*"-> E(
+30.0>=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+30.0>=true )
+<br>(1==0)-> E(
+30.0>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+10.0>=abcdefg )
+<br>"a?c*"-> E(
+10.0>=a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+10.0>=true )
+<br>(1==0)-> E(
+10.0>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334>=abcdefg )
+<br>"a?c*"-> E(
+-0.33333334>=a?c* )
+<br>0-> false
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+-0.33333334>=true )
+<br>(1==0)-> E(
+-0.33333334>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+true>=abcdefg )
+<br>"a?c*"-> E(
+true>=a?c* )
+<br>0-> E(
+true>=0.0 )
+<br>0x1e-> E(
+true>=30.0 )
+<br>012-> E(
+true>=10.0 )
+<br>-0.33333334-> E(
+true>=-0.33333334 )
+<br>(0==0)-> E(
+true>=true )
+<br>(1==0)-> E(
+true>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+false>=abcdefg )
+<br>"a?c*"-> E(
+false>=a?c* )
+<br>0-> E(
+false>=0.0 )
+<br>0x1e-> E(
+false>=30.0 )
+<br>012-> E(
+false>=10.0 )
+<br>-0.33333334-> E(
+false>=-0.33333334 )
+<br>(0==0)-> E(
+false>=true )
+<br>(1==0)-> E(
+false>=false )
+</td>
+</tr>
+<tr>
+<td> != </td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> false
+<br>0-> E(
+abcdefg!=0.0 )
+<br>0x1e-> E(
+abcdefg!=30.0 )
+<br>012-> E(
+abcdefg!=10.0 )
+<br>-0.33333334-> E(
+abcdefg!=-0.33333334 )
+<br>(0==0)-> E(
+abcdefg!=true )
+<br>(1==0)-> E(
+abcdefg!=false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+a?c*!=a?c* )
+<br>0-> E(
+a?c*!=0.0 )
+<br>0x1e-> E(
+a?c*!=30.0 )
+<br>012-> E(
+a?c*!=10.0 )
+<br>-0.33333334-> E(
+a?c*!=-0.33333334 )
+<br>(0==0)-> E(
+a?c*!=true )
+<br>(1==0)-> E(
+a?c*!=false )
+</td>
+<td>
+<br>abcdefg-> E(
+0.0!=abcdefg )
+<br>"a?c*"-> E(
+0.0!=a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+0.0!=true )
+<br>(1==0)-> E(
+0.0!=false )
+</td>
+<td>
+<br>abcdefg-> E(
+30.0!=abcdefg )
+<br>"a?c*"-> E(
+30.0!=a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+30.0!=true )
+<br>(1==0)-> E(
+30.0!=false )
+</td>
+<td>
+<br>abcdefg-> E(
+10.0!=abcdefg )
+<br>"a?c*"-> E(
+10.0!=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+10.0!=true )
+<br>(1==0)-> E(
+10.0!=false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334!=abcdefg )
+<br>"a?c*"-> E(
+-0.33333334!=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+-0.33333334!=true )
+<br>(1==0)-> E(
+-0.33333334!=false )
+</td>
+<td>
+<br>abcdefg-> E(
+true!=abcdefg )
+<br>"a?c*"-> E(
+true!=a?c* )
+<br>0-> E(
+true!=0.0 )
+<br>0x1e-> E(
+true!=30.0 )
+<br>012-> E(
+true!=10.0 )
+<br>-0.33333334-> E(
+true!=-0.33333334 )
+<br>(0==0)-> false
+<br>(1==0)-> true
+</td>
+<td>
+<br>abcdefg-> E(
+false!=abcdefg )
+<br>"a?c*"-> E(
+false!=a?c* )
+<br>0-> E(
+false!=0.0 )
+<br>0x1e-> E(
+false!=30.0 )
+<br>012-> E(
+false!=10.0 )
+<br>-0.33333334-> E(
+false!=-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+</tr>
+<tr>
+<td> && </td>
+<td>
+<br>abcdefg-> E(
+abcdefg&&abcdefg )
+<br>"a?c*"-> E(
+abcdefg&&a?c* )
+<br>0-> E(
+abcdefg&&0 )
+<br>0x1e-> E(
+abcdefg&&30 )
+<br>012-> E(
+abcdefg&&10 )
+<br>-0.33333334-> E(
+abcdefg&&-0.33333334 )
+<br>(0==0)-> E(
+abcdefg&&true )
+<br>(1==0)-> E(
+abcdefg&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*&&abcdefg )
+<br>"a?c*"-> E(
+a?c*&&a?c* )
+<br>0-> E(
+a?c*&&0 )
+<br>0x1e-> E(
+a?c*&&30 )
+<br>012-> E(
+a?c*&&10 )
+<br>-0.33333334-> E(
+a?c*&&-0.33333334 )
+<br>(0==0)-> E(
+a?c*&&true )
+<br>(1==0)-> E(
+a?c*&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+0&&abcdefg )
+<br>"a?c*"-> E(
+0&&a?c* )
+<br>0-> E(
+0&&0 )
+<br>0x1e-> E(
+0&&30 )
+<br>012-> E(
+0&&10 )
+<br>-0.33333334-> E(
+0&&-0.33333334 )
+<br>(0==0)-> E(
+0&&true )
+<br>(1==0)-> E(
+0&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+30&&abcdefg )
+<br>"a?c*"-> E(
+30&&a?c* )
+<br>0-> E(
+30&&0 )
+<br>0x1e-> E(
+30&&30 )
+<br>012-> E(
+30&&10 )
+<br>-0.33333334-> E(
+30&&-0.33333334 )
+<br>(0==0)-> E(
+30&&true )
+<br>(1==0)-> E(
+30&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+10&&abcdefg )
+<br>"a?c*"-> E(
+10&&a?c* )
+<br>0-> E(
+10&&0 )
+<br>0x1e-> E(
+10&&30 )
+<br>012-> E(
+10&&10 )
+<br>-0.33333334-> E(
+10&&-0.33333334 )
+<br>(0==0)-> E(
+10&&true )
+<br>(1==0)-> E(
+10&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334&&abcdefg )
+<br>"a?c*"-> E(
+-0.33333334&&a?c* )
+<br>0-> E(
+-0.33333334&&0 )
+<br>0x1e-> E(
+-0.33333334&&30 )
+<br>012-> E(
+-0.33333334&&10 )
+<br>-0.33333334-> E(
+-0.33333334&&-0.33333334 )
+<br>(0==0)-> E(
+-0.33333334&&true )
+<br>(1==0)-> E(
+-0.33333334&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+true&&abcdefg )
+<br>"a?c*"-> E(
+true&&a?c* )
+<br>0-> E(
+true&&0 )
+<br>0x1e-> E(
+true&&30 )
+<br>012-> E(
+true&&10 )
+<br>-0.33333334-> E(
+true&&-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+<td>
+<br>abcdefg-> E(
+false&&abcdefg )
+<br>"a?c*"-> E(
+false&&a?c* )
+<br>0-> E(
+false&&0 )
+<br>0x1e-> E(
+false&&30 )
+<br>012-> E(
+false&&10 )
+<br>-0.33333334-> E(
+false&&-0.33333334 )
+<br>(0==0)-> false
+<br>(1==0)-> false
+</td>
+</tr>
+<tr>
+<td> || </td>
+<td>
+<br>abcdefg-> E(
+abcdefg||abcdefg )
+<br>"a?c*"-> E(
+abcdefg||a?c* )
+<br>0-> E(
+abcdefg||0 )
+<br>0x1e-> E(
+abcdefg||30 )
+<br>012-> E(
+abcdefg||10 )
+<br>-0.33333334-> E(
+abcdefg||-0.33333334 )
+<br>(0==0)-> E(
+abcdefg||true )
+<br>(1==0)-> E(
+abcdefg||false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*||abcdefg )
+<br>"a?c*"-> E(
+a?c*||a?c* )
+<br>0-> E(
+a?c*||0 )
+<br>0x1e-> E(
+a?c*||30 )
+<br>012-> E(
+a?c*||10 )
+<br>-0.33333334-> E(
+a?c*||-0.33333334 )
+<br>(0==0)-> E(
+a?c*||true )
+<br>(1==0)-> E(
+a?c*||false )
+</td>
+<td>
+<br>abcdefg-> E(
+0||abcdefg )
+<br>"a?c*"-> E(
+0||a?c* )
+<br>0-> E(
+0||0 )
+<br>0x1e-> E(
+0||30 )
+<br>012-> E(
+0||10 )
+<br>-0.33333334-> E(
+0||-0.33333334 )
+<br>(0==0)-> E(
+0||true )
+<br>(1==0)-> E(
+0||false )
+</td>
+<td>
+<br>abcdefg-> E(
+30||abcdefg )
+<br>"a?c*"-> E(
+30||a?c* )
+<br>0-> E(
+30||0 )
+<br>0x1e-> E(
+30||30 )
+<br>012-> E(
+30||10 )
+<br>-0.33333334-> E(
+30||-0.33333334 )
+<br>(0==0)-> E(
+30||true )
+<br>(1==0)-> E(
+30||false )
+</td>
+<td>
+<br>abcdefg-> E(
+10||abcdefg )
+<br>"a?c*"-> E(
+10||a?c* )
+<br>0-> E(
+10||0 )
+<br>0x1e-> E(
+10||30 )
+<br>012-> E(
+10||10 )
+<br>-0.33333334-> E(
+10||-0.33333334 )
+<br>(0==0)-> E(
+10||true )
+<br>(1==0)-> E(
+10||false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334||abcdefg )
+<br>"a?c*"-> E(
+-0.33333334||a?c* )
+<br>0-> E(
+-0.33333334||0 )
+<br>0x1e-> E(
+-0.33333334||30 )
+<br>012-> E(
+-0.33333334||10 )
+<br>-0.33333334-> E(
+-0.33333334||-0.33333334 )
+<br>(0==0)-> E(
+-0.33333334||true )
+<br>(1==0)-> E(
+-0.33333334||false )
+</td>
+<td>
+<br>abcdefg-> E(
+true||abcdefg )
+<br>"a?c*"-> E(
+true||a?c* )
+<br>0-> E(
+true||0 )
+<br>0x1e-> E(
+true||30 )
+<br>012-> E(
+true||10 )
+<br>-0.33333334-> E(
+true||-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> true
+</td>
+<td>
+<br>abcdefg-> E(
+false||abcdefg )
+<br>"a?c*"-> E(
+false||a?c* )
+<br>0-> E(
+false||0 )
+<br>0x1e-> E(
+false||30 )
+<br>012-> E(
+false||10 )
+<br>-0.33333334-> E(
+false||-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+</tr>
+<tr>
+<td> * </td>
+<td>
+<br>abcdefg-> E(
+abcdefg*abcdefg )
+<br>"a?c*"-> E(
+abcdefg*a?c* )
+<br>0-> E(
+abcdefg*0.0 )
+<br>0x1e-> E(
+abcdefg*30.0 )
+<br>012-> E(
+abcdefg*10.0 )
+<br>-0.33333334-> E(
+abcdefg*-0.33333334 )
+<br>(0==0)-> E(
+abcdefg*true )
+<br>(1==0)-> E(
+abcdefg*false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c**abcdefg )
+<br>"a?c*"-> E(
+a?c**a?c* )
+<br>0-> E(
+a?c**0.0 )
+<br>0x1e-> E(
+a?c**30.0 )
+<br>012-> E(
+a?c**10.0 )
+<br>-0.33333334-> E(
+a?c**-0.33333334 )
+<br>(0==0)-> E(
+a?c**true )
+<br>(1==0)-> E(
+a?c**false )
+</td>
+<td>
+<br>abcdefg-> E(
+0.0*abcdefg )
+<br>"a?c*"-> E(
+0.0*a?c* )
+<br>0-> 0
+<br>0x1e-> 0
+<br>012-> 0
+<br>-0.33333334-> -0.0
+<br>(0==0)-> E(
+0.0*true )
+<br>(1==0)-> E(
+0.0*false )
+</td>
+<td>
+<br>abcdefg-> E(
+30.0*abcdefg )
+<br>"a?c*"-> E(
+30.0*a?c* )
+<br>0-> 0
+<br>0x1e-> 900
+<br>012-> 300
+<br>-0.33333334-> -10.0
+<br>(0==0)-> E(
+30.0*true )
+<br>(1==0)-> E(
+30.0*false )
+</td>
+<td>
+<br>abcdefg-> E(
+10.0*abcdefg )
+<br>"a?c*"-> E(
+10.0*a?c* )
+<br>0-> 0
+<br>0x1e-> 300
+<br>012-> 100
+<br>-0.33333334-> -3.3333335
+<br>(0==0)-> E(
+10.0*true )
+<br>(1==0)-> E(
+10.0*false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334*abcdefg )
+<br>"a?c*"-> E(
+-0.33333334*a?c* )
+<br>0-> -0.0
+<br>0x1e-> -10.0
+<br>012-> -3.3333335
+<br>-0.33333334-> 0.11111112
+<br>(0==0)-> E(
+-0.33333334*true )
+<br>(1==0)-> E(
+-0.33333334*false )
+</td>
+<td>
+<br>abcdefg-> E(
+true*abcdefg )
+<br>"a?c*"-> E(
+true*a?c* )
+<br>0-> E(
+true*0.0 )
+<br>0x1e-> E(
+true*30.0 )
+<br>012-> E(
+true*10.0 )
+<br>-0.33333334-> E(
+true*-0.33333334 )
+<br>(0==0)-> E(
+true*true )
+<br>(1==0)-> E(
+true*false )
+</td>
+<td>
+<br>abcdefg-> E(
+false*abcdefg )
+<br>"a?c*"-> E(
+false*a?c* )
+<br>0-> E(
+false*0.0 )
+<br>0x1e-> E(
+false*30.0 )
+<br>012-> E(
+false*10.0 )
+<br>-0.33333334-> E(
+false*-0.33333334 )
+<br>(0==0)-> E(
+false*true )
+<br>(1==0)-> E(
+false*false )
+</td>
+</tr>
+<tr>
+<td> / </td>
+<td>
+<br>abcdefg-> E(
+abcdefg/abcdefg )
+<br>"a?c*"-> E(
+abcdefg/a?c* )
+<br>0-> E(
+abcdefg/0.0 )
+<br>0x1e-> E(
+abcdefg/30.0 )
+<br>012-> E(
+abcdefg/10.0 )
+<br>-0.33333334-> E(
+abcdefg/-0.33333334 )
+<br>(0==0)-> E(
+abcdefg/true )
+<br>(1==0)-> E(
+abcdefg/false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*/abcdefg )
+<br>"a?c*"-> E(
+a?c*/a?c* )
+<br>0-> E(
+a?c*/0.0 )
+<br>0x1e-> E(
+a?c*/30.0 )
+<br>012-> E(
+a?c*/10.0 )
+<br>-0.33333334-> E(
+a?c*/-0.33333334 )
+<br>(0==0)-> E(
+a?c*/true )
+<br>(1==0)-> E(
+a?c*/false )
+</td>
+<td>
+<br>abcdefg-> E(
+0.0/abcdefg )
+<br>"a?c*"-> E(
+0.0/a?c* )
+<br>0-> E(
+0/0 )
+<br>0x1e-> 0
+<br>012-> 0
+<br>-0.33333334-> -0.0
+<br>(0==0)-> E(
+0.0/true )
+<br>(1==0)-> E(
+0.0/false )
+</td>
+<td>
+<br>abcdefg-> E(
+30.0/abcdefg )
+<br>"a?c*"-> E(
+30.0/a?c* )
+<br>0-> E(
+30/0 )
+<br>0x1e-> 1
+<br>012-> 3
+<br>-0.33333334-> -90.0
+<br>(0==0)-> E(
+30.0/true )
+<br>(1==0)-> E(
+30.0/false )
+</td>
+<td>
+<br>abcdefg-> E(
+10.0/abcdefg )
+<br>"a?c*"-> E(
+10.0/a?c* )
+<br>0-> E(
+10/0 )
+<br>0x1e-> 0.33333334
+<br>012-> 1
+<br>-0.33333334-> -30.0
+<br>(0==0)-> E(
+10.0/true )
+<br>(1==0)-> E(
+10.0/false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334/abcdefg )
+<br>"a?c*"-> E(
+-0.33333334/a?c* )
+<br>0-> E(
+-0.33333334/0.0 )
+<br>0x1e-> -0.011111111
+<br>012-> -0.033333335
+<br>-0.33333334-> 1.0
+<br>(0==0)-> E(
+-0.33333334/true )
+<br>(1==0)-> E(
+-0.33333334/false )
+</td>
+<td>
+<br>abcdefg-> E(
+true/abcdefg )
+<br>"a?c*"-> E(
+true/a?c* )
+<br>0-> E(
+true/0.0 )
+<br>0x1e-> E(
+true/30.0 )
+<br>012-> E(
+true/10.0 )
+<br>-0.33333334-> E(
+true/-0.33333334 )
+<br>(0==0)-> E(
+true/true )
+<br>(1==0)-> E(
+true/false )
+</td>
+<td>
+<br>abcdefg-> E(
+false/abcdefg )
+<br>"a?c*"-> E(
+false/a?c* )
+<br>0-> E(
+false/0.0 )
+<br>0x1e-> E(
+false/30.0 )
+<br>012-> E(
+false/10.0 )
+<br>-0.33333334-> E(
+false/-0.33333334 )
+<br>(0==0)-> E(
+false/true )
+<br>(1==0)-> E(
+false/false )
+</td>
+</tr>
+<tr>
+<td> + </td>
+<td>
+<br>abcdefg-> abcdefgabcdefg
+<br>"a?c*"-> E(
+abcdefg+a?c* )
+<br>0-> E(
+abcdefg+0 )
+<br>0x1e-> E(
+abcdefg+30 )
+<br>012-> E(
+abcdefg+10 )
+<br>-0.33333334-> E(
+abcdefg+-0.33333334 )
+<br>(0==0)-> E(
+abcdefg+true )
+<br>(1==0)-> E(
+abcdefg+false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*+abcdefg )
+<br>"a?c*"-> E(
+a?c*+a?c* )
+<br>0-> E(
+a?c*+0.0 )
+<br>0x1e-> E(
+a?c*+30.0 )
+<br>012-> E(
+a?c*+10.0 )
+<br>-0.33333334-> E(
+a?c*+-0.33333334 )
+<br>(0==0)-> E(
+a?c*+true )
+<br>(1==0)-> E(
+a?c*+false )
+</td>
+<td>
+<br>abcdefg-> E(
+0+abcdefg )
+<br>"a?c*"-> E(
+0.0+a?c* )
+<br>0-> 0
+<br>0x1e-> 30
+<br>012-> 10
+<br>-0.33333334-> -0.33333334
+<br>(0==0)-> E(
+0.0+true )
+<br>(1==0)-> E(
+0.0+false )
+</td>
+<td>
+<br>abcdefg-> E(
+30+abcdefg )
+<br>"a?c*"-> E(
+30.0+a?c* )
+<br>0-> 30
+<br>0x1e-> 60
+<br>012-> 40
+<br>-0.33333334-> 29.666666
+<br>(0==0)-> E(
+30.0+true )
+<br>(1==0)-> E(
+30.0+false )
+</td>
+<td>
+<br>abcdefg-> E(
+10+abcdefg )
+<br>"a?c*"-> E(
+10.0+a?c* )
+<br>0-> 10
+<br>0x1e-> 40
+<br>012-> 20
+<br>-0.33333334-> 9.666667
+<br>(0==0)-> E(
+10.0+true )
+<br>(1==0)-> E(
+10.0+false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334+abcdefg )
+<br>"a?c*"-> E(
+-0.33333334+a?c* )
+<br>0-> -0.33333334
+<br>0x1e-> 29.666666
+<br>012-> 9.666667
+<br>-0.33333334-> -0.6666667
+<br>(0==0)-> E(
+-0.33333334+true )
+<br>(1==0)-> E(
+-0.33333334+false )
+</td>
+<td>
+<br>abcdefg-> E(
+true+abcdefg )
+<br>"a?c*"-> E(
+true+a?c* )
+<br>0-> E(
+true+0.0 )
+<br>0x1e-> E(
+true+30.0 )
+<br>012-> E(
+true+10.0 )
+<br>-0.33333334-> E(
+true+-0.33333334 )
+<br>(0==0)-> E(
+true+true )
+<br>(1==0)-> E(
+true+false )
+</td>
+<td>
+<br>abcdefg-> E(
+false+abcdefg )
+<br>"a?c*"-> E(
+false+a?c* )
+<br>0-> E(
+false+0.0 )
+<br>0x1e-> E(
+false+30.0 )
+<br>012-> E(
+false+10.0 )
+<br>-0.33333334-> E(
+false+-0.33333334 )
+<br>(0==0)-> E(
+false+true )
+<br>(1==0)-> E(
+false+false )
+</td>
+</tr>
+<tr>
+<td> - </td>
+<td>
+<br>abcdefg-> E(
+abcdefg-abcdefg )
+<br>"a?c*"-> E(
+abcdefg-a?c* )
+<br>0-> E(
+abcdefg-0.0 )
+<br>0x1e-> E(
+abcdefg-30.0 )
+<br>012-> E(
+abcdefg-10.0 )
+<br>-0.33333334-> E(
+abcdefg--0.33333334 )
+<br>(0==0)-> E(
+abcdefg-true )
+<br>(1==0)-> E(
+abcdefg-false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*-abcdefg )
+<br>"a?c*"-> E(
+a?c*-a?c* )
+<br>0-> E(
+a?c*-0.0 )
+<br>0x1e-> E(
+a?c*-30.0 )
+<br>012-> E(
+a?c*-10.0 )
+<br>-0.33333334-> E(
+a?c*--0.33333334 )
+<br>(0==0)-> E(
+a?c*-true )
+<br>(1==0)-> E(
+a?c*-false )
+</td>
+<td>
+<br>abcdefg-> E(
+0.0-abcdefg )
+<br>"a?c*"-> E(
+0.0-a?c* )
+<br>0-> 0
+<br>0x1e-> -30
+<br>012-> -10
+<br>-0.33333334-> 0.33333334
+<br>(0==0)-> E(
+0.0-true )
+<br>(1==0)-> E(
+0.0-false )
+</td>
+<td>
+<br>abcdefg-> E(
+30.0-abcdefg )
+<br>"a?c*"-> E(
+30.0-a?c* )
+<br>0-> 30
+<br>0x1e-> 0
+<br>012-> 20
+<br>-0.33333334-> 30.333334
+<br>(0==0)-> E(
+30.0-true )
+<br>(1==0)-> E(
+30.0-false )
+</td>
+<td>
+<br>abcdefg-> E(
+10.0-abcdefg )
+<br>"a?c*"-> E(
+10.0-a?c* )
+<br>0-> 10
+<br>0x1e-> -20
+<br>012-> 0
+<br>-0.33333334-> 10.333333
+<br>(0==0)-> E(
+10.0-true )
+<br>(1==0)-> E(
+10.0-false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334-abcdefg )
+<br>"a?c*"-> E(
+-0.33333334-a?c* )
+<br>0-> -0.33333334
+<br>0x1e-> -30.333334
+<br>012-> -10.333333
+<br>-0.33333334-> 0.0
+<br>(0==0)-> E(
+-0.33333334-true )
+<br>(1==0)-> E(
+-0.33333334-false )
+</td>
+<td>
+<br>abcdefg-> E(
+true-abcdefg )
+<br>"a?c*"-> E(
+true-a?c* )
+<br>0-> E(
+true-0.0 )
+<br>0x1e-> E(
+true-30.0 )
+<br>012-> E(
+true-10.0 )
+<br>-0.33333334-> E(
+true--0.33333334 )
+<br>(0==0)-> E(
+true-true )
+<br>(1==0)-> E(
+true-false )
+</td>
+<td>
+<br>abcdefg-> E(
+false-abcdefg )
+<br>"a?c*"-> E(
+false-a?c* )
+<br>0-> E(
+false-0.0 )
+<br>0x1e-> E(
+false-30.0 )
+<br>012-> E(
+false-10.0 )
+<br>-0.33333334-> E(
+false--0.33333334 )
+<br>(0==0)-> E(
+false-true )
+<br>(1==0)-> E(
+false-false )
+</td>
+</tr>
+</table></center>
+<br>&nbsp;
+<br>&nbsp;
+<br>&nbsp;
+<p><br>the following table contains the testdata of the argument on righthand&nbsp;side and the result.
+<br>requestExpression: abcdefg= 1;
+<br>&nbsp;
+<br>&nbsp;
+<center><table BORDER COLS=9WIDTH="100%"NOSAVE">
+<tr>
+<td>&nbsp;left side><br>Operation v&nbsp;</td>
+<td>Name: abcdefg</td>
+<td>UnrN: "a?c*"</td>
+<td>Int: 0</td>
+<td>Int: 0x1e</td>
+<td>Hex: 012</td>
+<td>Oct: -0.33333334</td>
+<td>Float: (0==0)</td>
+<td>boolean: (1==0)</td>
+</tr>
+<tr>
+<td> == </td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+1.0==a?c* )
+<br>0-> false
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+1.0==true )
+<br>(1==0)-> E(
+1.0==false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*==1.0 )
+<br>"a?c*"-> E(
+a?c*==a?c* )
+<br>0-> E(
+a?c*==0.0 )
+<br>0x1e-> E(
+a?c*==30.0 )
+<br>012-> E(
+a?c*==10.0 )
+<br>-0.33333334-> E(
+a?c*==-0.33333334 )
+<br>(0==0)-> E(
+a?c*==true )
+<br>(1==0)-> E(
+a?c*==false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+0.0==a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+0.0==true )
+<br>(1==0)-> E(
+0.0==false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+30.0==a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> false
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+30.0==true )
+<br>(1==0)-> E(
+30.0==false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+10.0==a?c* )
+<br>0-> false
+<br>0x1e-> false
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+10.0==true )
+<br>(1==0)-> E(
+10.0==false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+-0.33333334==a?c* )
+<br>0-> false
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+-0.33333334==true )
+<br>(1==0)-> E(
+-0.33333334==false )
+</td>
+<td>
+<br>abcdefg-> E(
+true==1.0 )
+<br>"a?c*"-> E(
+true==a?c* )
+<br>0-> E(
+true==0.0 )
+<br>0x1e-> E(
+true==30.0 )
+<br>012-> E(
+true==10.0 )
+<br>-0.33333334-> E(
+true==-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+<td>
+<br>abcdefg-> E(
+false==1.0 )
+<br>"a?c*"-> E(
+false==a?c* )
+<br>0-> E(
+false==0.0 )
+<br>0x1e-> E(
+false==30.0 )
+<br>012-> E(
+false==10.0 )
+<br>-0.33333334-> E(
+false==-0.33333334 )
+<br>(0==0)-> false
+<br>(1==0)-> true
+</td>
+</tr>
+<tr>
+<td> <= </td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+1.0<=a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+1.0<=true )
+<br>(1==0)-> E(
+1.0<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*<=1.0 )
+<br>"a?c*"-> E(
+a?c*<=a?c* )
+<br>0-> E(
+a?c*<=0.0 )
+<br>0x1e-> E(
+a?c*<=30.0 )
+<br>012-> E(
+a?c*<=10.0 )
+<br>-0.33333334-> E(
+a?c*<=-0.33333334 )
+<br>(0==0)-> E(
+a?c*<=true )
+<br>(1==0)-> E(
+a?c*<=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+0.0<=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+0.0<=true )
+<br>(1==0)-> E(
+0.0<=false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+30.0<=a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> false
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+30.0<=true )
+<br>(1==0)-> E(
+30.0<=false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+10.0<=a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+10.0<=true )
+<br>(1==0)-> E(
+10.0<=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+-0.33333334<=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+-0.33333334<=true )
+<br>(1==0)-> E(
+-0.33333334<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+true<=1.0 )
+<br>"a?c*"-> E(
+true<=a?c* )
+<br>0-> E(
+true<=0.0 )
+<br>0x1e-> E(
+true<=30.0 )
+<br>012-> E(
+true<=10.0 )
+<br>-0.33333334-> E(
+true<=-0.33333334 )
+<br>(0==0)-> E(
+true<=true )
+<br>(1==0)-> E(
+true<=false )
+</td>
+<td>
+<br>abcdefg-> E(
+false<=1.0 )
+<br>"a?c*"-> E(
+false<=a?c* )
+<br>0-> E(
+false<=0.0 )
+<br>0x1e-> E(
+false<=30.0 )
+<br>012-> E(
+false<=10.0 )
+<br>-0.33333334-> E(
+false<=-0.33333334 )
+<br>(0==0)-> E(
+false<=true )
+<br>(1==0)-> E(
+false<=false )
+</td>
+</tr>
+<tr>
+<td> >= </td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+1.0>=a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+1.0>=true )
+<br>(1==0)-> E(
+1.0>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*>=1.0 )
+<br>"a?c*"-> E(
+a?c*>=a?c* )
+<br>0-> E(
+a?c*>=0.0 )
+<br>0x1e-> E(
+a?c*>=30.0 )
+<br>012-> E(
+a?c*>=10.0 )
+<br>-0.33333334-> E(
+a?c*>=-0.33333334 )
+<br>(0==0)-> E(
+a?c*>=true )
+<br>(1==0)-> E(
+a?c*>=false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+0.0>=a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+0.0>=true )
+<br>(1==0)-> E(
+0.0>=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+30.0>=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+30.0>=true )
+<br>(1==0)-> E(
+30.0>=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+10.0>=a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+10.0>=true )
+<br>(1==0)-> E(
+10.0>=false )
+</td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+-0.33333334>=a?c* )
+<br>0-> false
+<br>0x1e-> false
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+-0.33333334>=true )
+<br>(1==0)-> E(
+-0.33333334>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+true>=1.0 )
+<br>"a?c*"-> E(
+true>=a?c* )
+<br>0-> E(
+true>=0.0 )
+<br>0x1e-> E(
+true>=30.0 )
+<br>012-> E(
+true>=10.0 )
+<br>-0.33333334-> E(
+true>=-0.33333334 )
+<br>(0==0)-> E(
+true>=true )
+<br>(1==0)-> E(
+true>=false )
+</td>
+<td>
+<br>abcdefg-> E(
+false>=1.0 )
+<br>"a?c*"-> E(
+false>=a?c* )
+<br>0-> E(
+false>=0.0 )
+<br>0x1e-> E(
+false>=30.0 )
+<br>012-> E(
+false>=10.0 )
+<br>-0.33333334-> E(
+false>=-0.33333334 )
+<br>(0==0)-> E(
+false>=true )
+<br>(1==0)-> E(
+false>=false )
+</td>
+</tr>
+<tr>
+<td> != </td>
+<td>
+<br>abcdefg-> false
+<br>"a?c*"-> E(
+1.0!=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+1.0!=true )
+<br>(1==0)-> E(
+1.0!=false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*!=1.0 )
+<br>"a?c*"-> E(
+a?c*!=a?c* )
+<br>0-> E(
+a?c*!=0.0 )
+<br>0x1e-> E(
+a?c*!=30.0 )
+<br>012-> E(
+a?c*!=10.0 )
+<br>-0.33333334-> E(
+a?c*!=-0.33333334 )
+<br>(0==0)-> E(
+a?c*!=true )
+<br>(1==0)-> E(
+a?c*!=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+0.0!=a?c* )
+<br>0-> false
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+0.0!=true )
+<br>(1==0)-> E(
+0.0!=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+30.0!=a?c* )
+<br>0-> true
+<br>0x1e-> false
+<br>012-> true
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+30.0!=true )
+<br>(1==0)-> E(
+30.0!=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+10.0!=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> false
+<br>-0.33333334-> true
+<br>(0==0)-> E(
+10.0!=true )
+<br>(1==0)-> E(
+10.0!=false )
+</td>
+<td>
+<br>abcdefg-> true
+<br>"a?c*"-> E(
+-0.33333334!=a?c* )
+<br>0-> true
+<br>0x1e-> true
+<br>012-> true
+<br>-0.33333334-> false
+<br>(0==0)-> E(
+-0.33333334!=true )
+<br>(1==0)-> E(
+-0.33333334!=false )
+</td>
+<td>
+<br>abcdefg-> E(
+true!=1.0 )
+<br>"a?c*"-> E(
+true!=a?c* )
+<br>0-> E(
+true!=0.0 )
+<br>0x1e-> E(
+true!=30.0 )
+<br>012-> E(
+true!=10.0 )
+<br>-0.33333334-> E(
+true!=-0.33333334 )
+<br>(0==0)-> false
+<br>(1==0)-> true
+</td>
+<td>
+<br>abcdefg-> E(
+false!=1.0 )
+<br>"a?c*"-> E(
+false!=a?c* )
+<br>0-> E(
+false!=0.0 )
+<br>0x1e-> E(
+false!=30.0 )
+<br>012-> E(
+false!=10.0 )
+<br>-0.33333334-> E(
+false!=-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+</tr>
+<tr>
+<td> && </td>
+<td>
+<br>abcdefg-> E(
+1&&1 )
+<br>"a?c*"-> E(
+1&&a?c* )
+<br>0-> E(
+1&&0 )
+<br>0x1e-> E(
+1&&30 )
+<br>012-> E(
+1&&10 )
+<br>-0.33333334-> E(
+1&&-0.33333334 )
+<br>(0==0)-> E(
+1&&true )
+<br>(1==0)-> E(
+1&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*&&1 )
+<br>"a?c*"-> E(
+a?c*&&a?c* )
+<br>0-> E(
+a?c*&&0 )
+<br>0x1e-> E(
+a?c*&&30 )
+<br>012-> E(
+a?c*&&10 )
+<br>-0.33333334-> E(
+a?c*&&-0.33333334 )
+<br>(0==0)-> E(
+a?c*&&true )
+<br>(1==0)-> E(
+a?c*&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+0&&1 )
+<br>"a?c*"-> E(
+0&&a?c* )
+<br>0-> E(
+0&&0 )
+<br>0x1e-> E(
+0&&30 )
+<br>012-> E(
+0&&10 )
+<br>-0.33333334-> E(
+0&&-0.33333334 )
+<br>(0==0)-> E(
+0&&true )
+<br>(1==0)-> E(
+0&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+30&&1 )
+<br>"a?c*"-> E(
+30&&a?c* )
+<br>0-> E(
+30&&0 )
+<br>0x1e-> E(
+30&&30 )
+<br>012-> E(
+30&&10 )
+<br>-0.33333334-> E(
+30&&-0.33333334 )
+<br>(0==0)-> E(
+30&&true )
+<br>(1==0)-> E(
+30&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+10&&1 )
+<br>"a?c*"-> E(
+10&&a?c* )
+<br>0-> E(
+10&&0 )
+<br>0x1e-> E(
+10&&30 )
+<br>012-> E(
+10&&10 )
+<br>-0.33333334-> E(
+10&&-0.33333334 )
+<br>(0==0)-> E(
+10&&true )
+<br>(1==0)-> E(
+10&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334&&1 )
+<br>"a?c*"-> E(
+-0.33333334&&a?c* )
+<br>0-> E(
+-0.33333334&&0 )
+<br>0x1e-> E(
+-0.33333334&&30 )
+<br>012-> E(
+-0.33333334&&10 )
+<br>-0.33333334-> E(
+-0.33333334&&-0.33333334 )
+<br>(0==0)-> E(
+-0.33333334&&true )
+<br>(1==0)-> E(
+-0.33333334&&false )
+</td>
+<td>
+<br>abcdefg-> E(
+true&&1 )
+<br>"a?c*"-> E(
+true&&a?c* )
+<br>0-> E(
+true&&0 )
+<br>0x1e-> E(
+true&&30 )
+<br>012-> E(
+true&&10 )
+<br>-0.33333334-> E(
+true&&-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+<td>
+<br>abcdefg-> E(
+false&&1 )
+<br>"a?c*"-> E(
+false&&a?c* )
+<br>0-> E(
+false&&0 )
+<br>0x1e-> E(
+false&&30 )
+<br>012-> E(
+false&&10 )
+<br>-0.33333334-> E(
+false&&-0.33333334 )
+<br>(0==0)-> false
+<br>(1==0)-> false
+</td>
+</tr>
+<tr>
+<td> || </td>
+<td>
+<br>abcdefg-> E(
+1||1 )
+<br>"a?c*"-> E(
+1||a?c* )
+<br>0-> E(
+1||0 )
+<br>0x1e-> E(
+1||30 )
+<br>012-> E(
+1||10 )
+<br>-0.33333334-> E(
+1||-0.33333334 )
+<br>(0==0)-> E(
+1||true )
+<br>(1==0)-> E(
+1||false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*||1 )
+<br>"a?c*"-> E(
+a?c*||a?c* )
+<br>0-> E(
+a?c*||0 )
+<br>0x1e-> E(
+a?c*||30 )
+<br>012-> E(
+a?c*||10 )
+<br>-0.33333334-> E(
+a?c*||-0.33333334 )
+<br>(0==0)-> E(
+a?c*||true )
+<br>(1==0)-> E(
+a?c*||false )
+</td>
+<td>
+<br>abcdefg-> E(
+0||1 )
+<br>"a?c*"-> E(
+0||a?c* )
+<br>0-> E(
+0||0 )
+<br>0x1e-> E(
+0||30 )
+<br>012-> E(
+0||10 )
+<br>-0.33333334-> E(
+0||-0.33333334 )
+<br>(0==0)-> E(
+0||true )
+<br>(1==0)-> E(
+0||false )
+</td>
+<td>
+<br>abcdefg-> E(
+30||1 )
+<br>"a?c*"-> E(
+30||a?c* )
+<br>0-> E(
+30||0 )
+<br>0x1e-> E(
+30||30 )
+<br>012-> E(
+30||10 )
+<br>-0.33333334-> E(
+30||-0.33333334 )
+<br>(0==0)-> E(
+30||true )
+<br>(1==0)-> E(
+30||false )
+</td>
+<td>
+<br>abcdefg-> E(
+10||1 )
+<br>"a?c*"-> E(
+10||a?c* )
+<br>0-> E(
+10||0 )
+<br>0x1e-> E(
+10||30 )
+<br>012-> E(
+10||10 )
+<br>-0.33333334-> E(
+10||-0.33333334 )
+<br>(0==0)-> E(
+10||true )
+<br>(1==0)-> E(
+10||false )
+</td>
+<td>
+<br>abcdefg-> E(
+-0.33333334||1 )
+<br>"a?c*"-> E(
+-0.33333334||a?c* )
+<br>0-> E(
+-0.33333334||0 )
+<br>0x1e-> E(
+-0.33333334||30 )
+<br>012-> E(
+-0.33333334||10 )
+<br>-0.33333334-> E(
+-0.33333334||-0.33333334 )
+<br>(0==0)-> E(
+-0.33333334||true )
+<br>(1==0)-> E(
+-0.33333334||false )
+</td>
+<td>
+<br>abcdefg-> E(
+true||1 )
+<br>"a?c*"-> E(
+true||a?c* )
+<br>0-> E(
+true||0 )
+<br>0x1e-> E(
+true||30 )
+<br>012-> E(
+true||10 )
+<br>-0.33333334-> E(
+true||-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> true
+</td>
+<td>
+<br>abcdefg-> E(
+false||1 )
+<br>"a?c*"-> E(
+false||a?c* )
+<br>0-> E(
+false||0 )
+<br>0x1e-> E(
+false||30 )
+<br>012-> E(
+false||10 )
+<br>-0.33333334-> E(
+false||-0.33333334 )
+<br>(0==0)-> true
+<br>(1==0)-> false
+</td>
+</tr>
+<tr>
+<td> * </td>
+<td>
+<br>abcdefg-> 1
+<br>"a?c*"-> E(
+1.0*a?c* )
+<br>0-> 0
+<br>0x1e-> 30
+<br>012-> 10
+<br>-0.33333334-> -0.33333334
+<br>(0==0)-> E(
+1.0*true )
+<br>(1==0)-> E(
+1.0*false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c**1.0 )
+<br>"a?c*"-> E(
+a?c**a?c* )
+<br>0-> E(
+a?c**0.0 )
+<br>0x1e-> E(
+a?c**30.0 )
+<br>012-> E(
+a?c**10.0 )
+<br>-0.33333334-> E(
+a?c**-0.33333334 )
+<br>(0==0)-> E(
+a?c**true )
+<br>(1==0)-> E(
+a?c**false )
+</td>
+<td>
+<br>abcdefg-> 0
+<br>"a?c*"-> E(
+0.0*a?c* )
+<br>0-> 0
+<br>0x1e-> 0
+<br>012-> 0
+<br>-0.33333334-> -0.0
+<br>(0==0)-> E(
+0.0*true )
+<br>(1==0)-> E(
+0.0*false )
+</td>
+<td>
+<br>abcdefg-> 30
+<br>"a?c*"-> E(
+30.0*a?c* )
+<br>0-> 0
+<br>0x1e-> 900
+<br>012-> 300
+<br>-0.33333334-> -10.0
+<br>(0==0)-> E(
+30.0*true )
+<br>(1==0)-> E(
+30.0*false )
+</td>
+<td>
+<br>abcdefg-> 10
+<br>"a?c*"-> E(
+10.0*a?c* )
+<br>0-> 0
+<br>0x1e-> 300
+<br>012-> 100
+<br>-0.33333334-> -3.3333335
+<br>(0==0)-> E(
+10.0*true )
+<br>(1==0)-> E(
+10.0*false )
+</td>
+<td>
+<br>abcdefg-> -0.33333334
+<br>"a?c*"-> E(
+-0.33333334*a?c* )
+<br>0-> -0.0
+<br>0x1e-> -10.0
+<br>012-> -3.3333335
+<br>-0.33333334-> 0.11111112
+<br>(0==0)-> E(
+-0.33333334*true )
+<br>(1==0)-> E(
+-0.33333334*false )
+</td>
+<td>
+<br>abcdefg-> E(
+true*1.0 )
+<br>"a?c*"-> E(
+true*a?c* )
+<br>0-> E(
+true*0.0 )
+<br>0x1e-> E(
+true*30.0 )
+<br>012-> E(
+true*10.0 )
+<br>-0.33333334-> E(
+true*-0.33333334 )
+<br>(0==0)-> E(
+true*true )
+<br>(1==0)-> E(
+true*false )
+</td>
+<td>
+<br>abcdefg-> E(
+false*1.0 )
+<br>"a?c*"-> E(
+false*a?c* )
+<br>0-> E(
+false*0.0 )
+<br>0x1e-> E(
+false*30.0 )
+<br>012-> E(
+false*10.0 )
+<br>-0.33333334-> E(
+false*-0.33333334 )
+<br>(0==0)-> E(
+false*true )
+<br>(1==0)-> E(
+false*false )
+</td>
+</tr>
+<tr>
+<td> / </td>
+<td>
+<br>abcdefg-> 1
+<br>"a?c*"-> E(
+1.0/a?c* )
+<br>0-> E(
+1/0 )
+<br>0x1e-> 0.033333335
+<br>012-> 0.1
+<br>-0.33333334-> -3.0
+<br>(0==0)-> E(
+1.0/true )
+<br>(1==0)-> E(
+1.0/false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*/1.0 )
+<br>"a?c*"-> E(
+a?c*/a?c* )
+<br>0-> E(
+a?c*/0.0 )
+<br>0x1e-> E(
+a?c*/30.0 )
+<br>012-> E(
+a?c*/10.0 )
+<br>-0.33333334-> E(
+a?c*/-0.33333334 )
+<br>(0==0)-> E(
+a?c*/true )
+<br>(1==0)-> E(
+a?c*/false )
+</td>
+<td>
+<br>abcdefg-> 0
+<br>"a?c*"-> E(
+0.0/a?c* )
+<br>0-> E(
+0/0 )
+<br>0x1e-> 0
+<br>012-> 0
+<br>-0.33333334-> -0.0
+<br>(0==0)-> E(
+0.0/true )
+<br>(1==0)-> E(
+0.0/false )
+</td>
+<td>
+<br>abcdefg-> 30
+<br>"a?c*"-> E(
+30.0/a?c* )
+<br>0-> E(
+30/0 )
+<br>0x1e-> 1
+<br>012-> 3
+<br>-0.33333334-> -90.0
+<br>(0==0)-> E(
+30.0/true )
+<br>(1==0)-> E(
+30.0/false )
+</td>
+<td>
+<br>abcdefg-> 10
+<br>"a?c*"-> E(
+10.0/a?c* )
+<br>0-> E(
+10/0 )
+<br>0x1e-> 0.33333334
+<br>012-> 1
+<br>-0.33333334-> -30.0
+<br>(0==0)-> E(
+10.0/true )
+<br>(1==0)-> E(
+10.0/false )
+</td>
+<td>
+<br>abcdefg-> -0.33333334
+<br>"a?c*"-> E(
+-0.33333334/a?c* )
+<br>0-> E(
+-0.33333334/0.0 )
+<br>0x1e-> -0.011111111
+<br>012-> -0.033333335
+<br>-0.33333334-> 1.0
+<br>(0==0)-> E(
+-0.33333334/true )
+<br>(1==0)-> E(
+-0.33333334/false )
+</td>
+<td>
+<br>abcdefg-> E(
+true/1.0 )
+<br>"a?c*"-> E(
+true/a?c* )
+<br>0-> E(
+true/0.0 )
+<br>0x1e-> E(
+true/30.0 )
+<br>012-> E(
+true/10.0 )
+<br>-0.33333334-> E(
+true/-0.33333334 )
+<br>(0==0)-> E(
+true/true )
+<br>(1==0)-> E(
+true/false )
+</td>
+<td>
+<br>abcdefg-> E(
+false/1.0 )
+<br>"a?c*"-> E(
+false/a?c* )
+<br>0-> E(
+false/0.0 )
+<br>0x1e-> E(
+false/30.0 )
+<br>012-> E(
+false/10.0 )
+<br>-0.33333334-> E(
+false/-0.33333334 )
+<br>(0==0)-> E(
+false/true )
+<br>(1==0)-> E(
+false/false )
+</td>
+</tr>
+<tr>
+<td> + </td>
+<td>
+<br>abcdefg-> 2
+<br>"a?c*"-> E(
+1.0+a?c* )
+<br>0-> 1
+<br>0x1e-> 31
+<br>012-> 11
+<br>-0.33333334-> 0.6666666
+<br>(0==0)-> E(
+1.0+true )
+<br>(1==0)-> E(
+1.0+false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*+1.0 )
+<br>"a?c*"-> E(
+a?c*+a?c* )
+<br>0-> E(
+a?c*+0.0 )
+<br>0x1e-> E(
+a?c*+30.0 )
+<br>012-> E(
+a?c*+10.0 )
+<br>-0.33333334-> E(
+a?c*+-0.33333334 )
+<br>(0==0)-> E(
+a?c*+true )
+<br>(1==0)-> E(
+a?c*+false )
+</td>
+<td>
+<br>abcdefg-> 1
+<br>"a?c*"-> E(
+0.0+a?c* )
+<br>0-> 0
+<br>0x1e-> 30
+<br>012-> 10
+<br>-0.33333334-> -0.33333334
+<br>(0==0)-> E(
+0.0+true )
+<br>(1==0)-> E(
+0.0+false )
+</td>
+<td>
+<br>abcdefg-> 31
+<br>"a?c*"-> E(
+30.0+a?c* )
+<br>0-> 30
+<br>0x1e-> 60
+<br>012-> 40
+<br>-0.33333334-> 29.666666
+<br>(0==0)-> E(
+30.0+true )
+<br>(1==0)-> E(
+30.0+false )
+</td>
+<td>
+<br>abcdefg-> 11
+<br>"a?c*"-> E(
+10.0+a?c* )
+<br>0-> 10
+<br>0x1e-> 40
+<br>012-> 20
+<br>-0.33333334-> 9.666667
+<br>(0==0)-> E(
+10.0+true )
+<br>(1==0)-> E(
+10.0+false )
+</td>
+<td>
+<br>abcdefg-> 0.6666666
+<br>"a?c*"-> E(
+-0.33333334+a?c* )
+<br>0-> -0.33333334
+<br>0x1e-> 29.666666
+<br>012-> 9.666667
+<br>-0.33333334-> -0.6666667
+<br>(0==0)-> E(
+-0.33333334+true )
+<br>(1==0)-> E(
+-0.33333334+false )
+</td>
+<td>
+<br>abcdefg-> E(
+true+1.0 )
+<br>"a?c*"-> E(
+true+a?c* )
+<br>0-> E(
+true+0.0 )
+<br>0x1e-> E(
+true+30.0 )
+<br>012-> E(
+true+10.0 )
+<br>-0.33333334-> E(
+true+-0.33333334 )
+<br>(0==0)-> E(
+true+true )
+<br>(1==0)-> E(
+true+false )
+</td>
+<td>
+<br>abcdefg-> E(
+false+1.0 )
+<br>"a?c*"-> E(
+false+a?c* )
+<br>0-> E(
+false+0.0 )
+<br>0x1e-> E(
+false+30.0 )
+<br>012-> E(
+false+10.0 )
+<br>-0.33333334-> E(
+false+-0.33333334 )
+<br>(0==0)-> E(
+false+true )
+<br>(1==0)-> E(
+false+false )
+</td>
+</tr>
+<tr>
+<td> - </td>
+<td>
+<br>abcdefg-> 0
+<br>"a?c*"-> E(
+1.0-a?c* )
+<br>0-> 1
+<br>0x1e-> -29
+<br>012-> -9
+<br>-0.33333334-> 1.3333334
+<br>(0==0)-> E(
+1.0-true )
+<br>(1==0)-> E(
+1.0-false )
+</td>
+<td>
+<br>abcdefg-> E(
+a?c*-1.0 )
+<br>"a?c*"-> E(
+a?c*-a?c* )
+<br>0-> E(
+a?c*-0.0 )
+<br>0x1e-> E(
+a?c*-30.0 )
+<br>012-> E(
+a?c*-10.0 )
+<br>-0.33333334-> E(
+a?c*--0.33333334 )
+<br>(0==0)-> E(
+a?c*-true )
+<br>(1==0)-> E(
+a?c*-false )
+</td>
+<td>
+<br>abcdefg-> -1
+<br>"a?c*"-> E(
+0.0-a?c* )
+<br>0-> 0
+<br>0x1e-> -30
+<br>012-> -10
+<br>-0.33333334-> 0.33333334
+<br>(0==0)-> E(
+0.0-true )
+<br>(1==0)-> E(
+0.0-false )
+</td>
+<td>
+<br>abcdefg-> 29
+<br>"a?c*"-> E(
+30.0-a?c* )
+<br>0-> 30
+<br>0x1e-> 0
+<br>012-> 20
+<br>-0.33333334-> 30.333334
+<br>(0==0)-> E(
+30.0-true )
+<br>(1==0)-> E(
+30.0-false )
+</td>
+<td>
+<br>abcdefg-> 9
+<br>"a?c*"-> E(
+10.0-a?c* )
+<br>0-> 10
+<br>0x1e-> -20
+<br>012-> 0
+<br>-0.33333334-> 10.333333
+<br>(0==0)-> E(
+10.0-true )
+<br>(1==0)-> E(
+10.0-false )
+</td>
+<td>
+<br>abcdefg-> -1.3333334
+<br>"a?c*"-> E(
+-0.33333334-a?c* )
+<br>0-> -0.33333334
+<br>0x1e-> -30.333334
+<br>012-> -10.333333
+<br>-0.33333334-> 0.0
+<br>(0==0)-> E(
+-0.33333334-true )
+<br>(1==0)-> E(
+-0.33333334-false )
+</td>
+<td>
+<br>abcdefg-> E(
+true-1.0 )
+<br>"a?c*"-> E(
+true-a?c* )
+<br>0-> E(
+true-0.0 )
+<br>0x1e-> E(
+true-30.0 )
+<br>012-> E(
+true-10.0 )
+<br>-0.33333334-> E(
+true--0.33333334 )
+<br>(0==0)-> E(
+true-true )
+<br>(1==0)-> E(
+true-false )
+</td>
+<td>
+<br>abcdefg-> E(
+false-1.0 )
+<br>"a?c*"-> E(
+false-a?c* )
+<br>0-> E(
+false-0.0 )
+<br>0x1e-> E(
+false-30.0 )
+<br>012-> E(
+false-10.0 )
+<br>-0.33333334-> E(
+false--0.33333334 )
+<br>(0==0)-> E(
+false-true )
+<br>(1==0)-> E(
+false-false )
+</td>
+</tr>
+</table></center>
+</body>
+</html>

@@ -1,0 +1,163 @@
+options{
+  STATIC = false;
+}
+PARSER_BEGIN(SyntaTrial)
+
+package eurogate.pvl.regexp.request;
+
+import java.util.Hashtable;
+import java.io.StringReader;
+
+/** class SyntaTrial checks the syntax of a requestExpression
+ *  and builds a Hashtable.
+ *  The requestExpression is stored in the class Request as a String.
+ *  The request passes a StringReader into SyntaTrial. 
+ *  The Hashtable is later used by class RegFitCheck.
+ */
+public class SyntaTrial{
+  private static final Boolean FALSE= Boolean.FALSE; 
+  private static final Boolean TRUE= Boolean.TRUE;
+
+  private java.util.Hashtable _requestAssigns = new java.util.Hashtable();
+  private java.util.Stack _argStack = new java.util.Stack();
+
+ /** createTable stores the data of the requestExpression into a Hashtable.
+  *  input is gifen to its class. 
+  *  output is the Hashtable.
+  *  ParseException and TokenMgrError are thrown
+  *  if the expression contains errors.
+  */
+  public Hashtable createTable() throws ParseException,
+                                        TokenMgrError{
+    while(getToken(1).kind != EOF){ 
+      requestExpression();
+    }
+    
+    return _requestAssigns;
+  }
+
+
+} // class SyntaTrial
+PARSER_END(SyntaTrial)
+
+
+// ignore space characters, tabs, carriage return, and new line characters
+SKIP :
+{
+  " "
+| "\t"
+| "\r"
+| "\n"
+}
+
+
+TOKEN : 
+{
+        < ASSIGN: "=" >
+  |     < SEMICOLON: ";" >
+}
+
+
+TOKEN : 
+{                                                        
+        < ANYNAME : "\"" ( [" ", "!", "#" - "~"] )* "\"" >	
+} 
+
+
+TOKEN : 
+{
+        < NAME : ["a" - "z" ,"A" - "Z", "#", "$", ".", "@", "_"]
+                 ( ["a" - "z"]
+		  | ["A" - "Z"]
+                  | ["0" - "9"]   
+	          | ["#", "$", ".", "@", "_"] )* >
+} 
+
+
+TOKEN :                                            
+{
+        < FLOAT: ( (["-","+"])? (["0"-"9"])* "." (["0"-"9"])+ )
+	         | ( (["-","+"])? (["0"-"9"])+ "." (["0"-"9"])* ) >        
+}
+
+
+TOKEN :
+{
+        < INTEGER: ( ["1"-"9"]  (["0"-"9"])* ) >
+}
+
+
+TOKEN :
+{
+        < ZEROINT: "0" >
+}
+
+
+TOKEN :
+{
+        < OCTINTEGER: "0" (["0"-"7"])+ >		   
+}
+
+
+TOKEN :
+{
+        < HEXINTEGER: "0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+ >
+}
+
+
+void requestExpression() :
+{}
+{
+       ( assignment() )+
+}
+
+
+void assignment() :
+{String key= null;
+}
+{
+      <NAME>{key= token.image; }
+      <ASSIGN>
+      value()
+      <SEMICOLON>{_requestAssigns.put(key, _argStack.pop()); }
+}  
+
+
+void value() :
+{
+}
+{
+
+	      	<ANYNAME>{
+	                    _argStack.push(
+			      token.image.substring(1,(token.image.length()-1)) );
+		         }
+			 	  
+	      | <NAME>{
+		         _argStack.push(token.image);
+		      }
+
+
+	      | <FLOAT>{
+	                  _argStack.push(Float.valueOf(token.image)); 
+		       }
+
+              | <ZEROINT>{
+                           _argStack.push(Integer.valueOf(token.image,10) );
+                         }
+
+	      | <INTEGER>{
+	                    _argStack.push(Integer.valueOf(token.image,10)); 
+			 }			  
+
+	      | <OCTINTEGER>{
+	                       _argStack.push(
+			         Integer.valueOf(token.image.substring(1),8)); 
+			    }
+
+              | <HEXINTEGER>{
+	                       _argStack.push(
+			        Integer.valueOf(token.image.substring(2),16)); 
+			    }    
+
+}

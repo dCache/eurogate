@@ -1,0 +1,149 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; SunOS 5.6 sun4u) [Netscape]">
+   <title>BNF for SyntaTrial.jj</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<center>
+<h1>
+BNF for SyntaTrial.jj</h1></center>
+
+<center>
+<h2>
+TOKENS</h2></center>
+
+<table NOSAVE >
+<tr NOSAVE>
+<td VALIGN=TOP NOSAVE>ASSIGN</td>
+
+<td>::=</td>
+
+<td>"="</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>SEMICOLON</td>
+
+<td>::=</td>
+
+<td>";"</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>NAME</td>
+
+<td>::=</td>
+
+<td>["a" - "z" ,"A" - "Z", "#", "$", ".", "@", "_"]
+<br>( ["a" - "z"]
+<br>| ["A" - "Z"]
+<br>| ["0" - "9"]
+<br>| ["#", "$", ".", "@", "_"] )*</td>
+<tr>
+<td></td>
+<td></td>
+</tr>
+</tr>
+
+<tr>
+<td>ANYNAME</td>
+
+<td>::=</td>
+
+<td>"\"" ( [" ", "!", "#" - "~"] )* "\""</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+
+<tr NOSAVE>
+<td>FLOAT</td>
+
+<td>::=</td>
+
+<td VALIGN=TOP NOSAVE>( (["-","+"])? (["0"-"9"])* "." (["0"-"9"])+ )
+<br>| ( (["-","+"])? (["0"-"9"])+ "." (["0"-"9"])* )</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>INTEGER</td>
+
+<td>::=</td>
+
+<td>( ["1"-"9"]&nbsp; (["0"-"9"])* )</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>ZEROINT</td>
+
+<td>::=</td>
+
+<td>"0"&nbsp;</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>OCTINTEGER</td>
+
+<td>::=</td>
+
+<td>"0" (["0"-"7"])+</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+
+<tr>
+<td>HEXINTEGER</td>
+
+<td>::=</td>
+
+<td>"0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+</td>
+</tr>
+
+<tr>
+<td></td>
+
+<td></td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>

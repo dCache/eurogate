@@ -1,0 +1,164 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="GENERATOR" content="Mozilla/4.7 [en] (X11; I; SunOS 5.6 sun4u) [Netscape]">
+   <title>BNF for TreeCut.jj</title>
+</head>
+<body text="#000000" bgcolor="#FFFFFF" link="#0000EE" vlink="#551A8B" alink="#FF0000">
+
+<center>
+<h1>
+BNF for TreeCut.jj</h1></center>
+
+<center>
+<h2>
+TOKENS</h2></center>
+
+<table >
+
+<tr><td>AND</td><td>::=</td><td>"&&"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>OR</td><td>::=</td><td>"||"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>PLUS</td><td>::=</td><td>"+"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>MINUS</td><td>::=</td><td>"-"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>MULT</td><td>::=</td><td>"*"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>DIV</td><td>::=</td><td>"/"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>GE</td><td>::=</td><td>">="</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>LE</td><td>::=</td><td>"<="</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>EQ</td><td>::=</td><td>"=="</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>NE</td><td>::=</td><td>"!="</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>GT</td><td>::=</td><td>"!="</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>LT</td><td>::=</td><td>"<"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>NOT</td><td>::=</td><td>"!"</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>LPAR</td><td>::=</td><td>"("</td></tr>
+<tr><td></td><td></td></tr>
+
+<tr><td>RPAR</td><td>::=</td><td>")"</td></tr>
+<tr><td></td><td></td></tr>
+
+
+<tr>
+<td>NAME</td>
+
+<td>::=</td>
+
+<td>["a" - "z" ,"A" - "Z", "#", "$", ".", "@", "_"]
+<br>( ["a" - "z"]
+<br>| ["A" - "Z"]
+<br>| ["0" - "9"]
+<br>| ["#", "$", ".", "@", "_"] )*</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+
+
+<tr>
+<td>ANYNAME</td>
+
+<td>::=</td>
+
+<td>"\"" ( [" ", "!", "#" - "~"] )* "\""</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>FLOAT</td>
+
+<td>::=</td>
+
+<td>( (["-","+"])? (["0"-"9"])* "." (["0"-"9"])+ )
+<br>| ( (["-","+"])? (["0"-"9"])+ "." (["0"-"9"])* )</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>INTEGER</td>
+
+<td>::=</td>
+
+<td>( ["1"-"9"]&nbsp; (["0"-"9"])* )</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>ZEROINT</td>
+
+<td>::=</td>
+
+<td>"0"&nbsp;</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>OCTINTEGER</td>
+
+<td>::=</td>
+
+<td>"0" (["0"-"7"])+</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+</tr>
+
+<tr>
+<td>HEXINTEGER</td>
+
+<td>::=</td>
+
+<td>"0" ["x","X"] (["0"-"9","a"-"f","A"-"F"])+</td>
+</tr>
+
+<tr>
+<td></td>
+<td></td>
+</tr>
+</table>
+
+<br>&nbsp;
+</body>
+</html>
