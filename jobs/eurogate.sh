@@ -182,6 +182,19 @@ checkSsh() {
 #-----------------------------------------------------------------
 ##################################################################
 #
+eugateDrives() {
+
+   checkVar spyPort || exit $? 
+   checkJava || exit $?
+   
+   $JAVA eurogate.spy.DriveSpy localhost $spyPort >/dev/null 2>&1 &
+   
+   exit 0
+
+}
+#-----------------------------------------------------------------
+##################################################################
+#
 eugateStart() {
    # 
    # we need some variables
@@ -342,6 +355,17 @@ eugateInitPvl() {
   return 0
 }
 #-----------------------------------------------------------------
+eustoreHelp() {
+   echo "Usage : "
+   echo "eustore.sh  start"
+   echo "eustore.sh  stop"
+   echo "eustore.sh  login"
+   echo "eustore.sh  spy"
+   echo "eustore.sh  drives"
+   echo "eustore.sh  initPvl"
+   echo "eustore.sh  classpath"
+   return 0
+}
 #
 theSwitch() {
    case "$weAre" in
@@ -350,6 +374,7 @@ theSwitch() {
       *login)       eugateLogin  ;;
       *check)       eugateCheck  ;;
       *spy)         eugateSpy $*  ;;
+      *drives)      eugateDrives $*  ;;
       *initPvl)     eugateInitPvl $*  ;;
       *classpath)     javaClasspath $*  ;;
       *cp)     getFull $*  ;;
@@ -358,6 +383,7 @@ theSwitch() {
          shift 
          theSwitch $*
       ;;
+      *) eustoreHelp ;;
    esac
 }
 #
