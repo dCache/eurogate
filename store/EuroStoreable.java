@@ -22,9 +22,9 @@ import eurogate.misc.CookieEnumeration ;
   * framework.
   * <table border=2>
   * <tr><th>Position</th><th>Class</th><th>Purpose</th></tr>
-  * <tr><td>1</td><td>dmg.util.Args</td><td>args</td></tr>
+  * <tr><td>1</td><td><a href=http://watphrakeo.desy.de/cells/dmg.util.Args.html>dmg.util.Args</a></td><td>args</td></tr>
   * <tr><td>2</td><td>java.util.Hashtable</td><td>environment</td>
-  * <tr><td>3</td><td>dmg.util.Logable</td><td>output</td>
+  * <tr><td>3</td><td><a href=http://watphrakeo.desy.de/cells/dmg.util.Logable.html>dmg.util.Logable</a></td><td>output</td>
   * </table>
   * <ul>
   * <li>
