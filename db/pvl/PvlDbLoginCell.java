@@ -645,6 +645,20 @@ public class      PvlDbLoginCell
      
      return "Volume add to "+vsName+" : "+args.argv(0) ;
   }
+  public String hh_set_volume = "<volumeName> -status=<status>" ;
+  public String ac_set_volume_$_1( Args args )throws Exception {
+     if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
+     
+     VolumeHandle    volume    = _pvlDb.getVolumeByName( args.argv(0) ) ;
+     
+     String status = args.getOpt("status") ;
+     if( status == null )return "Set volume to ?what?" ;
+     
+     volume.open(CdbLockable.WRITE ) ;   
+        volume.setStatus( status ) ; 
+     volume.close(CdbLockable.COMMIT) ;     
+     return "Status of "+args.argv(0)+" set to "+status ;
+  }
   //
   // utils 
   //
