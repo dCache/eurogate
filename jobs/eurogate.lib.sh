@@ -308,7 +308,8 @@ eurogateGuiStart() {
    #
    checkVar aclPort  || exit $?
    checkForJava      || exit $?
-   username=`whoami 2>/dev/null`
+   username=`id 2>/dev/null | awk '{ print $1 }'`
+   username=`expr $username : ".*(\(.*\))"`
    if [ $? -ne 0 ] ; then username="admin" ; fi
    #
    $JAVA $JAVA_OPTIONS dmg.cells.applets.login.SshLoginMain \
