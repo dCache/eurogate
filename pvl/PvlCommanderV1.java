@@ -18,7 +18,7 @@ import java.lang.reflect.* ;
   *  
   *
   * @author Patrick Fuhrmann
-  * @version 0.1, 22 Apr 1999
+  * @version 0.1, 22 Apr 2000
   */
 public class PvlCommanderV1 {
 
