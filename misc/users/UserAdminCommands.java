@@ -66,22 +66,46 @@ public class UserAdminCommands implements  Interpretable {
        checkDatabase() ;
        checkPermission( args , "user.*.create" ) ;
        String user = args.argv(0) ;
-       Enumeration e = _userDb.getElementsOf(user) ;
-       if( e.hasMoreElements() )
-         throw new
-         DatabaseException( "Not Empty : "+user ) ;
-       e = _userDb.getParentsOf(user) ;
-       if( e.hasMoreElements() )
-         throw new
-         DatabaseException( "Still in groups : "+user ) ;
-       _userMetaDb.removePrincipal( user ) ;
        try{
-          _userDb.removeContainer( user ) ;
-          _aclDb.removeAclItem( "user."+user+".access" ) ;
-       }catch( Exception ee ){
-          // This is not an error. removeContainer may
-          // have failed which indicates that this is
-          // an user.
+          UserMetaDictionary dict = _userMetaDb.getDictionary( user ) ;
+          String type = dict.valueOf("type") ;
+          if( type == null ) 
+               throw new
+               DatabaseException( "Principal type not defined in meta database" ) ;
+
+          if( type.equals("user" ) ){
+             try{
+                Enumeration e = _userDb.getParentsOf(user) ;
+                if( e.hasMoreElements() )
+                  throw new
+                  DatabaseException( "Still in groups : "+user ) ;
+              }catch(NoSuchElementException eee ){
+                // no problem : has not been in a group
+              }
+             _userMetaDb.removePrincipal( user ) ;
+
+          }else if( type.equals( "group" ) ){
+
+             Enumeration e = _userDb.getElementsOf(user) ;
+
+             if( e.hasMoreElements() )
+               throw new
+               DatabaseException( "Not Empty : "+user ) ;
+             e = _userDb.getParentsOf(user) ;
+             if( e.hasMoreElements() )
+               throw new
+               DatabaseException( "Still in groups : "+user ) ;
+             _userMetaDb.removePrincipal( user ) ;
+             _userDb.removeContainer( user ) ;
+             _aclDb.removeAclItem( "user."+user+".access" ) ;
+
+          }else{
+             throw new
+               DatabaseException( "Invalid principal type : "+type ) ;
+          }
+       }catch(Exception ie ){
+          ie.printStackTrace() ;
+          throw ie ;
        }
        return "" ;
     }
@@ -110,22 +134,30 @@ public class UserAdminCommands implements  Interpretable {
        return "" ;
     }
     public String hh_show_group = "<group>" ;
-    public String ac_show_group_$_1( Args args )throws Exception {
+    public Object ac_show_group_$_1( Args args )throws Exception {
         Enumeration  e  = _userDb.getElementsOf(args.argv(0)) ;
+        return args.getOpt("binary") == null ?
+               (Object) sendAscii( e ) : sendBinary( e ) ;
+    }
+    public String hh_show_groups = "" ;
+    public Object ac_show_groups( Args args )throws Exception {
+        Enumeration  e  = _userDb.getContainers() ;
+        return args.getOpt("binary") == null ?
+               (Object) sendAscii( e ) : sendBinary( e ) ;
+    }
+    private String sendAscii( Enumeration e ){
         StringBuffer sb = new StringBuffer() ;
         while( e.hasMoreElements() ){
            sb.append( e.nextElement().toString() ).append("\n") ;
         }
         return sb.toString() ;
     }
-    public String hh_show_groups = "" ;
-    public String ac_show_groups( Args args )throws Exception {
-        Enumeration  e  = _userDb.getContainers() ;
-        StringBuffer sb = new StringBuffer() ;
+    private Object sendBinary( Enumeration e ){
+        Vector v = new Vector() ;
         while( e.hasMoreElements() ){
-           sb.append( e.nextElement().toString() ).append("\n") ;
+           v.addElement( e.nextElement().toString() ) ;
         }
-        return sb.toString() ;
+        return v ;
     }
     public String hh_add_access = "[-allowed|-denied] <acl> <principal>" ;
     public String ac_add_access_$_2( Args args )throws Exception {
@@ -192,15 +224,24 @@ public class UserAdminCommands implements  Interpretable {
         return  ( ok ? "Allowed" : "Denied" ) + "\n" ;
     }
     public String hh_show_principal = "<principalName>" ;
-    public String ac_show_principal_$_1( Args args )throws Exception {
+    public Object ac_show_principal_$_1( Args args )throws Exception {
         UserMetaDictionary dict = _userMetaDb.getDictionary(args.argv(0)) ;
         Enumeration e = dict.keys() ;
-        StringBuffer sb = new StringBuffer() ;
-        while( e.hasMoreElements() ){
-            String user = (String)e.nextElement() ;
-            sb.append( user+" -> "+dict.valueOf(user) ).append("\n") ;
+        if( args.getOpt( "binary" ) == null ){
+           StringBuffer sb = new StringBuffer() ;
+           while( e.hasMoreElements() ){
+               String user = (String)e.nextElement() ;
+               sb.append( user+" -> "+dict.valueOf(user) ).append("\n") ;
+           }
+           return sb.toString() ;
+        }else{
+           Hashtable hash = new Hashtable() ;
+           while( e.hasMoreElements() ){
+               String user = (String)e.nextElement() ;
+               hash.put( user , dict.valueOf(user) ) ;
+           }
+           return hash ;
         }
-        return sb.toString() ;
     }
     public String hh_set_principal = "<principalName> <key>=<value> [...]" ;
     public String ac_set_principal_$_1_99( Args args )throws Exception {
