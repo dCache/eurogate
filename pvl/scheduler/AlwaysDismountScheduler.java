@@ -15,6 +15,11 @@ public class AlwaysDismountScheduler extends PvlScheduler {
        _pvlDb = pvlDb ;
        say( "AlwaysDismountScheduler ready" ) ;
    }
+   public AlwaysDismountScheduler( PvlDb pvlDb , Dictionary hash ){
+       super( pvlDb , hash ) ;
+       _pvlDb = pvlDb ;
+       say( "AlwaysDismountScheduler ready" ) ;
+   }
    public PvlResourceModifier 
       dismountAction( PvlResourceRequestQueue requestQueue ,
                       PvlResourceModifier  modifier  )
