@@ -4,5 +4,6 @@ java -nojit dmg.cells.applets.login.SshLoginMain \
             Drive:eurogate.spy.DriveDisplayPanel \
             Acl:eurogate.spy.AclManagerPanel \
             Principals:eurogate.spy.PrincipalManagerPanel \
-            fun:eurogate.spy.DrawingPanel &
+            fun:eurogate.spy.DrawingPanel \
+            Pigs:eurogate.spy.DrawingFrame &
  
