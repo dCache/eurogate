@@ -57,6 +57,7 @@ public class       AclCell
          
           UserAdminCommands uac = new UserAdminCommands( _userDb , _aclDb , _userMetaDb ) ;
           addCommandListener( uac ) ;
+          setCommandExceptionEnabled( true ) ;
           //
           // read the password file information
           //

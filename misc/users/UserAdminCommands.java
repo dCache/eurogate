@@ -164,7 +164,7 @@ public class UserAdminCommands implements  Interpretable {
         return "" ;
     }
     public String hh_show_acl = "<aclName> [-resolve]" ;
-    public String ac_show_acl_$_1( Args args )throws Exception {
+    public Object ac_show_acl_$_1( Args args )throws Exception {
         checkDatabase() ;
         boolean resolve = args.getOpt("resolve") != null ;
         AcDictionary dict = _aclDb.getPermissions(args.argv(0),resolve);
@@ -173,11 +173,16 @@ public class UserAdminCommands implements  Interpretable {
         StringBuffer sb = new StringBuffer() ;
         if( inherits == null )sb.append( "<resolved>\n") ;
         else sb.append("<inherits="+inherits+">\n") ;
+        Hashtable hash = new Hashtable() ;
         while( e.hasMoreElements() ){
             String user = (String)e.nextElement() ;
-            sb.append( user+" -> "+dict.getPermission(user)+"\n" ) ;
+            boolean perm = dict.getPermission(user) ;
+            sb.append( user+" -> "+perm+"\n" ) ;
+            hash.put( user , new Boolean( perm ) ) ;
         }
-        return sb.toString() ;
+        return args.getOpt("binary") == null ? 
+               (Object)sb.toString() :
+               (Object)hash ;
     }
     public String hh_check = "<acl> <user>" ;
     public Object ac_check_$_2( Args args )throws Exception {
