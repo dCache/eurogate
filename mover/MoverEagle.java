@@ -10,8 +10,10 @@ import java.io.* ;
 import java.net.* ;
 import java.util.* ;
 
-public class MoverEagle extends CellAdapter
-  implements Runnable, dmg.util.Logable {
+public class MoverEagle 
+       extends CellAdapter
+       implements Runnable, 
+                  Logable {
   
   private CellNucleus _nucleus ;
   private String      _pvlPath ;
@@ -47,7 +49,7 @@ public class MoverEagle extends CellAdapter
   // Logable interface implementations
   public void log(String s) {
     pin(s);
-    say(s);
+    super.say(s);
   }
   public void elog(String s) { log(s); }
   public void plog(String s) { log(s); }
@@ -89,7 +91,7 @@ public class MoverEagle extends CellAdapter
       _weAreBusy   = false ;
       export();
       start() ;
-      pin( "Started " + __version) ;
+      say( "Started " + __version) ;
    }
    public void cleanUp(){
       unregister() ;
@@ -98,7 +100,7 @@ public class MoverEagle extends CellAdapter
       if( _spray == null )return ;
       _spray.setInfo( _info = new StateInfo( getCellName() , false ) ) ;
       _weAreOnline = false ;
-      pin( "Forced Unregistering" ) ;
+      say( "Forced Unregistering" ) ;
    }
    public void getInfo( PrintWriter pw ){
       super.getInfo( pw ) ;
@@ -445,7 +447,7 @@ public class MoverEagle extends CellAdapter
     try {   // here comes the BIG... try
     
       if ( _delay > 0 ) {
-	pin( "Warning : delaying by "+_delay+" seconds" ) ;
+	say( "Warning : delaying by "+_delay+" seconds" ) ;
 	try { Thread.currentThread().sleep(_delay*1000) ;}
 	catch (InterruptedException ie ) {}
 	say( "Woken up" ) ;
@@ -470,17 +472,25 @@ public class MoverEagle extends CellAdapter
 
       say( "Trying to connect to "+host+":"+port+")" ) ;
       moverSocket  = new Socket( host , port ) ;
-      pin( "Connected ... waiting for "+_fileSize+" bytes" ) ;
+      say( "Connected ... waiting for "+_fileSize+" bytes" ) ;
       inputStream   = new DataInputStream(  moverSocket.getInputStream() ) ;
       controlStream = new DataOutputStream( moverSocket.getOutputStream() ) ;
       controlStream.writeUTF( "Hello-EuroStore-Client " + clientId ) ;
 
-      pin( "Starting data tranfer" ) ;
+      say( "Starting data tranfer" ) ;
 
       if (!_disk) {
 	to.OpenReady(100);  // open tape device - native code
 	to.Display("Locate", cart);
-	to.PositionEOR(eorPos);
+	
+        try{
+	    to.PositionEOR(eorPos);
+         }catch( DevIOException devIoE ){
+            say( "PositioningEOR : ("+devIoE.getMessage()+") rewind/retry" ) ;
+            to.Rewind() ;
+            to.PositionEOR(eorPos) ;
+         }
+
 	filePos = to.GetPosition();
       } else {
 	filePos = "1:0";
@@ -643,7 +653,7 @@ public class MoverEagle extends CellAdapter
 	 returnFinal( 11 , error );
        }
        _lastException = dioe ;
-       pin( "<<< "+error ) ;
+       say( "<<< "+error ) ;
        if (_disk)f.delete();
        return;
 
@@ -731,7 +741,7 @@ public class MoverEagle extends CellAdapter
     _fileSize        = _activeRequest.getFileSize();
     
     
-    pin(">>> GET "+_activeRequest) ;
+    say(">>> GET "+_activeRequest) ;
 
     try {
       if (_disk) {
@@ -781,7 +791,13 @@ public class MoverEagle extends CellAdapter
       if (!_disk) {
 	 ti.OpenReady(200);
 	 ti.Display("Locate", cart);
-	 ti.Position(filePos);
+         try{
+	    ti.Position(filePos);
+         }catch( DevIOException devIoE ){
+            say( "Positioning : ("+devIoE.getMessage()+") rewind/retry" ) ;
+            ti.Rewind() ;
+            ti.Position(filePos) ;
+         }
       }
       
       _rest = _fileSize ;
