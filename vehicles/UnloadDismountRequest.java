@@ -1,6 +1,6 @@
 package  eurogate.vehicles ;
 
-
+import   java.util.* ;
 
 public class      UnloadDismountRequest
        extends    EurogateRequestImpl 
@@ -62,5 +62,8 @@ public class      UnloadDismountRequest
     public void setResidualBytes( long size ){}
     public void setRealBytes( long size ){}
     public void setPosition( String filePosition , String eorPosition ){}
+    public Dictionary getParameterDictionary(){ 
+        return new Hashtable() ;
+    }
 
 } 

@@ -1,7 +1,7 @@
 package eurogate.db.pvl ;
 
 import  dmg.util.cdb.* ;
-
+import  eurogate.misc.parser.* ;
 import java.util.* ;
 import java.io.* ; 
 
@@ -49,9 +49,6 @@ public class      DriveHandle extends CdbFileRecordHandle {
    public void setDeviceName( String name ){
       setAttribute( "device" , name ) ;
    }
-   public void setSelectionString( String selection ){
-      setAttribute( "selection" , selection ) ;
-   }
    public void setOwner( String owner ){
       setAttribute( "owner" , owner ) ;
    }
@@ -66,9 +63,6 @@ public class      DriveHandle extends CdbFileRecordHandle {
    }
    public String getStatus(){
       return (String)getAttribute("status") ;
-   }
-   public String getSelectionString(){
-      return (String)getAttribute("selection") ;
    }
    public String getDeviceName(){
       return (String)getAttribute("device") ;
@@ -124,5 +118,33 @@ public class      DriveHandle extends CdbFileRecordHandle {
       }catch( NumberFormatException ee ){
          return 0 ;
       }
+   }
+   //
+   // the selection stuff is a bit more complicated
+   //
+   private PCode _selectionCode = null ;
+   public void setSelectionString( String selection ) throws Exception {
+      if( ( selection == null ) || selection.equals("") || selection.equals("none") ){
+         setAttribute( "selection" , "1 1 ==" ) ;
+         return ;
+      }
+      PTokenizable pt = new PTokenizer( selection ) ;
+      _selectionCode = PPVM.compile( pt ) ;
+      setAttribute( "selection" , selection ) ;
+   }
+   public String getSelectionString(){
+      return (String)getAttribute("selection") ;
+   }
+   public PCode getSelectionCode() throws Exception {
+      if( _selectionCode != null )return _selectionCode ;
+      
+      String selection = getSelectionString() ;
+      if( ( selection == null )  || 
+            selection.equals("") || 
+            selection.equals("none")   )
+         selection = "1 1 ==" ;
+         
+      PTokenizable pt = new PTokenizer( selection ) ;
+      return _selectionCode = PPVM.compile( pt ) ;
    }
 } 

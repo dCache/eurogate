@@ -1,5 +1,5 @@
 package  eurogate.vehicles ;
-
+import java.util.* ;
 /**
   *   this interface does no longer make any sense
   *   and should be removed as soon as possibe.
@@ -22,6 +22,7 @@ public interface PvlRequest extends EurogateRequest {
     public void   setPvr( String pvr ) ;
     public void   setCartridge( String cartridge ) ;
     public void   setDrive( String drive ) ;
+    public Dictionary getParameterDictionary() ;
     
 }
  

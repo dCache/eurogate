@@ -3,6 +3,8 @@ package eurogate.pvl.scheduler ;
 
 import eurogate.db.pvl.* ;
 import eurogate.pvl.* ;
+import eurogate.misc.parser.* ;
+
 import dmg.util.cdb.* ;
 import dmg.util.*;
 import java.util.* ;
@@ -22,6 +24,7 @@ public class PvlScheduler implements PvlResourceScheduler {
        public String  name ;
        public String  pvrName ;
        public long    time = 0 ;
+       public PCode   code = null ;
        DriveInfo( String name , String cartridge ,
                   boolean allocated , boolean usable,
                   String  pvrName  ) {
@@ -33,6 +36,7 @@ public class PvlScheduler implements PvlResourceScheduler {
          this.pvrName   = pvrName ;                 
        }
        public void setTime( long time ){ this.time = time ; }
+       public void setSelectionCode( PCode code ){ this.code = code ; }
        public String toString(){
           return "Drive="+name+
                  ";cart="+cartridge+
@@ -237,6 +241,7 @@ public class PvlScheduler implements PvlResourceScheduler {
      boolean   usable     = false ;
      boolean   allocated  = false ;
      long      time       = 0 ;
+     PCode     code       = null ;
      for( int i= 0 ; i < pvrNames.length ; i++ ){
         pvrInfo = new PvrInfo( pvrNames[i] ) ;
         try{
@@ -255,6 +260,7 @@ public class PvlScheduler implements PvlResourceScheduler {
                        drive.getStatus().equals( "enabled" )  ;
                     allocated = ! drive.getOwner().equals("-") ; 
                     time      = drive.getTime() ;
+                    code      = drive.getSelectionCode() ;
                  drive.close( CdbLockable.COMMIT ) ;  
                  driveInfo = new DriveInfo( 
                                    driveNames[j] , 
@@ -263,6 +269,7 @@ public class PvlScheduler implements PvlResourceScheduler {
                                    usable ,
                                    pvrNames[i] )  ;
                  driveInfo.setTime(time) ;
+                 driveInfo.setSelectionCode(code);
                  pvrInfo.addDriveInfo( driveInfo ) ;
               }catch( Exception eeee ){
                  say( "Problem in 'getPvrSet' (drives) : "+eeee ) ;

@@ -1,7 +1,10 @@
 package eurogate.vehicles ;
 
 import eurogate.misc.* ;
+import eurogate.misc.parser.* ;
+
 import java.io.* ;
+import java.util.* ;
 
 public class      RequestImpl 
        extends    EurogateRequestImpl
@@ -27,7 +30,7 @@ public class      RequestImpl
     private String _pvrName           = null ;
     private long   _residualBytes     = -1 ;
     private long   _realBytes         = -1 ;
-    
+    private Dictionary _paraHash      = null ;
    public String toString(){
        StringBuffer sb = new StringBuffer() ;
        sb.append(super.toString()) ;
@@ -119,6 +122,9 @@ public class      RequestImpl
     public String getStorageGroup(){ return _storageGroup  ; }
     public String getStore(){ return _store ; }
     public String getParameter(){ return _parameter ; }
+    public Dictionary getParameterDictionary(){ 
+        return _paraHash == null ? new Hashtable() : _paraHash ;
+    }
     public String getVolume(){ return _volume ; }
     public String getVolumeSet(){ return _volumeSet ; }
     public String getCartridge(){ return _cartridge ; }
@@ -127,6 +133,9 @@ public class      RequestImpl
     //
     public void   setParameter( String parameter ){
        _parameter = parameter ;
+       try{
+          _paraHash  = new PTokens( parameter ) ;
+       }catch(Exception ee ){}
     }
     public void   setFileSize( long size ){
        _fileSize = size ;

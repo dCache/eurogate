@@ -74,5 +74,31 @@
      </tr>
      </table>
   </blockquote>
+<h3>Pvl Administration</h3>
+  <blockquote>
+     <table border=1 bgcolor=#bbee33>
+     <tr><th>Command</th><th>Acl</th><th>Comment</th></tr>
+     <tr><td>create pvr &lt;pvrName&gt;</td>
+         <td>pvr.*.create</td>
+         <td bgcolor=red>creates a pvr</td>
+     </tr>
+     <tr><td>create drive -pvr=&lt;pvrName&gt; &lt;driveName&gt;</td>
+         <td>pvr.&lt;pvrName&gt;.modify</td>
+         <td>define a new drive</td>
+     </tr>
+     <tr><td>set drive -pvr=&lt;pvrName&gt; &lt;driveName&gt; ...</td>
+         <td>pvr.&lt;pvrName&gt;.modify</td>
+         <td>define a new drive</td>
+     </tr>
+     <tr><td>create cartridgeDescriptor &lt;name&gt;</td>
+         <td>pvl.*.modify</td>
+         <td>define a new cartridgeDescriptor</td>
+     </tr>
+     <tr><td>create volumeDescriptor &lt;name&gt;</td>
+         <td>pvl.*.modify</td>
+         <td>define a new volumeDescriptor</td>
+     </tr>
+     </table>
+  </blockquote>
 </body>
 </html>

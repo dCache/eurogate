@@ -1,6 +1,6 @@
 package  eurogate.vehicles ;
 
-
+import java.util.* ;
 
 public class      PvrRequestImpl 
        extends    EurogateRequestImpl 
@@ -36,6 +36,7 @@ public class      PvrRequestImpl
     public void   setCartridge( String cartridgeName ){
        _cartridgeName = cartridgeName ;
     }
+    public Dictionary getParameterDictionary(){ return new Hashtable() ; }
     public String toString(){
        return super.toString()+
                ";v="+_cartridgeName+

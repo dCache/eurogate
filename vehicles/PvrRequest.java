@@ -1,6 +1,6 @@
 package  eurogate.vehicles ;
 
-
+import   java.util.* ;
 
 public interface PvrRequest extends EurogateRequest {
 
@@ -11,4 +11,5 @@ public interface PvrRequest extends EurogateRequest {
     public void   setCartridge( String cartridgeName ) ;
     public void   setPvr( String pvr ) ;
     public String getPvr() ;
+    public Dictionary getParameterDictionary() ;
 }

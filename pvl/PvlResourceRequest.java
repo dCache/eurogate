@@ -1,5 +1,7 @@
 package eurogate.pvl ;
 
+import  java.util.* ;
+
 import  eurogate.vehicles.* ;
 
 import  dmg.util.* ;
@@ -28,6 +30,7 @@ public class PvlResourceRequest extends PvlResourceModifier {
     public String getCartridge(){ return _request.getCartridge() ; }
     public String getDrive(){ return _request.getDrive() ; }
     public String getPvr(){ return _request.getPvr() ; }
+    public Dictionary getParameterDictinary(){ return _request.getParameterDictionary() ;}
     
     public void setCartridge( String cartridge ){ 
        _request.setCartridge( cartridge ) ;
