@@ -12,7 +12,6 @@ checkForJava() {
 #  find the javaclasses
 #
    checkJava || return $?
-   
 }
 #
 #############################################################
@@ -64,12 +63,27 @@ checkForSsh() {
    #
    #  the ssh keys
    #
-   if [ \( -z "${keyBase}"              \) -o \
-        \( ! -f "${keyBase}/server_key" \) -o \
-        \( ! -f "${keyBase}/host_key"   \)    ] ; then
-      echo " ! The keyBase is not defined, or keys not yet created " 1>&2
-      echo " ! Please read eurogateSetup.template for the neccessary infos !" 1>&2 
+   if [ -z "${keyBase}"  ]  ; then
+      echo " ! The keyBase is not defined" 1>&2
+      echo " ! Please read eurogateSetup(.template) for the neccessary infos !" 1>&2 
       return 3
+   fi
+   if [ \( ! -f "${keyBase}/server_key" \) -o \
+        \( ! -f "${keyBase}/host_key"   \)    ] ; then
+     echo " * Trying to create new keys (may take awhile)"
+     sshkeygen=`findBinary2 ssh-keygen sshkeygen /usr/bin`   
+     if [ $? -ne 0 ] ; then echo "Couldn't find ssh-keygen" 1>&2 ; return 4 ; fi
+     SSHKEYGEN=${sshkeygen}
+     $SSHKEYGEN -b  768 -f ${keyBase}/server_key -N "" 1>/dev/null
+     if [ $? -ne 0 ] ; then
+        echo "Keygen of server key failed" 1>&2
+        return 4
+     fi
+     $SSHKEYGEN -b 1024 -f ${keyBase}/host_key   -N "" 1>/dev/null
+     if [ $? -ne 0 ] ; then
+        echo "Keygen of host key failed" 1>&2
+        return 4
+     fi
    fi
    return 0
 }
@@ -173,6 +187,96 @@ eurogateDeletePvl() {
 
 ##################################################################
 #
+#       make ready to use package ( simulation mode only )
+#
+makePackage() {
+   # make sure we have a valid classpath were we can extract the
+   # cells.jar from. 
+   # In addition we need the binaries 'ssh' and 'ssh-keygen'
+   # althought checkForSsh will generate a host/server keypair.
+   #
+   echo " * checking for cells.jar and ssh binaries."
+   #
+   #  we stay with the currently chosen classpath
+   #
+   java=`findBinary java /usr/java/bin /usr/lib/java/bin`
+   if [ $? -ne 0 ] ; then echo "Couldn't find java" ; exit 4 ; fi
+   JAVA=${java}
+   checkForSsh  || exit $?
+   echo " * removing unnessary java directories."
+   rm -rf ${thisDir}/../store/bdb \
+          ${thisDir}/../store/objectivity52 \
+          ${thisDir}/../pvl/regexp            >/dev/null 2>&1
+   #
+   # adjust location
+   #
+   cd ${thisDir}/..
+   mkdir eurogate/bin 2>/dev/null
+   #
+   #
+   #  check for newer class files.
+   #
+   unset NEED_TO_COMPILE
+   if [ ! -f bin/eurogate.jar ] ; then
+      NEED_TO_COMPILE=yes
+   else
+      n=`find . -name "*.java" -newer bin/eurogate.jar 2>/dev/null`
+      if [ ! -z "$n" ] ; then
+         NEED_TO_COMPILE=yes
+      fi
+   fi
+   if [ ! -z "$NEED_TO_COMPILE" ] ; then
+      echo " * compiling sources ... (may take awhile)"
+      javadir=`dirname ${JAVA}`
+      if [ "$javadir" = "." ] ; then 
+        JAR=jar 
+        JAVAC=javac
+      else 
+        JAR=$javadir/jar 
+        JAVAC=$javadir/javac
+      fi
+      ${JAVAC} `find . -name "*.java"`
+      if [ $? -ne 0 ] ; then
+         echo " !!!! Compilation failed, can't continue"
+         exit 3
+      fi
+      echo " * creating eurogate.jar"
+
+      cd ..
+      ${JAR} c0f eurogate/bin/eurogate.jar `find . -name "*.class"` 1>/dev/null 2>&1
+   else
+      echo " * eurogate.jar still up to date"
+      cd ..
+   fi
+   #
+   #  find the cells
+   #
+   myCells=`getCellsLocation 2>/dev/null`
+   if [ \( ! -z "$myCells" \) -a \( -f "$myCells" \) ] ; then
+      cp $myCells eurogate/bin
+   else
+      echo " !!! can't find the cells" 1>&2
+      exit 4
+   fi
+   #
+   # find the ssh
+   #
+   sshdir=`dirname ${SSH}` 
+   if [ "$sshdir" = "." ] ; then
+      sshdir=`which ssh`
+      sshdir=`dirname $sshdir`
+   else
+      sshdir=`dirname $SSH`
+   fi
+   cp $sshdir/ssh $sshdir/ssh-keygen eurogate/bin
+   echo " * creating tar file"
+   tar cf eurogate.tar eurogate/jobs eurogate/bin eurogate/docs
+   echo " * Done -> `pwd`/eurogate.tar "
+   exit 0  
+}
+#
+##################################################################
+#
 #       eurogate start
 #
 eurogateStart() {
@@ -206,9 +310,7 @@ eurogateStart() {
    switchSimMode || exit $?
    prepareDbSimMode || exit $?
    #
-   #
-   echo "Trying to start Eurogate"
-   printf "Please wait ... "
+   echo " * Trying to start Eurogate"
    #
    eurogateCheck
    if [ $? -eq 0 ] ; then
@@ -217,6 +319,8 @@ eurogateStart() {
    fi
    #
    #
+   #
+   printf " * Please wait ... "
    #
    if [ "${master}" = "yes" ] ; then
    
@@ -308,9 +412,8 @@ eurogateSwitch() {
      *start)       eurogateStart $* ;;
      *stop)        eurogateStop  $* ;;
      *login)       eurogateLogin  $* ;;
-     *initPvl)     eurogateInitPvl  $* ;;
-     *deletePvl)   eurogateDeletePvl  $* ;;
-     *execStore)   shift ; eurogateExecStore $* ;;
+     *otto)        getCellsLocation $* ;;
+     *mkpack)      makePackage $* ;;
      *)            eurogateHelp $* ;;
    esac
    return $?

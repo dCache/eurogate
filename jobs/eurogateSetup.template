@@ -19,7 +19,7 @@
 #  has to be specified with the 'java' variable. 
 #  If not defined we try to find it ourselfs.
 #
-#    java=/usr/java/bin/java
+#java=/usr/java/bin/java
 #
 # SSH
 #
@@ -30,44 +30,19 @@
 #  illegal. ). If you need to take your own ssh 
 #  redefine the 'ssh' variable accordingly.
 #  To make use of the ssh protocol, the server key
-#  and the hostKey must be created first. 
+#  and the hostKey are created the first time eurostore
+#  is started. 
 #  While we are running a test environment 
-#  we are not using the original ssh_host_key
+#  we are not using the original /etc/ssh_host_key
 #  to avoid security leaks. So the hostkey and
 #  the server key are created somewhere and the
 #  variable 'keyBase' has to be set to this
 #  directory. This procedure simply satisfies the
 #  the protocol and has nothing to do with 
-#  security. The following commands will do :
-#
-#       cd <eurogateBaseDir>/jobs
-#       ../bin/ssh-keygen -b  768 -f ./server_key -N ""
-#       ../bin/ssh-keygen -b 1024 -f ./host_key   -N ""
+#  security. 
 #
 #ssh=${thisDir}/../bin/ssh
 keyBase=${thisDir}
-#
-#   - The log directory
-#   -----------------
-#
-#  Whatever we have to say will end up here.
-#  If not defined or if it doesn't exist,
-#  everything will go to /dev/null.
-#
-logdir=/tmp
-#
-#    - The java classes
-#    -----------------
-#
-#  This eurogate implementation needs the cells.jar and
-#  the eurogate.jar file to run. They are searched for
-#  in the 'jardir'. Alternatively the eurogate classes
-#  may also be looked for in eurogateClasses. If the latter
-#  directory exist, these classes precede the ${jardir}/eurogate.jar
-#  file.
-#  
-jardir=${thisDir}/../bin
-eurogateClasses=${thisDir}/../..
 #
 #    - The database paths
 #    -----------------
@@ -94,6 +69,28 @@ eurogateClasses=${thisDir}/../..
 #     jobs/eurogate start
 #
 databaseRoot=/home/patrick/eurogateDb
+#
+#   - The log directory
+#   -----------------
+#
+#  Whatever we have to say will end up here.
+#  If not defined or if it doesn't exist,
+#  everything will go to /dev/null.
+#
+logdir=/tmp
+#
+#    - The java classes
+#    -----------------
+#
+#  This eurogate implementation needs the cells.jar and
+#  the eurogate.jar file to run. They are searched for
+#  in the 'jardir'. Alternatively the eurogate classes
+#  may also be looked for in eurogateClasses. If the latter
+#  directory exist, these classes precede the ${jardir}/eurogate.jar
+#  file.
+#  
+jardir=${thisDir}/../bin
+eurogateClasses=${thisDir}/../..
 #
 #    - The movers
 #    -----------------
@@ -152,5 +149,5 @@ mode=simulation
 pvlDbPort=23124
 sshPort=23125
 clientPort=28000
-telnetPort=23123
+#  telnetPort=23123
 #  spyPort=23222

@@ -39,6 +39,36 @@ findBinary() {
     echo $RES
     return 0
 }
+findBinary2() {
+    xkey=$1
+    z="echo \${$2}"
+    x=`( eval  $z )`
+    if [ \( -z "${x}" \) -o \( "${x}" = "$xkey" \) ] ; then
+#       echo "$1 path not defined, trying to find it." 1>&2
+       RES=`which $1 2>/dev/null`
+       if [ $? -eq 1 ] ; then
+#          echo "$1 not found in PATH, trying ... " 1>&2
+          tmp=$PATH
+          shift
+          while [ $# -gt 0 ] ; do PATH=$PATH:$1 ; shift ; done
+          PATH=$PATH:${thisDir}/../bin
+          RES=`which $xkey 2>/dev/null`
+          if [ $? -eq 1 ] ; then
+             echo "Couldn't find $1 at all" 1>&2
+             return 4
+          fi
+       fi
+    else
+       if [ ! -x ${x} ] ; then
+          echo "The specified java path (${x}) couldn't be found" 2>&1
+          return 4
+       else
+          RES=${x}
+       fi
+    fi
+    echo $RES
+    return 0
+}
 checkVar() {
   while [ $# -ne 0 ] ; do
     z="echo \${$1}"
@@ -72,6 +102,21 @@ checkJava() {
        return 5
    fi
    return 0 ;
+}
+getCellsLocation() {
+
+    
+    echo $CLASSPATH | \
+    awk -F: '{ for( i = 1 ; i <= NF ; i++ )print $i }' |
+    while read p ; do
+       if [ \( -z "$p" \) -o \( ! -f "$p" \) ] ; then continue ; fi
+       n=`basename $p`
+       if [ "$n" = "cells.jar" ] ; then
+          echo $p
+          return 0
+       fi
+    done
+    return 1
 }
 javaClasspath() {
    $JAVA -version 1>/dev/null 2>/dev/null
