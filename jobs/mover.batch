@@ -1,0 +1,13 @@
+#
+set printout default     3
+set printout RoutingMgr  none
+set printout CellGlue    none
+#
+set env  device      /eagle/d0${moverVersion}
+set env  moverName   drive${moverVersion}
+#
+create eurogate.mover.MoverEagle   drive${moverVersion}    "pvl ${device}"
+set printout ${moverName} all
+#
+
+ 

@@ -1,0 +1,93 @@
+#
+#  specify the printout levels 
+#
+set printout default     3 
+set printout CellGlue    none 
+set printout RoutingMgr  none
+#
+set context databaseRoot          ${database}
+#  
+set context databaseName          ${databaseRoot}/pvl
+set context storeDatabase         ${databaseRoot}/store
+set context clientListenPort      ${doorPort} 
+set context dbListenPort          ${databasePort}
+set context pvrListenPort         ${pvrProxyPort}
+set context scheduler             eurogate.pvl.scheduler.AlwaysDismountScheduler
+set context dumpDirectory         /export/opt/Eurogate/logs
+set context htmlRoot              /export/home/patrick/v3
+set context sshPort               22333
+set context userBase              ${database}/users
+# 
+#            The Door 
+#
+create dmg.cells.services.login.LoginManager EuroGate \
+             "${clientListenPort} eurogate.gate.EuroGate -prot=raw"
+#
+#            The Store ( Big Bubble ) 
+#
+create eurogate.store.StarGateVX MAIN-store  \
+              "eurogate.store.EuroStoreV1 pvl ${storeDatabase}"
+#
+#            The Database Manager
+#
+create eurogate.db.pvl.PvlDbManager PvlManager
+#
+#            The Database login shell ( add volume .... ) 
+
+create dmg.cells.services.login.LoginManager dbLogin \
+             "${dbListenPort} \
+             eurogate.db.pvl.PvlDbLoginCell \
+             -prot=telnet"
+#        
+#           The PVL
+#
+#create eurogate.pvl.PvlCoreV1  pvl
+create eurogate.pvl.PvlCoreV2  pvl eurogate.pvl.scheduler.BasicScheduler
+#
+#
+create eurogate.pvr.PvrLoginManager pvrInetd "${pvrListenPort} eurogate.pvr.PvrLoginCell"
+#
+#
+define context HttpServerSetup endDefine
+set alias system   class     dmg.cells.services.HttpSystemService
+set alias eurogate class     eurogate.misc.HttpEurogateService
+set alias <home>   context   home
+set alias images   directory ${eurogate}/docs/images
+set alias help     directory ${eurogate}/docs/html
+set alias applets     directory ${htmlRoot}/eurogate/jobs
+set alias cellclasses directory ${htmlRoot}
+set alias ingo        directory /export/home/ingoa/www
+endDefine
+#
+copy file:${eurogate}/docs/html/home.html   context:home
+copy file:${eurogate}/jobs/${dbInit}        context:initDatabase
+#
+create dmg.cells.services.HttpServiceCell HttpServer  22080
+#
+###############################################################
+# 
+#    the ssh login and the user manager part
+#
+#///////////////////////////////////////////////////
+#
+set context keyBase   /usr/home/patrick/cvs-eurogate/eurogate/jobs
+#
+#   path definitions
+#
+#
+set context serverKeyFile     ${keyBase}/server_key
+set context hostKeyFile       ${keyBase}/host_key
+set env     securityCell      acm
+set context userPasswordFile  cell:${securityCell}
+#
+create dmg.cells.services.login.UserMgrCell ${securityCell} ${userBase}
+#
+create dmg.cells.services.login.SshKeyManager    skm
+#
+#
+create dmg.cells.services.login.LoginManager slm \
+      "${sshPort}  \
+       dmg.cells.services.login.StreamObjectCell \
+       -prot=ssh -auth=dmg.cells.services.login.SshSAuth_A \
+       eurogate.spy.EGAdmin"
+

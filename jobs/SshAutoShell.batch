@@ -1,0 +1,34 @@
+#
+#  specify the printout levels 
+#
+set printout default     3 
+set printout CellGlue    none 
+set printout RoutingMgr  none
+#
+###############################################################
+# 
+#    the ssh login and the user manager part
+#
+#///////////////////////////////////////////////////
+#
+set context sshPort           22222
+set context keyBase           /usr/home/patrick/cvs-eurogate/eurogate/jobs
+#
+#   path definitions
+#
+#
+set context serverKeyFile     ${keyBase}/server_key
+set context hostKeyFile       ${keyBase}/host_key
+set env     securityCell      acm
+set context userPasswordFile  cell:${securityCell}
+#
+create eurogate.misc.users.UserSecurityCell ${securityCell} ${userBase}
+#
+create dmg.cells.services.login.SshKeyManager    skm
+#
+create dmg.cells.services.login.LoginManager slm \
+      "${sshPort}  \
+       dmg.cells.services.login.StreamObjectCell \
+       -prot=ssh -auth=dmg.cells.services.login.SshSAuth_A \
+       eurogate.misc.users.EurogateShell"
+
