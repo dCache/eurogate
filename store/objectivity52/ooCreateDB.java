@@ -58,8 +58,8 @@ public class ooCreateDB {
     
     try {
       _treeBFDB = _fd.newDB("BfidDB");
-      _miscDB = _fd.newDB("MiscDB");
-      _hashVDB = _fd.newDB("VolDB");
+      _miscDB   = _fd.newDB("MiscDB");
+      _hashVDB  = _fd.newDB("VolDB");
       _hashSGDB = _fd.newDB("SGroupDB");
     } catch (ObjyRuntimeException e) {
       e.reportErrors();
@@ -78,24 +78,28 @@ public class ooCreateDB {
     
     try {
       _compBFCont = new ooContObj();
-      _miscDB.addContainer(_compBFCont, null, 0, 10, 10);
+      _miscDB.addContainer(_compBFCont, "BFCont", 1, 1, 1);
       //_compBFCont.cluster(_ooBFComp);
-      _miscDB.nameObj(_ooBFComp, "ooBFCompare");
+      _compBFCont.nameObj(_ooBFComp, "ooBFCompare");
       
       _compVCont = new ooContObj();
-      _miscDB.addContainer(_compVCont, null, 0, 10, 10);
+      _miscDB.addContainer(_compVCont, "VCont", 1, 1, 1);
       //_compVCont.cluster(_ooVComp);
-      _miscDB.nameObj(_ooVComp, "ooVCompare");
+      _compVCont.nameObj(_ooVComp, "ooVCompare");
       
       _compSGCont = new ooContObj();
-      _miscDB.addContainer(_compSGCont, null, 0, 10, 10);
+      _miscDB.addContainer(_compSGCont, "SGCont", 1, 1, 1);
       //_compSGCont.cluster(_compSGCont);
-      _miscDB.nameObj(_ooSGComp, "ooSGCompare");
+      _compSGCont.nameObj(_ooSGComp, "ooSGCompare");
     } catch (ObjyRuntimeException e) {
       e.reportErrors();
       _session.abort();
       return;
-    }
+    } /*catch (ObjectNameNotUniqueException nu) {
+      nu.reportErrors();
+      _session.abort();
+      return;
+    }*/
     _session.commit();
     say("container for comparators created");
 
@@ -113,7 +117,11 @@ public class ooCreateDB {
       e.reportErrors();
       _session.abort();
       return;
-    }
+    } /*catch (ObjectNameNotUniqueException nu) {
+      nu.reportErrors();
+      _session.abort();
+      return;
+    }*/
     _session.commit();
     say("volume and storage group Hash-Sets created");
     
@@ -134,7 +142,11 @@ public class ooCreateDB {
       e.reportErrors();
       _session.abort();
       return;
-    }
+    } /*catch (ObjectNameNotUniqueException nu) {
+      nu.reportErrors();
+      _session.abort();
+      return;
+    }*/
     _session.commit();
     say("bitfile Tree-Set created");
     say("all done");

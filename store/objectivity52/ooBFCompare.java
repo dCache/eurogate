@@ -16,14 +16,20 @@ public class ooBFCompare extends ooCompare {
   
   public int compare(Object obj1, Object obj2) {
     // String bf1 = ((ooBfid) obj1)._bfid;
-    String bf2 = null;
+    ooBfid bf1 = (ooBfid) obj1;
+    String bfid;
+    bf1.fetch();
     
+    //System.err.println("obj1: " + obj1 + " obj2: " + obj2);
     if (obj2 instanceof ooBfid) {
-      bf2 = ((ooBfid) obj2)._bfid;
+      ooBfid bf2 = (ooBfid) obj2;
+      bf2.fetch();
+      bfid = bf2._bfid;
     } else {  // must be the bfid directly as String
-      bf2 = (String) obj2;
+      bfid = (String) obj2;
     }
-    return(((ooBfid) obj1)._bfid.compareTo(bf2));
+//System.err.println("obj1: " + obj1 + " obj1._bfid: " + ((ooBfid) obj1)._bfid);
+    return(bf1._bfid.compareTo(bfid));
   }
   
   public int hash(Object key) {

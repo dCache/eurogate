@@ -16,15 +16,18 @@ public class ooSGCompare extends ooCompare {
   public ooSGCompare() { }
   
   public int compare(Object obj1, Object obj2) {
-    // String bf1 = ((ooBfid) obj1)._bfid;
     String s = null;
+    ooSGroup sg1 = (ooSGroup) obj1;
+    sg1.fetch();
     
     if (obj2 instanceof ooSGroup) {
-      s = ((ooSGroup) obj2)._sgName;
+      ooSGroup sg2 = (ooSGroup) obj2;
+      sg2.fetch();
+      s = sg2._sgName;
     } else {  // must be the bfid directly as String
       s = (String) obj2;
     }
-    return(((ooSGroup) obj1)._sgName.compareTo(s));
+    return(sg1._sgName.compareTo(s));
   }
   
   public int hash(Object key) {

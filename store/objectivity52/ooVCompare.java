@@ -17,14 +17,18 @@ public class ooVCompare extends ooCompare {
   
   public int compare(Object obj1, Object obj2) {
     // String bf1 = ((ooBfid) obj1)._bfid;
-    String v2 = null;
+    String s = null;
+    ooVolume v1 = (ooVolume) obj1;
+    v1.fetch();
     
     if (obj2 instanceof ooVolume) {
-      v2 = ((ooVolume) obj2)._volName;
+      ooVolume v2 = (ooVolume) obj2;
+      v2.fetch();
+      s = v2._volName;
     } else {  // must be the bfid directly as String
-      v2 = (String) obj2;
+      s = (String) obj2;
     }
-    return(((ooVolume) obj1)._volName.compareTo(v2));
+    return(v1._volName.compareTo(s));
   }
   
   public int hash(Object key) {

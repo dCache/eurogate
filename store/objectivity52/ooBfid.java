@@ -20,7 +20,7 @@ public class ooBfid extends ooObj {
   public long _size = 0;
   public String _location = null;
   public String _storingDevice = null;
-  public String _state = "Undefined";
+  public String _state = null;
   // _state could be
   //     "Undefined"
   //     "Transient"
@@ -52,9 +52,42 @@ public class ooBfid extends ooObj {
       false,
       Relationship.INLINE_LONG);
   }
+  
+  public void attachVolume(ooVolume v) {
+    _volume.form(v);
+  }
+  
+  public ooVolume getVolume() {
+    return((ooVolume) _volume.get());
+  }
 
-  public ooBfid() { }
+  public void attachSGroup(ooSGroup sg) {
+    _storagegroup.form(sg);
+  }
+  
+  public ooSGroup getSGroup() {
+    return((ooSGroup) _storagegroup.get());
+  }
+
+  public ooBfid() { _state = "Undefined"; }
   public ooBfid(String bfid) {
     _bfid = bfid;
+    _state = "Undefined";
+  }
+  
+  public void setStateTransient() {
+    _state = "Transient";
+  }
+  
+  public void setStatePermanent() {
+    _state = "Permanent";
+  }
+  
+  public boolean isStateTransient() {
+    return(_state.compareTo("Transient") == 0);
+  }
+  
+  public boolean isStatePermanent() {
+    return(_state.compareTo("Permanent") == 0);
   }
 }

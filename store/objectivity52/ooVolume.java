@@ -28,7 +28,15 @@ public class ooVolume extends ooObj {
       Relationship.VERSION_MOVE,
       false,
       false,
-      Relationship.INLINE_NONE);
+      Relationship.INLINE_LONG);
+  }
+  
+  public void attachBitfile(ooBfid bf) {
+    _bitfiles.add(bf);
+  }
+  
+  public com.objy.db.app.Iterator getBitfiles() {
+    return(_bitfiles.scan());
   }
   
   public ooVolume() { }
