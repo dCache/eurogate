@@ -99,6 +99,17 @@ public class      RequestImpl
         _bfid          = bfid ;
         
     }
+    public RequestImpl(    String type ,
+                           String store ,
+                           String bfid ,
+                           String clientReqId     ){
+                           
+        super( type , "i/o" ) ;                  
+        _store         = store ;
+        _bfid          = bfid ;
+        _clientReqId   = clientReqId ;
+        
+    }
     public String getHostName(){ return _hostName ; }
     public int    getHostPort(){ return _hostPort ; }
     public long   getFileSize(){ return _fileSize ; }
