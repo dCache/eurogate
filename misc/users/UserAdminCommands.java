@@ -38,7 +38,7 @@ public class UserAdminCommands implements  Interpretable {
        }catch(Exception ee ){}
        if( ! _aclDb.check(acl,user,_userDb) )
           throw new 
-          Exception( "Acl >"+acl+"< negative for "+user ) ;       
+          AclPermissionException( "Acl >"+acl+"< negative for "+user ) ;       
     }
     public String hh_create_user = "<userName>" ;
     public String ac_create_user_$_1( Args args )throws Exception {
