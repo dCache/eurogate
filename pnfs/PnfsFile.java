@@ -147,16 +147,17 @@ public class PnfsFile extends File  {
       File f = new File( this , ".(tags)(x)" ) ;
       if( ! f.exists() )return null ;
       Vector v = new Vector() ;
+      String line = null ;
+      BufferedReader r = null ;
       try{
-         String line = null ;
-         BufferedReader r = new BufferedReader(
-                               new FileReader( f ) ) ;
+         r = new BufferedReader( new FileReader( f ) ) ;
          while( ( line = r.readLine() ) != null ){
             v.addElement( line ) ;
          }
-         r.close() ;
       }catch( IOException ee ){
          return null ;
+      }finally{
+         try{ r.close() ; }catch(Exception e){}
       }
       String [] a = new String[v.size()] ;
       String tagName = null ;
@@ -179,24 +180,29 @@ public class PnfsFile extends File  {
       return str.substring( 7 , str.length()-1 ) ;
    }
    public String [] getTag( String tagName ){
+   
       if( ( ! isDirectory() ) || ( ! isPnfs() ) )return null ;
+      
       File f = new File( this , ".(tag)("+tagName+")" ) ;
+      
       if( ! f.exists() )return null ;
+      
+      BufferedReader r    = null ;
+      Vector         v    = new Vector() ;
+      String         line = null ;
       try{
-         Vector v = new Vector() ;
-         String line = null ;
-         BufferedReader r = new BufferedReader(
-                               new FileReader( f ) ) ;
+         r = new BufferedReader( new FileReader( f ) ) ;
          while( ( line = r.readLine() ) != null ){
             v.addElement( line ) ;
          }
-         r.close() ;
-         String [] a = new String[v.size()] ;
-         v.copyInto( a ) ;
-         return a ;
       }catch( IOException ee ){
          return null ;
+      }finally{
+         try{ r.close() ; }catch(Exception ie){}
       }
+      String [] a = new String[v.size()] ;
+      v.copyInto( a ) ;
+      return a ;
    }
    /*
    public String getAbsolutePath(){
