@@ -90,6 +90,8 @@ public class      PvrLoginManager
        
   
   }
+  public void say( String str ){ pin( str ) ; super.say( str ) ; }
+  public void esay( String str ){ pin( str ) ; super.esay( str ) ; }
   private void acceptConnections(){
          //
          //
