@@ -180,9 +180,10 @@ public class UserAdminCommands implements  Interpretable {
         return sb.toString() ;
     }
     public String hh_check = "<acl> <user>" ;
-    public String ac_check_$_2( Args args )throws Exception {
+    public Object ac_check_$_2( Args args )throws Exception {
         checkDatabase() ;
         boolean ok = _aclDb.check(args.argv(0),args.argv(1),_userDb);
+        if( args.getOpt("binary") != null )return new Boolean(ok) ;
         return  ( ok ? "Allowed" : "Denied" ) + "\n" ;
     }
     public String hh_show_principal = "<principalName>" ;
