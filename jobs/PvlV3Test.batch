@@ -1,0 +1,56 @@
+set printout default all
+
+set context dbRoot /export/home/patrick/v3/DB_V2
+set context databaseName ${dbRoot}/pvl
+
+define context initDatabase endDefine
+   create pvr stk
+   create volumeDescriptor  vd-9840    -size=20000000000
+   create cartridgeDescriptor cd-9840  -type=9840
+   create cartridge R01261-R01270      -cd=cd-9840  -pvr=stk
+   create volume V001 -cart=R01261 -pvr=stk  -vd=vd-9840
+   create volume V002 -cart=R01262 -pvr=stk  -vd=vd-9840
+   create volume V003 -cart=R01263 -pvr=stk  -vd=vd-9840
+   create volume V004 -cart=R01264 -pvr=stk  -vd=vd-9840
+   create volume V005 -cart=R01265 -pvr=stk  -vd=vd-9840
+   create volume V006 -cart=R01266 -pvr=stk  -vd=vd-9840
+   create volume V007 -cart=R01267 -pvr=stk  -vd=vd-9840
+   create volume V008 -cart=R01268 -pvr=stk  -vd=vd-9840
+   create volume V009 -cart=R01269 -pvr=stk  -vd=vd-9840
+   create volume V010 -cart=R01270 -pvr=stk  -vd=vd-9840
+   create volumeSet  raw
+   create volumeSet  dst
+   add volume V001 -vs=raw
+   add volume V002 -vs=raw
+   add volume V003 -vs=raw
+   add volume V004 -vs=raw
+   add volume V005 -vs=raw
+   add volume V006 -vs=raw
+   add volume V007 -vs=raw
+   add volume V008 -vs=raw
+   add volume V009 -vs=raw
+   add volume V010 -vs=raw
+   create drive drive0 -pvr=stk  -dev=/eagle/d00 -spec=0:3:9:3
+   create drive drive1 -pvr=stk  -dev=/eagle/d01 -spec=0:3:9:4
+   set drive drive0 -pvr=stk  -status=enabled
+   set drive drive1 -pvr=stk  -status=enabled
+endDefine
+
+create dmg.cells.services.login.LoginManager xlm \
+    "22220 dmg.cells.applets.alias.AliasLoginCell  -prot=raw"
+    
+create eurogate.store.StarGateV1 MAIN-store "${dbRoot}/store pvl"
+
+
+create eurogate.db.pvl.PvlDbManager dbMgr
+
+create dmg.cells.services.login.LoginManager pvlL \
+    "22124  eurogate.db.pvl.PvlDbLoginCell \
+     -prot=telnet -localOk"
+     
+create eurogate.pvl.PvlCoreV2 pvl \
+       "eurogate.pvl.scheduler.BasicScheduler"
+       
+
+create dmg.cells.services.login.LoginManager blm \
+       "22221 dmg.cells.services.ObjectLoginCell -prot=raw"
