@@ -41,6 +41,9 @@ public class      PrincipalManagerPanel
       _createUserPanel = new CreateUserPanel() ;
       _createUserPanel.addActionListener(this) ;
       
+      _groupPanel.addActionListener(this) ;
+      
+      
       Label title = new Label( "Principal Relation Manager" , Label.CENTER ) ;
       title.setFont( _headerFont ) ;
 
@@ -76,29 +79,30 @@ public class      PrincipalManagerPanel
    //
    //              main switch board
    //
+   private void showMaster( Panel panel ){
+      if( panel == _currentPanel )return ;
+      if( _currentPanel != null ){
+         _masterPanel.remove( _currentPanel ) ;
+         _currentPanel = null ;
+      }
+      if( panel == null )return ;
+      _masterPanel.add( _currentPanel = panel , "Center" ) ;
+   }
    public synchronized void  actionPerformed( ActionEvent e ){
       Object source = e.getSource() ;
       String action = e.getActionCommand() ;
       System.out.println( "Action ["+source+"] : "+e ) ;
       if( action.equals("groupOk") ){
-         if( _currentPanel != null ){
-            _masterPanel.remove( _currentPanel ) ;
-            _currentPanel = null ;
-         }
+         _groupPanel.setGroup( _createUserPanel.getPrincipal() ) ;
          _groupPanel.update() ;
-         _groupPanel.setTitle( "Group "+_createUserPanel.getPrincipal() ) ;
-         _masterPanel.add( _currentPanel = _groupPanel , "Center" ) ;
+         showMaster( _groupPanel ) ;
       }else if( action.equals("userOk" ) ){
-         if( _currentPanel != null ){
-            _masterPanel.remove( _currentPanel ) ;
-            _currentPanel = null ;
-         }
-         _masterPanel.add( _currentPanel = _userPanel , "Center" ) ;
+         _userPanel.setUser( _createUserPanel.getPrincipal() ) ;
+         _userPanel.update() ;
+         showMaster( _userPanel ) ;
+         
       }else{        
-         if( _currentPanel != null ){
-            _masterPanel.remove( _currentPanel ) ;
-            _currentPanel = null ;
-         }
+         showMaster(null);
       }
       validate() ;
 //      if( source == _listPanel ){
@@ -185,22 +189,150 @@ public class      PrincipalManagerPanel
    //
    // user admin panel
    //
+   private class      PasswordPanel 
+           extends    EventHelper 
+           implements ActionListener, 
+                      TextListener ,
+                      DomainConnectionListener  {
+        
+        private Button _updateButton          = new Button( "Update" ) ;
+        private TextField _oldPasswordText    = new TextField("");
+        private TextField _newPasswordText    = new TextField("");
+        private TextField _verifyPasswordText = new TextField("") ;
+        private PasswordPanel(){
+           super( new BorderLayout() , 15 , Color.red ) ;
+           GridLayout gl = new GridLayout(0,3);
+           gl.setHgap(15);
+           gl.setVgap(15);
+           setLayout(gl);
+           add( _updateButton ) ;
+           add( new Label( "Old Password" , Label.RIGHT ) ) ;
+           add( _oldPasswordText ) ;
+           add( new Label( "New Password" , Label.RIGHT ) ) ;
+           add( _newPasswordText ) ;
+           add( _verifyPasswordText ) ;
+           
+           _newPasswordText.addTextListener(this);
+           _verifyPasswordText.addTextListener(this);
+        }          
+        public void textValueChanged(TextEvent e){  
+           _updateButton.setEnabled(
+                 ( ! _newPasswordText.getText().equals("") ) &&
+                 (  _newPasswordText.getText().equals(
+                     _verifyPasswordText.getText() ) ) ) ;      
+        }
+        public void actionPerformed( ActionEvent event ) {
+        }
+        public void domainAnswerArrived( Object obj , int id ){
+           if( obj instanceof Throwable){
+              setText(obj) ;
+              return ;
+           }
+        }
+   }
+   /////////////////////////////////////////////////////////
+   //
+   // user admin panel
+   //
    private class      UserPanel 
            extends    EventHelper 
            implements ActionListener, 
                       TextListener ,
                       DomainConnectionListener  {
                       
+      private String _user = "" ;
+      private List   _parentList = new List() ;
+      private Label  _titleLabel = new Label( "User Manager",Label.CENTER) ;
+      private TextField _emailText = new TextField("") ;
+      private TextField _nameText  = new TextField("") ;
+      private PasswordPanel _passwordPanel = new PasswordPanel() ;
       private UserPanel(){
         super( new BorderLayout() , 15 , Color.green ) ;
-      }                
+        
+        BorderLayout bl = new BorderLayout() ;
+        bl.setVgap(10) ;
+        bl.setHgap(10) ;
+        Panel parentPanel = new Panel( bl ) ;
+        Label parentLabel = new Label( "Parents" , Label.CENTER ) ;
+        parentLabel.setFont( _headerFont ) ;
+        parentPanel.add( parentLabel , "North" ) ;
+        parentPanel.add( _parentList , "Center" ) ;
+        _parentList.addActionListener( this ) ;
+        _titleLabel.setFont( _headerFont ) ;        
+        add( _titleLabel , "North" ) ;
+        add( parentPanel , "West" ) ;
+         
+        bl = new BorderLayout() ;
+        bl.setVgap(10) ;
+        bl.setHgap(10) ;
+        Panel attributePanel = new SimpleBorderPanel( bl , 10 , Color.green ) ;
+        attributePanel.add( new Label("User Attributes",Label.CENTER ),"North") ;
+
+        _emailText.addActionListener( this ) ;
+        _nameText.addActionListener( this ) ;
+        RowColumnLayout rcl = new RowColumnLayout(2,RowColumnLayout.LAST) ;
+        rcl.setVgap(10);
+        rcl.setHgap(10);
+        Panel rowPanel = new Panel( rcl ) ;
+        rowPanel.add( new Label("Full Name") ) ;
+        rowPanel.add( _nameText ) ;
+        rowPanel.add( new Label("E-Mail") ) ;
+        rowPanel.add( _emailText ) ;
+        attributePanel.add( rowPanel , "Center" ) ;
+        
+        add( attributePanel , "Center" ) ;
+        
+        attributePanel.add( _passwordPanel , "South" ) ;
+      }
+      private void setUser(String user ){
+         _user = user ; 
+         _titleLabel.setText( "User >>"+_user+"<<") ;
+         _titleLabel.invalidate() ;
+      }
+      private void update(){
+         if( _parentList.getItemCount() > 0 )_parentList.removeAll() ;
+         Enumeration e = _createUserPanel.getGroupParents() ;
+         if( e != null )
+            while( e.hasMoreElements() )
+               _parentList.add(e.nextElement().toString());
+         _emailText.setText("");
+         _nameText.setText("") ;
+         Hashtable attr = _createUserPanel.getPrincipalAttributes() ;
+         
+         String value = (String)attr.get("eMail") ;
+         if( value != null )_emailText.setText(value) ;
+         value = (String)attr.get("fullName") ;
+         if( value != null )_nameText.setText(value) ;
+      }
+                      
       public void textValueChanged(TextEvent e){        
       }
       public void actionPerformed( ActionEvent event ) {
         Object source = event.getSource() ;
+        String command = event.getActionCommand() ;
         setText("");
+        if( source == _parentList ){
+           _createUserPanel.activatePrincipal(command) ;
+           return ;
+        }else if( source == _emailText ){
+           command = "set principal "+_user+
+                            " \"eMail="+_emailText.getText()+"\"" ;
+           setText( "Waiting for : "+command ) ;
+           sendCommand( command , this ) ;
+        }else if( source == _nameText ){
+           command = "set principal "+_user+
+                            " \"fullName="+_nameText.getText()+"\"" ;
+           setText( "Waiting for : "+command ) ;
+           sendCommand( command , this ) ;
+        }
       }     
       public void domainAnswerArrived( Object obj , int id ){
+         if( obj instanceof Throwable){
+            setText(obj) ;
+            update() ;
+            return ;
+         }
+         _createUserPanel.activatePrincipal(_user) ;
       }
                       
    }
@@ -212,36 +344,154 @@ public class      PrincipalManagerPanel
            extends    EventHelper 
            implements ActionListener, 
                       TextListener ,
+                      ItemListener ,
                       DomainConnectionListener  {
       
-      private List   _memberList = new  List() ;      
-      private Label  _titleLabel = new Label("",Label.CENTER) ;    
+      private String _group      = "" ;
+      private List   _memberList = new List() ;      
+      private List   _parentList = new List() ;
+      private Label  _titleLabel = new Label("",Label.CENTER) ; 
+      private Button _removeButton = new Button( "Remove" ) ;
+      private Button _addButton    = new Button( "Add" ) ;
+      private TextField _memberText = new TextField( "" ) ;
+      private Hashtable _memberHash = null ;
+      private class ModifyMemberPanel extends SimpleBorderPanel {
+         private ModifyMemberPanel(){
+             super( new FlowLayout() , 15 , Color.blue ) ;
+             RowColumnLayout rcl = new RowColumnLayout(1,0) ;
+             rcl.setHgap(15) ;
+             rcl.setVgap(15) ;
+             setLayout( rcl ) ;
+             
+             Label addRemoveTitle = 
+                  new Label( "Add / Remove Members" , Label.CENTER);
+        
+             add( addRemoveTitle ) ;
+             
+             add( _memberText ) ;
+        
+             GridLayout gl = new GridLayout(0,2) ;
+             Panel buttonPanel = new Panel( gl ) ;
+             buttonPanel.add( _addButton ) ;
+             buttonPanel.add( _removeButton ) ;
+        
+             add( buttonPanel ) ;
+                 
+         }
+      }
       private GroupPanel(){
         super( new BorderLayout() , 15 , Color.red ) ;
         
         _titleLabel.setFont( _headerFont ) ;
         add( _titleLabel , "North" ) ;
-        add( _memberList , "West" ) ;
+        
+        Label membersTitle = new Label("Members" , Label.CENTER) ;
+        Label parentsTitle = new Label("Parents" , Label.CENTER);        
+        membersTitle.setFont( _headerFont ) ;
+        parentsTitle.setFont( _headerFont ) ;
+        
+        BorderLayout bl = new BorderLayout() ;      
+        Panel listPanel = new Panel( bl ) ;
+        
+        listPanel.add( parentsTitle , "North" ) ;
+        listPanel.add( _parentList , "Center" ) ;
+        
+        add( listPanel , "West" ) ;
+        
+        bl = new BorderLayout(0,1) ;      
+        listPanel = new Panel( bl ) ;
+        
+        listPanel.add( membersTitle , "North" ) ;
+        listPanel.add( _memberList , "Center" ) ;
+        
+        add( listPanel , "East" ) ;
+        
+        _memberText.addTextListener( this ) ;
+        _memberList.addItemListener( this ) ;
+        _addButton.addActionListener( this ) ;
+        _removeButton.addActionListener( this ) ;
+        _memberList.addActionListener( this ) ;
+        _parentList.addActionListener(this) ;
+        add( new ModifyMemberPanel() , "Center" ) ;
       } 
-      private void setTitle(String title ){
-         _titleLabel.setText(title) ;
+      private void setGroup(String group ){
+         _group = group ; 
+         _titleLabel.setText( "Group >>"+_group+"<<") ;
          _titleLabel.invalidate() ;
       }
       private void update(){
          if( _memberList.getItemCount() > 0 )_memberList.removeAll() ;
          Enumeration e = _createUserPanel.getGroupMembers() ;
+         _memberHash = new Hashtable() ;
+         if( e != null )
+            for( int i = 0 ;  e.hasMoreElements() ; i++ ){
+               String member = e.nextElement().toString() ;
+               _memberList.add( member );
+               _memberHash.put( member , new Integer(i)  ) ;
+            }
+         if( _parentList.getItemCount() > 0 )_parentList.removeAll() ;
+         e = _createUserPanel.getGroupParents() ;
          if( e != null )
             while( e.hasMoreElements() )
-               _memberList.add(e.nextElement().toString());
+               _parentList.add(e.nextElement().toString());
          
+         _memberText.setText("");
+      }
+      public void itemStateChanged( ItemEvent e ){
+        int i = _memberList.getSelectedIndex() ;
+        if( i < 0 )return ;
+        String member = _memberList.getItem(i) ;
+        _memberText.setText(member) ;
       }
       public void textValueChanged(TextEvent e){        
+         Object source = e.getSource() ;
+         if( source == _memberText ){
+            int i = _memberList.getSelectedIndex() ;
+            if( i > -1 )_memberList.deselect(i) ;
+            _removeButton.setEnabled(false) ;
+            _addButton.setEnabled(false);
+            String member = _memberText.getText() ;
+            if( member.equals("") )return ;
+           
+            Integer n = null ;
+            if( ( n = (Integer)_memberHash.get( _memberText.getText() ) ) != null ){
+               _removeButton.setEnabled(true) ;
+               _memberList.select( n.intValue() ) ;
+            }else{
+               _addButton.setEnabled(true) ;
+            }
+         }
       }
+
       public void actionPerformed( ActionEvent event ) {
         Object source = event.getSource() ;
-        setText("");
+        String command = null ;
+        if( source == _addButton ){
+           command = "add "+_memberText.getText()+ " to "+_group ;
+           setText( "Waiting for >>"+command+"<<" ) ;
+           sendCommand( command, this , 1 ) ;
+        }else if( source == _removeButton ){
+           command = "remove "+_memberText.getText()+ " from "+_group ;
+           setText( "Waiting for >>"+command+"<<" ) ;
+           sendCommand( command, this , 1 ) ;
+        }else if( ( source == _memberList ) ||
+                  ( source == _parentList )   ){
+           _createUserPanel.activatePrincipal( event.getActionCommand() ) ;  
+        }
       }     
       public void domainAnswerArrived( Object obj , int id ){
+         System.out.println( "Answer for groupPanel : "+obj.getClass()+";id="+id);
+         if( obj instanceof Throwable ){
+            
+         }else if( id == 1 ){
+             String command = "show group "+_group  ;
+             setText( "Waiting for >>"+command+"<<" ) ;
+             sendCommand( command, _createUserPanel , 0 ) ;
+         }else if( id == 2 ){
+             processActionEvent(
+               new ActionEvent( this , 0 , "groupOk" ) 
+             ) ;
+         }
       }
    }
    /////////////////////////////////////////////////////////
@@ -260,6 +510,7 @@ public class      PrincipalManagerPanel
       private TextField _principalText     = new TextField("");   
       private Hashtable _userAttributes    = null ;
       private Vector    _groupMembers      = null ;
+      private Vector    _groupParents      = null ;
       private CreateUserPanel( ){
 
          super( new GridLayout(0,1) , 15 , Color.red ) ;
@@ -294,6 +545,16 @@ public class      PrincipalManagerPanel
       private Enumeration getGroupMembers(){ 
          return _groupMembers == null ? null : _groupMembers.elements() ;
       }
+      private Enumeration getGroupParents(){ 
+         return _groupParents == null ? null : _groupParents.elements() ;
+      }
+      private Hashtable getPrincipalAttributes(){ 
+         return _userAttributes ;
+      }
+      private void activatePrincipal( String principal ){
+         setPrincipal( principal ) ;
+         sendCommand( "show principal "+principal , this ) ;
+      }
       private void setPrincipal( String str ){ _principalText.setText(str) ; }
       private String getPrincipal(){ return _principalText.getText() ; }
       public String toString(){ return "CreateUserPanel" ; }
@@ -327,16 +588,16 @@ public class      PrincipalManagerPanel
         }
       }     
       public void domainAnswerArrived( Object obj , int id ){
+     
          String principal = getPrincipal() ;
+         System.out.println( "createUserPanel : arrived : "+
+                             obj.getClass()+"id="+id) ;
          if( obj instanceof Hashtable ){
             _userAttributes = (Hashtable)obj ;
             String type = (String) _userAttributes.get("type" ) ;
             if( type.equals("user") ){
-               setText("") ;
-               setEnabled( false , false , true , true ) ;
-               processActionEvent(
-                  new ActionEvent( this , 0 , "userOk" ) 
-               ) ;
+               setText("Waiting for 'show parents'") ;
+               sendCommand( "show parents "+principal , this ) ;
           
             }else if( type.equals("group") ){
                setText( "Waiting for 'show group "+principal ) ;
@@ -348,7 +609,19 @@ public class      PrincipalManagerPanel
                ) ;
             }
          }else if( obj instanceof Vector ){
-            _groupMembers = (Vector)obj ;
+            _groupParents = (Vector) obj ;
+            _groupMembers = null ;
+            setText("") ;
+            setEnabled( false , false , true , true ) ;
+            processActionEvent(
+               new ActionEvent( this , 0 , "userOk" ) 
+            ) ;
+         }else if( ( obj instanceof Object [] ) &&
+                   ( ((Object[])obj).length > 1 ) &&
+                   ( ((Object[])obj)[0] instanceof Vector ) &&
+                   ( ((Object[])obj)[1] instanceof Vector )    ){
+            _groupParents = (Vector) (((Object[])obj)[0]);
+            _groupMembers = (Vector) (((Object[])obj)[1]);
             setText("") ;
             setEnabled( false , false , true , true ) ;
             processActionEvent(
