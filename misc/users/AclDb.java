@@ -42,6 +42,12 @@ public class AclDb {
        }
        public boolean isResolved(){ return _inherits == null ; }
        public String getInheritance(){ return _inherits ; }
+       public AclItem cloneMe(){ 
+           AclItem item   = new AclItem(_name) ;
+           item._users    = (Hashtable)_users.clone() ;
+           item._inherits = _inherits ;
+           return item ;
+       }
    }
    private File      _aclDir = null ;
    private AgingHash _hash   = new AgingHash(20) ;
@@ -61,7 +67,7 @@ public class AclDb {
            throws NoSuchElementException{
        System.out.println( "getAcl : "+aclName) ;
        AclItem item = (AclItem)_hash.get( aclName ) ;
-       if( item != null )return item ;
+       if( item != null )return item.cloneMe() ;
        return _loadAcl( aclName ) ;       
    }
    private void _storeAcl( String aclName , AclItem item )
@@ -217,40 +223,65 @@ public class AclDb {
          // items with stars from left to right.
          //
          //  e.g. : a.b.c -> V(a.b.c)={a.b.c,a.b.*,a.*.*,*.*.*}
+         //  formal :
+         //     V(a[0].a[1]...a[n])[0] = a[0].a[1]...a[n-1].*
          //
          StringTokenizer st = new StringTokenizer(instanceName,".") ;
          String [] mm = new String[st.countTokens()] ;
-         for(int i = 0 ; i < mm.length ; i++ )mm[i] = st.nextToken() ;
-         String [] mask = new String[mm.length] ;
+         int firstStar = mm.length ;
+         for(int i = 0 ; i < mm.length ; i++ ){
+            mm[i] = st.nextToken() ;
+            if( ( firstStar == mm.length ) && 
+                  mm[i].equals("*")              )firstStar = i ;
+         }
+         System.out.println( "getAcl : fistStar = "+firstStar);
+         String [] mask = new String[firstStar+1] ;
          int k = 0 ;
-         mask[k++] = instanceName ;
-         for( int i = 0 ; i < mm.length ; i++ ){
+         for( int i = firstStar ; i >= 0 ; i-- ){
             StringBuffer sb = new StringBuffer() ;
             for( int j = 0 ; j < mm.length ; j++ ){
-               if( j > (mm.length-1-i) )sb.append("*.") ;
+               if( j >= i )sb.append("*.") ;
                else sb.append(mm[j]).append(".");
             }
             mask[k++] = sb.toString() ;          
+            System.out.println( "getAcl : mask[k="+(k-1)+"] = "+mask[k-1]);
          }
          //
          //   I don't know if this is what we actually want :
          //   we walk through all possiblities but the order might
          //   be wrong or at least worth a discussion.
          //
-         //      class.V(instance).action
-         //      class.*.action
-         //      class.V(instance).*
+         //      class.V(instance)[0].action
+         //      class.V(instance)[0].*
+         //      class.V(instance)[1].action
+         //      class.V(instance)[1].*
          //      class.*.*
          //      *.*.*
          //
-         array = new String[3+2*mask.length] ;
          k = 0 ;
-         for( int i = 1 ; i < mask.length ; i++ )
-             array[k++] = className+"."+mask[i]+actionName ;
-         array[k++] = className+".*."+actionName ;
-         for( int i = 1 ; i < mask.length ; i++ )
-             array[k++] = className+"."+mask[i]+"*" ;
-         array[k++] = className+".*.*" ;
+         if( className.equals("*") ){
+            array = new String[1] ;
+         }else if( actionName.equals("*") && instanceName.equals("*") ){
+            array = new String[2] ;
+            array[k++] = className+".*.*" ;
+         }else if( actionName.equals("*") ){
+            array = new String[2+mask.length] ;
+            for( int i = 0 ; i < mask.length ; i++ ){
+                array[k++] = className+"."+mask[i]+"*" ;
+            }
+            array[k++] = className+".*.*" ;
+         }else if( instanceName.equals("*") ){
+            array = new String[3] ;
+            array[k++] = className+".*."+actionName ;
+            array[k++] = className+".*.*" ;
+         }else{
+            array = new String[2+2*mask.length] ;
+            for( int i = 0 ; i < mask.length ; i++ ){
+                array[k++] = className+"."+mask[i]+actionName ;
+                array[k++] = className+"."+mask[i]+"*" ;
+            }
+            array[k++] = className+".*.*" ;
+         }
          array[k++] = "*.*.*" ;
        }
        //
@@ -261,13 +292,13 @@ public class AclDb {
        for( int i = 0 ; i < array.length ; i++ ){
           if( currentItem == null ){
              try{
-                currentItem = getAcl(array[i]) ;
+                currentItem = _resolveAclItem(array[i]) ;
              }catch(NoSuchElementException ee){
                // no problem;
              }
           }else{
              try{
-                AclItem nextItem = getAcl( array[i] ) ;
+                AclItem nextItem = _resolveAclItem( array[i] ) ;
                 Enumeration e = nextItem.getUsers() ;
                 while( e.hasMoreElements() ){
                    String  user   = (String)e.nextElement() ;
@@ -285,20 +316,26 @@ public class AclDb {
    }
    private AclItem _resolveAclItem( String aclItem )
            throws NoSuchElementException{
-       AclItem inItem   = null ;
-       AclItem item     = getAcl( aclItem ) ;  
+       AclItem result   = getAcl( aclItem ) ; 
+       AclItem cursor   = result ; 
        String inherited = null ;
-       while( ( inherited = item.getInheritance() ) != null ){
-          inItem = getAcl( inherited ) ;
-          Enumeration e = inItem.getUsers() ;
+       int i = 0;
+       for( i = 0 ; 
+            ( i < 200 ) &&
+            ( inherited = cursor.getInheritance() ) != null ; i++ ){
+          cursor = getAcl( inherited ) ;
+          Enumeration e = cursor.getUsers() ;
           while( e.hasMoreElements() ){
              String  user   = (String)e.nextElement() ;
-             item.merge( user , inItem.getUserAccess(user) ) ;
+             result.merge( user , cursor.getUserAccess(user) ) ;
           }
-//          item = inItem ;
        }
-       item.setInheritance(null);
-       return item ;     
+       if( i == 200 )
+         throw new
+         NoSuchElementException("Infinit inheritance loop detected") ;
+         
+       result.setInheritance(null);
+       return result ;     
    }
    public synchronized boolean check( String aclItem , 
                          String user , 
