@@ -19,19 +19,30 @@ import java.net.* ;
   */
 public class   PvlCommander  {
 
-  private PvlDb       _pvlDb     = null ;
-  private Hashtable   _defaultHash = new Hashtable() ;
-
-    public PvlCommander( PvlDb  pvlDb ){
+  private PvlDb               _pvlDb       = null ;
+  private Hashtable           _defaultHash = new Hashtable() ;
+  private PermissionCheckable _permission  = null ;
+  
+  public PvlCommander( PvlDb  pvlDb ){
     
        _pvlDb = pvlDb ;
-    }
+  }
+  public void setPermissionCheckable( PermissionCheckable permission ){
+      _permission = permission ;
+  }
+  private void checkPermission( Args args , String acl ) throws AclException{
+     if( ( _permission == null ) || ! ( args instanceof Authorizable ) )return ;
+     
+     _permission.checkPermission( (Authorizable)args , acl ) ;
+                                
+  }
   //
   //  the pvr
   //
   public String hh_create_pvr = "<pvrName>" ;
   public String ac_create_pvr_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
+     checkPermission( args , "pvr.*.create" ) ;
      _pvlDb.createPvr( args.argv(0) ) ;
      return "Pvr created : "+args.argv(0) ;
   }
@@ -68,6 +79,8 @@ public class   PvlCommander  {
      String selection = (String)hash.get( "sel" ) ;
      if( selection == null )selection="" ;
 
+     checkPermission( args , "pvr."+pvrName+".modify" ) ;
+     
      PvrHandle pvr = _pvlDb.getPvrByName( pvrName ) ;
      
      DriveHandle drive = pvr.createDrive( args.argv(0) ) ;
@@ -89,7 +102,7 @@ public class   PvlCommander  {
      Hashtable hash = fillHash( _defaultHash , args ) ;
      String pvrName = (String)hash.get( "pvr" ) ;
      boolean   full = hash.get( "l" ) != null ;
-        
+     boolean   sel  = hash.get( "s" ) != null ;
      StringBuffer sb          = new StringBuffer() ;
      String [] pvrNameList    = null ;
      
@@ -104,20 +117,28 @@ public class   PvlCommander  {
         PvrHandle    pvr         = _pvlDb.getPvrByName( pvrName ) ;
         String []    driveNames  = pvr.getDriveNames() ;
         DriveHandle  drive       = null ;
-        String status = null , cartridge = null , owner = null ;
+        String status = null , cartridge = null , owner = null , selection = null ;
         for( int i = 0 ; i < driveNames.length ; i++ ){
            drive = pvr.getDriveByName( driveNames[i] ) ;
            drive.open( CdbLockable.READ ) ;
            status    = drive.getStatus() ;
            cartridge = drive.getCartridge() ;
            owner     = drive.getOwner() ;
+           selection = drive.getSelectionString() ;
            drive.close( CdbLockable.COMMIT ) ;
-           sb.append( Formats.field( driveNames[i]  , 12 ) ).
-              append( Formats.field( status         , 12 ) ).
-              append( Formats.field( cartridge      , 12 ) ).
-              append( Formats.field( pvrNameList[j] , 8  ) ).
-              append( Formats.field( owner          , 8  ) ).
-              append("\n") ;
+           if( sel ){
+              sb.append( Formats.field( driveNames[i]  , 12 ) ).
+                 append( Formats.field( pvrNameList[j] , 8  ) ).
+                 append( selection == null ? "none" : selection ).
+                 append("\n") ;
+           }else{
+              sb.append( Formats.field( driveNames[i]  , 12 ) ).
+                 append( Formats.field( status         , 12 ) ).
+                 append( Formats.field( cartridge      , 12 ) ).
+                 append( Formats.field( pvrNameList[j] , 8  ) ).
+                 append( Formats.field( owner          , 8  ) ).
+                 append("\n") ;
+           }
         }
      }
      return sb.toString() ;
@@ -145,6 +166,8 @@ public class   PvlCommander  {
      String      driveName = args.argv(0) ;
      PvrHandle   pvr       = _pvlDb.getPvrByName( pvrName ) ;
      DriveHandle drive     = pvr.getDriveByName( driveName ) ;
+
+     checkPermission( args , "pvr."+pvrName+".modify" ) ;
      
      String value = null ;
      drive.open(CdbLockable.WRITE) ;
