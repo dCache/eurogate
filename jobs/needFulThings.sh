@@ -86,6 +86,12 @@ checkJava() {
      echo "Fatal : can't find java runtime" 2>&1
      return 7
    fi
+   xx=`$JAVA 2>&1 | grep maxjitcode`
+   if [ ! -z "$xx" ] ; then JAVA_OPTIONS=-Xmaxjitcodesize0 ; fi
+   xx=`$JAVA 2>&1 | grep nojit`
+   if [ ! -z "$xx" ] ; then JAVA_OPTIONS=-nojit ; fi
+   export JAVA_OPTIONS
+   echo "Using javaoptions : $JAVA_OPTIONS"
    export CLASSPATH
    CLASSPATH=${eurogateClasses}:${jardir}/eurogate.jar:${jardir}/cells.jar
    #

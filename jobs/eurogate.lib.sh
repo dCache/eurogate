@@ -311,7 +311,7 @@ eurogateGuiStart() {
    username=`whoami 2>/dev/null`
    if [ $? -ne 0 ] ; then username="admin" ; fi
    #
-   $JAVA -nojit dmg.cells.applets.login.SshLoginMain \
+   $JAVA $JAVA_OPTIONS dmg.cells.applets.login.SshLoginMain \
             -host=localhost -port=${aclPort} -user=${username} \
             Drive-Mgr:eurogate.spy.DriveDisplayPanel \
             Acl-Mgr:eurogate.spy.AclManagerPanel \
@@ -384,7 +384,7 @@ eurogateStart() {
          log=/dev/null
       fi
    
-      nohup $JAVA -nojit  dmg.cells.services.Domain $domainName \
+      nohup $JAVA $JAVA_OPTIONS  dmg.cells.services.Domain $domainName \
                -param setupFile=$setupFilePath \
                       thisDir=${thisDir}  \
                -tunnel2 ${masterPort} \
@@ -429,7 +429,7 @@ eurogateStart() {
             log=/dev/null
          fi
          #
-         nohup $JAVA -Xmaxjitcodesize0 dmg.cells.services.Domain euroMover${moverVersion} \
+         nohup $JAVA $JAVA_OPTIONS dmg.cells.services.Domain euroMover${moverVersion} \
                   -param setupFile=${setupFilePath} \
                          thisDir=${thisDir}  \
                          moverVersion=${moverVersion} \
