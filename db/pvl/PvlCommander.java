@@ -9,6 +9,7 @@ import   dmg.protocols.ssh.* ;
 import java.util.* ;
 import java.io.* ;
 import java.net.* ;
+import java.text.* ;
 
 
 /**
@@ -96,8 +97,8 @@ public class   PvlCommander  {
      drive.close(CdbLockable.COMMIT) ;
      return "Drive Created : "+args.argv(0)+" "+info  ;
   }
-  public String hh_ls_drive = "-pvr=<pvr>" ;
-  public String ac_ls_drive_$_0_1( Args args ) throws Exception {
+  public String hh_ls_db_drive = "-pvr=<pvr> -s [<driveName>]" ;
+  public String ac_ls_db_drive_$_0_1( Args args ) throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
      Hashtable hash = fillHash( _defaultHash , args ) ;
      String pvrName = (String)hash.get( "pvr" ) ;
@@ -106,6 +107,62 @@ public class   PvlCommander  {
      StringBuffer sb          = new StringBuffer() ;
      String [] pvrNameList    = null ;
      
+     if( args.argc() > 0 ){
+        
+        if( pvrName == null )
+          throw new 
+          CommandException( "-pvr=<pvr> must be given for <drive>") ;
+        String    driveName = args.argv(0) ;
+        PvrHandle pvr       = _pvlDb.getPvrByName( pvrName ) ;
+        if( pvr == null )
+          throw new
+          IllegalArgumentException( "pvr not found : "+pvrName) ;        
+        DriveHandle drive = pvr.getDriveByName( driveName ) ;
+        if( drive == null )
+          throw new
+          IllegalArgumentException( "drive not found : "+driveName) ;        
+        String status = null , cartridge = null , owner = null ,
+               selection = null , specific = null , device = null ,
+               action    = null ;
+        int    idle   = 0 , minimalBlock = 0 , maximalBlock = 0 ,
+               bestBlock = 0 ;
+        long   time   = 0 ;
+        drive.open( CdbLockable.READ ) ;
+           status    = drive.getStatus() ;
+           cartridge = drive.getCartridge() ;
+           owner     = drive.getOwner() ;
+           selection = drive.getSelectionString() ;
+           idle      = drive.getIdleTime() ;
+           specific  = drive.getSpecificName() ;
+           device    = drive.getDeviceName() ;
+           minimalBlock = drive.getMinimalBlockSize() ;
+           maximalBlock = drive.getMaximalBlockSize() ;
+           bestBlock    = drive.getBestBlockSize() ;
+           action       = drive.getAction() ;
+           time         = drive.getTime() ;
+        drive.close( CdbLockable.COMMIT ) ;
+        DateFormat   df    = new SimpleDateFormat("hh.mm.ss" ) ;
+        sb.append("Invariants\n") ;
+        sb.append("     Drive Name : ").append(driveName).append("\n") ;
+        sb.append("     Robot View : ").append(specific).append("\n") ;
+        sb.append("    Device Name : ").append(device).append("\n") ;
+        sb.append("      Idle Time : ").append(idle).append("\n") ;
+        sb.append("      Selection : ").append(selection).append("\n") ;
+        sb.append("       maxBlock : ").append(maximalBlock).append("\n") ;
+        sb.append("       minBlock : ").append(minimalBlock).append("\n") ;
+        sb.append("      bestBlock : ").append(bestBlock).append("\n") ;
+        sb.append("Variants\n");
+        sb.append("         Status : ").append(status).append("\n") ;
+        sb.append("         Action : ").append(action).append("\n") ;
+        sb.append("      Cartridge : ").append(cartridge).append("\n") ;
+        sb.append("          Owner : ").append(owner).append("\n") ;
+        sb.append("    Last Access : ").
+           append(df.format(new Date(time))).
+           append("\n") ;
+        return sb.toString() ;
+     }   
+    
+    
      if( pvrName == null ){
         pvrNameList = _pvlDb.getPvrNames() ;
      }else{
@@ -155,6 +212,7 @@ public class   PvlCommander  {
                 "     -cart=<cartridgeName>\n"+
                 "     -owner=<owner>\n"+
                 "     -spec=<robotSecificDriveName>]\n"+
+                "     -idle=<idleTime/sec>]\n"+
                 "     -sel=<selectionString>\n" ;
   public String ac_set_drive_$_1( Args args ) throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
@@ -213,10 +271,15 @@ public class   PvlCommander  {
         }catch(Exception e){}
         drive.setBestBlockSize( size ) ;
      }
-     
-     String info = drive.toLine() ;
+     if( ( value = (String)hash.get( "idle" ) ) != null ){
+        int size = 0 ;
+        try{
+           size = Integer.parseInt( value ) ;
+        }catch(Exception e){}
+        drive.setIdleTime( size ) ;
+     }
      drive.close(CdbLockable.COMMIT) ;
-     return "Drive Modified : "+args.argv(0)+" "+info  ;
+     return "" ;
        
   }
   //
@@ -226,6 +289,7 @@ public class   PvlCommander  {
                 "<cartridgeDescriptorName> -type=<cartridgeType>" ;
   public String ac_create_cartridgeDescriptor_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
+     checkPermission( args , "pvl.*.modify" ) ;
      Hashtable hash = fillHash( _defaultHash , args ) ;
      String type = (String)hash.get( "type" ) ;
      if( type == null )
@@ -263,6 +327,7 @@ public class   PvlCommander  {
   public String hh_create_volumeDescriptor = "<volumeDescriptorName> -size=<size>" ;
   public String ac_create_volumeDescriptor_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
+     checkPermission( args , "pvl.*.modify" ) ;
      Hashtable hash = fillHash( _defaultHash , args ) ;
      String sizeStr = (String)hash.get( "size" ) ;
      if( sizeStr == null )
@@ -321,6 +386,7 @@ public class   PvlCommander  {
         IllegalArgumentException( "-cart=<cartridge> not specified" ) ;
      String position = (String)hash.get( "position" ) ;
        
+     checkPermission( args , "pvr."+pvrName+".modify" ) ;
         
      VolumeHandle volume = 
          _pvlDb.createVolume( pvrName , 
@@ -435,6 +501,7 @@ public class   PvlCommander  {
         throw new 
         IllegalArgumentException( "-cd=<cartridgeDescriptor> not specified" ) ;
         
+     checkPermission( args , "pvr."+pvrName+".modify" ) ;
      String cart = args.argv(0) ;
      
      ItemRange range = new ItemRange( cart ) ;
@@ -557,6 +624,7 @@ public class   PvlCommander  {
   public String ac_create_volumeSet_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
      Hashtable hash = fillHash( _defaultHash , args ) ;
+     checkPermission( args , "pvl.*.modify" ) ;
      _pvlDb.createVolumeSet( args.argv(0) ) ;
      return "VolumeSet created : "+args.argv(0) ;
   }
@@ -567,6 +635,8 @@ public class   PvlCommander  {
      String vsName = (String)hash.get( "vs" ) ;
      if( vsName == null )
         throw new IllegalArgumentException( "-vs=<volumeSet> not specified" ) ;
+
+     checkPermission( args , "pvl.*.modify" ) ;
 
      VolumeSetHandle volumeSet = _pvlDb.getVolumeSetByName( vsName ) ;
      VolumeHandle    volume    = _pvlDb.getVolumeByName( args.argv(0) ) ;
@@ -583,7 +653,9 @@ public class   PvlCommander  {
      
      String status = args.getOpt("status") ;
      if( status == null )return "Set volume to ?what?" ;
-     
+ 
+     checkPermission( args , "pvl.*.modify" ) ;
+    
      volume.open(CdbLockable.WRITE ) ;   
         volume.setStatus( status ) ; 
      volume.close(CdbLockable.COMMIT) ;     
