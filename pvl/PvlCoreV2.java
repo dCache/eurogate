@@ -264,13 +264,110 @@ public class      PvlCoreV2
        public String getReturnMessage(){ return getMessage() ; }
        
    }
+   //
+   // r0  : pvl-request
+   // r1  : username 
+   // r2  : command
+   // r3  : pvr
+   // r4  : drive/volume
+   //(r5  : new status )
+   //
+   private void executeOutOfBand( CellMessage msg , Object [] request ){
+       if( ( request.length < 3 ) ||
+           ( ! ( request[2] instanceof String) )  ){
+         esay( "Illegal request in OutOfBand" ) ;
+         
+         return ;
+      }
+      String command = (String)request[2] ;
+      Object answer = null ;
+      try{
+         if( command.equals( "get-volume-status" ) ){
+            if( request.length < 5 )
+            throw new Exception( "Not enough arguments" ) ;
+            String pvrName    = (String)request[3] ;
+            String volumeName = (String)request[4] ;
+            VolumeHandle volume = _pvlDb.getVolumeByName(volumeName) ;
+            volume.open(CdbLockable.READ) ;
+               String status = volume.getStatus() ;
+            volume.close(CdbLockable.COMMIT) ;
+            Object [] a = new Object[6] ;
+            for( int i = 0 ; i < 5 ; i++ )a[i] = request[i] ;
+            a[5] = status ;
+            answer = a ;
+         }else if(command.equals( "set-volume-status" ) ){
+            if( request.length < 6 )
+            throw new Exception( "Not enough arguments" ) ;
+            String pvrName    = (String)request[3] ;
+            String volumeName = (String)request[4] ;
+            String status     = (String)request[5] ;
+            VolumeHandle volume = _pvlDb.getVolumeByName(volumeName) ;
+            volume.open(CdbLockable.WRITE) ;
+               volume.setStatus(status) ;
+               status = volume.getStatus() ;
+            volume.close(CdbLockable.COMMIT) ;
+            request[5] = status ;
+            answer = request ;
+         }else if(command.equals( "get-drive-status" ) ){
+            if( request.length < 5 )
+            throw new Exception( "Not enough arguments" ) ;
+            String pvrName = (String)request[3] ;
+            String driveName = (String)request[4] ;
+            PvrHandle pvr = _pvlDb.getPvrByName( pvrName ) ;
+            pvr.open(CdbLockable.READ) ;
+               DriveHandle drive = pvr.getDriveByName( driveName ) ;
+               drive.open(CdbLockable.READ) ;
+               String status = drive.getStatus() ;
+               drive.close(CdbLockable.COMMIT) ;
+            pvr.close(CdbLockable.COMMIT) ;
+            Object [] a = new Object[6] ;
+            for( int i = 0 ; i < 5 ; i++ )a[i] = request[i] ;
+            a[5] = status ;
+            answer = a ;
+         }else if(command.equals( "set-drive-status" ) ){
+            if( request.length < 6 )
+            throw new Exception( "Not enough arguments" ) ;
+            String pvrName   = (String)request[3] ;
+            String driveName = (String)request[4] ;
+            PvrHandle pvr    = _pvlDb.getPvrByName( pvrName ) ;
+            String status    = (String)request[5] ;
+            pvr.open(CdbLockable.WRITE) ;
+               DriveHandle drive = pvr.getDriveByName( driveName ) ;
+               drive.open(CdbLockable.WRITE) ;
+               drive.setStatus(status) ;
+                  status = drive.getStatus() ;
+               drive.close(CdbLockable.COMMIT) ;
+            pvr.close(CdbLockable.COMMIT) ;
+            answer = request ;
+         }else{
+           throw new Exception( "Unknown request : "+command ) ;
+         }
+      
+      }catch(Exception e ){
+          esay( "Problem in out or band with '"+command+"' : "+e ) ;
+          answer = e ;
+      }
+      try{
+         msg.setMessageObject( answer ) ;
+         msg.revertDirection() ;
+         sendMessage( msg ) ;
+      }catch( Exception ioe ){
+         esay( ioe ) ;
+      }
+   
+   }
    public void messageArrived( CellMessage msg ){
    
        Object obj = msg.getMessageObject() ;
        
        say( "MA "+obj ) ;
        
-       if( obj instanceof EurogateRequest ){
+       if( obj instanceof Object [] ){
+         
+          if( ((Object[])obj).length < 3 )return ;
+          executeOutOfBand( msg , (Object[])obj ) ;
+          
+       }else if( obj instanceof EurogateRequest ){
        
            EurogateRequest req     = (EurogateRequest) obj ;
            String          command = req.getActionCommand() ;
