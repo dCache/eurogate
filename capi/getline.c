@@ -6,9 +6,10 @@
 
 char * getline( char * prompt ){
    static char line[256] ;
+   char * result ;
    printf( "%s " , prompt ) ;
-   fgets( line , sizeof(line) , stdin ) ;
-   return line ;
+   result = fgets( line , sizeof(line) , stdin ) ;
+   return  result == NULL ? "" : result ;
 
 }
  
