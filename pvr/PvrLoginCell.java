@@ -46,11 +46,13 @@ public class      PvrLoginCell
      private PvrRequest  _request ;
      private boolean     _recovery = false ;
      private String      _linkId   = null ;
+     private boolean     _sendNewdrive = false ;
      public RequestFrame( PvrRequest request , String linkId ){
         _request  = request ; 
         _message  = null ;
         _linkId   = linkId ;
         _recovery = true ;
+        
      }
      public RequestFrame( CellMessage msg , PvrRequest request ){
         _request  = request ; 
@@ -58,6 +60,8 @@ public class      PvrLoginCell
         _linkId   = null ;
         _recovery = false ;
      }
+     public void        sendNewdrive( boolean s ){ _sendNewdrive = s ; }
+     public boolean     sendNewdrive(){ return _sendNewdrive ; }
      public PvrRequest  getRequest(){ return _request ; }
      public CellMessage getMessage(){ return _message ; }
      public boolean     isRecovery(){ return _recovery ; }
@@ -133,6 +137,7 @@ public class      PvrLoginCell
                 if( ! ( req instanceof PvrRequest ) )continue ;
                 String com = ((PvrRequest)req).getActionCommand() ;
                 if( com.equals("mount") || com.equals("dismount") ){
+                   frame.sendNewdrive(true) ;
                    _recoveryHash.put( key , frame ) ;
                     say( "   added ["+i+","+key+"]="+req ) ;
                 }
@@ -143,7 +148,9 @@ public class      PvrLoginCell
        if( reqIdString != null ){
           try{
              _pvrRequestId = Integer.parseInt( reqIdString ) ;
-          }catch(Exception e){}      
+          }catch(Exception e){
+             _pvrRequestId = 10000; 
+          }      
        }
        say( "Using next RequestId : "+_pvrRequestId ) ;
        //
@@ -180,9 +187,10 @@ public class      PvrLoginCell
   public void cleanUp(){
       if( ! _terminated ){
          _terminated = true ;
-         say( "Sending 'terminate' to pvr" ) ;
+         String pvrRequest = "terminate "+( ++_pvrRequestId ) ;
          try{
-            _out.writeUTF( "terminate "+( ++_pvrRequestId ) ) ;
+            say( "toPvr : "+pvrRequest ) ;
+            _out.writeUTF( pvrRequest ) ;
          }catch( Exception ee ){}
       }
       say( "Storing next pvrRequestId in context 'pvrRequestId'" ) ;
@@ -252,14 +260,16 @@ public class      PvrLoginCell
         }
         _finishGate.open() ;
      }else if( Thread.currentThread() == _recoveryThread ){
-        while( _recoveryThreadOk ){
-           if( _recoveryHash.size() == 0 )break ;
-           try{
-              sendRecoveryNewdrives() ;
-              Thread.currentThread().sleep(5000) ;
-           }catch(Exception ie ){ 
-              esay( "recoveryThread problem : "+ie ) ;
-              break ;
+         synchronized( _hashLock ){
+           while( _recoveryThreadOk ){
+              if( _recoveryHash.size() == 0 )break ;
+              try{
+                 sendRecoveryNewdrives() ;
+                 _hashLock.wait(10000) ;
+              }catch(Exception ie ){ 
+                 esay( "recoveryThread problem : "+ie ) ;
+                 break ;
+              }
            }
         }
         say( "Recovery Thread finished" ) ;
@@ -267,7 +277,7 @@ public class      PvrLoginCell
      }
   }
   private void sendRecoveryNewdrives() throws Exception {
-     say( "Recovery Hashsize still : "+_recoveryHash.size() ) ;
+     say( "recovery Hashsize still : "+_recoveryHash.size() ) ;
      synchronized( _hashLock ){
         Enumeration e = _recoveryHash.keys() ;
         Hashtable tmpHash = new Hashtable() ;
@@ -282,7 +292,13 @@ public class      PvrLoginCell
               //
               continue ;
            }
-           PvrRequest   req   = frame.getRequest() ;
+           if( ! frame.sendNewdrive() ){
+              tmpHash.put( key , frame ) ;
+              say( "recovery : newdrive switched off for "+key ) ;
+              continue ;
+           }
+           //
+           PvrRequest req   = frame.getRequest() ;
            PvrRequest r = 
               new PvrRequestImpl( "newdrive" , "*" , "*" ,
                                   req.getGenericDrive() ,
@@ -297,7 +313,7 @@ public class      PvrLoginCell
            tmpHash.put( 
                ""+_pvrRequestId , new RequestFrame( r , key ) 
            ) ;
-           say( "Sending : "+pvrRequestString ) ;
+           say( "toPvr : "+pvrRequestString ) ;
            _out.writeUTF( pvrRequestString ) ;
              
         }
@@ -349,6 +365,7 @@ public class      PvrLoginCell
          _requestHash.put( ""+_pvrRequestId , new RequestFrame( msg , request ) ) ;
       }
       try{
+         say( "toPvr : "+pvrRequest ) ;
          _out.writeUTF( pvrRequest ) ;
       }catch( Exception e ){
          String problem = "Problem while writing to pvr : "+e ;
@@ -359,9 +376,6 @@ public class      PvrLoginCell
             _requestHash.remove( ""+_pvrRequestId ) ;
          }
          return ;
-      }
-      synchronized( _hashLock ){
-         _requestHash.put( ""+_pvrRequestId , new RequestFrame( msg , request ) ) ;
       }
   }
   public void say( String str ){
@@ -387,6 +401,7 @@ public class      PvrLoginCell
                            new RequestFrame( getThisMessage() , null ) ) ;
      }
      try{
+         say( "toPvr : "+sb.toString() ) ;
          _out.writeUTF( sb.toString() ) ;
      }catch( IOException e ){
          String problem = "Problem while writing to pvr : "+e ;
@@ -473,6 +488,9 @@ public class      PvrLoginCell
      }
   }
   private void recoveryQueryArrived( RequestFrame frame , Args args ){
+      //
+      // get the original request 
+      //
       String linkId = frame.getLinkId() ;
       RequestFrame linkFrame ;
       synchronized( _hashLock ){
@@ -482,46 +500,100 @@ public class      PvrLoginCell
          esay( "Recover for id "+linkId+" obsolete" ) ;
          return ; 
       }
-      String id = args.argv(1) ;     
-      String rc = args.argv(2) ;
+      String type = args.argv(0) ;
+      String id   = args.argv(1) ;     
+      String rc   = args.argv(2) ;
+      
       String cartInDrive = "empty" ;
       if( rc.equals( "1" ) ){
          cartInDrive = "empty" ;
+      }else if( rc.equals( "2" ) ){
+         cartInDrive = "unknown" ;
       }else if( rc.equals( "3" ) ){
          cartInDrive = args.argv(3) ;      
       }else{
          say( "recovery id-"+id+" -> unknown result : "+rc ) ;
          return ;
       }
-      say( "recovery id-"+id+" cartridgeInDrive : "+cartInDrive ) ;
+      say( "recovery packet : type="+type+
+           ";id="+id+";cart="+cartInDrive ) ;
       //
       // get the original request
       //
-      PvrRequest req = (PvrRequest)linkFrame.getRequest() ;
-      String action = req.getActionCommand() ;
+      PvrRequest req    = (PvrRequest)linkFrame.getRequest() ;
+      String     action = req.getActionCommand() ;
       if( action.equals("mount") ){
           //
-          // if the original request was a mount, we
-          // have to wait until the mount was sucessful 
-          // which the requested cartridge.
           //
           String cart = req.getCartridge() ;
-          if( cart.equals( cartInDrive ) ){
-             say( "recovery id-"+id+" original mount "+linkId+" ok "+cart ) ; 
-             synchronized( _hashLock ){
-                _requestHash.remove( linkId ) ;
-                _recoveryHash.remove( linkId ) ;
-             }
-             CellMessage msg = linkFrame.getMessage() ;
-             req.setReturnValue(0,"O.K.") ;
-             sendBack( msg ) ;
-          }else{
-             say( "recovery id-"+id+
-                  " original mount "+linkId+" bad "+cart+"<->"+cartInDrive ) ; 
+          if( rc.equals( "1" ) ){
+             // 
+             // we have to resubmit a 'mount'.
+             // we store the original 'request' together
+             // with the new 'pvrRequestId' and link
+             // them together, and we switch off the
+             // newdrive requests.
              //
-             // not yet the required answer. lets wait...
+             _pvrRequestId++ ;
+             String pvrRequest = "mount "+_pvrRequestId+
+                          " "+req.getCartridge()+
+                          " "+req.getGenericDrive()+
+                          " "+req.getSpecificDrive() ;
+             synchronized( _hashLock ){
+                _recoveryHash.put( 
+                       ""+_pvrRequestId ,
+                        new RequestFrame( req , linkId ) 
+                                 ) ;
+                try{
+                   say( "toPvr : "+pvrRequest ) ;
+                   _out.writeUTF( pvrRequest ) ;
+                }catch(Exception ee ){
+                   esay( "Problem sending "+_pvrRequestId+" : "+ee ) ;
+                   _recoveryHash.remove( ""+_pvrRequestId ) ;
+                }
+                linkFrame.sendNewdrive(false);
+             }
+             
+          }else if( rc.equals( "2" ) ){
+             //
+             // we have to continue with our 'newdrive'
              //
              return ;
+          }else if( rc.equals( "3" ) ){
+             //
+             // a cartridge is mounted ( the correct one ? )
+             //
+             if( cart.equals( cartInDrive ) ){
+                say( "recovery id-"+id+" original mount "+linkId+" ok "+cart ) ; 
+                synchronized( _hashLock ){
+                   _requestHash.remove( linkId ) ;
+                   _recoveryHash.remove( linkId ) ;
+                }
+                CellMessage msg = linkFrame.getMessage() ;
+                req.setReturnValue(0,"O.K.") ;
+                sendBack( msg ) ;
+             }else{
+                //
+                // not yet the required answer. 
+                // it difficult to do the right thing here,
+                // so we let the request fail
+                // and dismount the drive.
+                //
+                say( "recovery id-"+id+
+                     " original mount "+linkId+" bad "+cart+"<->"+cartInDrive ) ; 
+                PvrRequest r = 
+                  new PvrRequestImpl( "dismount" , "*" , "*" ,
+                                      req.getGenericDrive() ,
+                                      req.getSpecificDrive()    ) ;
+                _pvrRequestId ++ ;
+                synchronized( _hashLock ){
+                   _requestHash.remove( linkId ) ;
+                   _recoveryHash.remove( linkId ) ;
+                }
+                CellMessage msg = linkFrame.getMessage() ;
+                req.setReturnValue(44,"pvr seems to be confused") ;
+                sendBack( msg ) ;
+             }
           }
       }else if( action.equals("dismount") ){
           //
