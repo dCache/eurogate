@@ -32,9 +32,10 @@ public class      PvrLoginCell
   private DataInputStream  _in   = null ;
   private String           _pvrName  = null ;
   private String           _pvrType  = null ;
-  private Hashtable        _requestHash = new Hashtable() ;
+  private Hashtable        _requestHash  ;
   private boolean          _terminated  = false ;
   private Gate             _finishGate  = new Gate(false) ;
+  private String           _contextHashName = null ;
 
   private class RequestFrame {
      private CellMessage _message ;
@@ -86,9 +87,31 @@ public class      PvrLoginCell
           _pvrName = _cellName ;
           _pvrType = "Generic" ;
        }
+       //
+       // we need to keep the information about the outstanding
+       // requests, although the c-pvr may disconnect/connect.
+       // Therefor we store the hashtable ( the only stateless part)
+       // within the domain context.
+       //
+       _contextHashName = _pvrName+"("+_pvrType+")" ;
+       say( "Checking for contextHash entry : "+_contextHashName ) ;
+       _requestHash = (Hashtable)_context.get( _contextHashName ) ;
+       //
+       if( _requestHash == null ){
+          say( _contextHashName + " not found (puh); creating new one" ) ;
+          _context.put( _contextHashName , _requestHash = new Hashtable() ) ;
+       }else{
+          say( _contextHashName + " found; will use it ( dumps follows )" ) ;
+          Enumeration e = _requestHash.elements() ;
+          for( int i = 0 ; e.hasMoreElements() ; i++ ){
+             say( "["+i+"]="+(e.nextElement()).toString() ) ;
+          }
+       }
+       //
        _finishGate.close() ;
        start() ;
   }
+  public void setPrintoutLevel( int level ){ _nucleus.setPrintoutLevel( level ) ; }
   public String toString(){
      if( _pvrName == null )return "Initializing" ;
      return "pvrName="+_pvrName+
@@ -123,6 +146,13 @@ public class      PvrLoginCell
       say( "Final gate opened; closing I/O streams" ) ;
       try{ _out.close() ; }catch(Exception ioe){}
       try{ _in.close() ; }catch(Exception ioe){}
+      /*
+       * this part would be O.K. if the other components 
+       * were prepared for 'cancel-request' which they are
+       * not. 
+       * So  our solution is to store all persistent infos
+       * in the domain context.
+       *
       if( _requestHash.size() > 0 ){
          say( "Still "+_requestHash.size()+" requests pending" ) ;
          Enumeration  e     = _requestHash.elements() ;
@@ -131,6 +161,11 @@ public class      PvrLoginCell
             frame.getRequest().setReturnValue( 121 , "Pvr went down" ) ;
             sendBack( frame.getMessage() ) ;
          }
+      }
+      */
+      if( _requestHash.size() == 0 ){
+          say( "No remainding requests ; removing : "+_contextHashName ) ;
+          _context.remove( _contextHashName ) ;
       }
       say( "Pvr : "+_cellName+" finished" ) ;
   }
@@ -207,6 +242,14 @@ public class      PvrLoginCell
          return ;
       }
       _requestHash.put( ""+_pvrRequestId , new RequestFrame( msg , request ) ) ;
+  }
+  public void say( String str ){
+     super.say( str ) ;
+     pin( str ) ;
+  }
+  public void esay( String str ){
+     super.esay( str ) ;
+     pin( str ) ;
   }
   public String hh_send = "<command> <args...>" ;
   
