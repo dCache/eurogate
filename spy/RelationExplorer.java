@@ -1,5 +1,5 @@
 package eurogate.spy ;
-
+   
 
 import java.awt.* ;
 import java.awt.event.* ;
