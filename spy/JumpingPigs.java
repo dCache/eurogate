@@ -15,9 +15,17 @@ public class      JumpingPigs
     private static final int INITIAL = 1 ;
     private static final int MOVING  = 2 ;
     private static final int FINAL   = 3 ;
+    
+    private static final int PIG_MODE = 1 ;
+    private static final int PROGRESS_MODE = 2 ;
+    
+    private int    _mode    = PIG_MODE ;
     private int    _state   = 0 ;
     private int    _recPosX = 0 , _recPosY = 0 ;
     private int    _dX      = 0 , _dY      = 0 ;
+    
+    private String    _progressTitle = "" ;
+    private double    _progressValue = 500 ;
     private Font      _memberFont = new Font( "SansSerif" , 0 , 12 ) ;
     private Hashtable _items      = new Hashtable() ;
     private Vector    _relations  = new Vector() ;
@@ -44,11 +52,54 @@ public class      JumpingPigs
        }
        private String getName(){ return _name ; }
        private Image  getImage(){ return _images[_imageType] ; }
+       private String getSetup(Dimension d){
+          float x = (float)_rectangle.x / (float)d.width ;
+          float y = (float)_rectangle.y / (float)d.height ;
+          return _name+":"+x+","+y+";" ;
+       }
+       private void setSetup( Dimension d , String str ){
+          try{
+             StringTokenizer st = new StringTokenizer(str,",") ;
+             String v = st.nextToken() ;
+             _rectangle.x = (int)( Float.valueOf(v).floatValue() * (float)d.width ) ;
+             v = st.nextToken() ;
+             _rectangle.y = (int)( Float.valueOf(v).floatValue() * (float)d.height ) ;
+          }catch(Exception ee){
+             throw new NumberFormatException(ee.toString());
+          }
+       }
+    }
+    public void setSetup( String setup ){
+       Dimension d = getSize() ;
+       StringTokenizer st = new StringTokenizer(setup,";") ;
+       while( st.hasMoreTokens() ){
+          try{
+             StringTokenizer xt = new StringTokenizer(st.nextToken(),":");
+             Element element = (Element)_items.get(xt.nextToken()) ;
+             element.setSetup(d,xt.nextToken());
+          }catch(Exception ee ){
+//             ee.printStackTrace() ;
+          }
+       }
+       refresh();
+    }
+    public void rescale(){ setSetup( getSetup() ) ;}
+    public String getSetup(){
+      Dimension d = getSize() ;
+      Enumeration e = _items.elements() ;
+      StringBuffer sb = new StringBuffer() ;
+      while( e.hasMoreElements() ){
+         Element element = (Element)e.nextElement() ;
+         sb.append( element.getSetup(d) ) ;
+      }
+      return sb.toString();
     }
     public JumpingPigs(){
        addMouseMotionListener(this);
        addMouseListener(this);
-    }    
+    } 
+    public void switchProgressBar(){ _mode = PROGRESS_MODE ; refresh() ; }
+    public void switchPigs(){ _mode = PIG_MODE ; refresh() ; }   
     public void addContainer( String name ){
        synchronized( _items ){
           if( _items.get( name ) != null )
@@ -88,8 +139,13 @@ public class      JumpingPigs
        }
        refresh() ;
     }
-    public void showProgressBar( String title ){
-    
+    public void setProgressTitle( String title ){
+       _progressTitle = title ;
+       refresh() ;
+    }
+    public void setProgressBar( double progress ){
+       _progressValue = progress ;
+       refresh() ;
     }
     public void addRelation( String left , String right ){
        synchronized( _items ){
@@ -114,9 +170,6 @@ public class      JumpingPigs
        }
        refresh() ;
     }
-    public void setProgressBar( int n ){
-    
-    }
     public void actionPerformed( ActionEvent e ){
         Object source = e.getSource() ;
     }
@@ -138,8 +191,57 @@ public class      JumpingPigs
            _needsRedraw = false ;
            refreshAll(g);
        }
-       if( _moving != null  )drawMovingPig( g ) ;
+       switch( _mode ){
+          case PIG_MODE :
+             if( _moving != null  )drawMovingPig( g ) ;
+          break ;
+          case PROGRESS_MODE :
+             drawProgressFrame( g ) ;
+          break ;
+       }
 
+    }
+    private Font _progressFont = new Font( "SansSerif" , Font.ITALIC , 12 ) ;
+    private FontMetrics _progressFontMetrics = null ;
+    private void drawProgressFrame( Graphics g ){
+       Dimension d   = getSize() ;
+       int barWidth  = d.width/2 ;
+       int barHeight = 20 ;
+
+       
+       if( ! _progressTitle.equals("") ){
+          if( _progressFontMetrics == null )
+             _progressFontMetrics = Toolkit.getDefaultToolkit().getFontMetrics(_progressFont) ;
+            
+          int length  = _progressFontMetrics.stringWidth(_progressTitle) ;
+          int descent = _progressFontMetrics.getMaxDescent() ;
+          g.setColor(Color.black);
+          g.drawString( _progressTitle ,
+                        ( d.width - length ) /2 ,
+                        ( d.height - barHeight)/2 - barHeight - descent ) ;
+          
+       }
+       drawProgressBar( g , 
+                        new Rectangle( ( d.width - barWidth ) / 2  ,
+                                       ( d.height - barHeight)/2  ,
+                                       barWidth , barHeight ) ,
+                        _progressValue ) ;
+    }
+    private void drawProgressBar( Graphics g , Rectangle r , double progress ){
+       Color b = _background ;       
+       Color revert = new Color( 255 - b.getRed() , 
+                                 255 - b.getGreen() , 
+                                 255 - b.getBlue() ) ;
+       g.setColor( revert ) ;
+       int p = ((int)( progress * r.width )) ;
+       p = Math.min( p , r.width ) ;
+       g.fillRect( r.x , r.y , p , r.height ) ;
+       g.setColor( b.brighter() ) ;
+       g.drawLine( r.x , r.y , r.x + r.width - 1 , r.y ) ;
+       g.drawLine( r.x , r.y , r.x   , r.y + r.height - 1) ;
+       g.setColor( b.darker() ) ;
+       g.drawLine( r.x , r.y + r.height , r.x + r.width , r.y + r.height ) ;
+       g.drawLine( r.x + r.width , r.y , r.x + r.width , r.y + r.height ) ;
     }
     private void drawMovingPig( Graphics g ){
        Rectangle p     = _moving.getRectangle() ;
@@ -215,8 +317,14 @@ public class      JumpingPigs
     }
     private void refreshAll( Graphics g ){
        drawFrame( g ) ;
-       drawRelations( g ) ;
-       drawPigs( g ) ;
+       switch( _mode ){
+          case PIG_MODE :
+            drawRelations( g ) ;
+            drawPigs( g ) ;
+          break ;
+          case PROGRESS_MODE :
+          break ;
+       }
     }
     private void drawRelations( Graphics g ){
        //
