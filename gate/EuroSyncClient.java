@@ -68,9 +68,15 @@ public class EuroSyncClient implements Runnable {
                
             String           id = args.argv(1) ;
             RequestCompanion rc = (RequestCompanion)_requests.get(id) ;
-            if( rc == null )
+            if( rc == null ){
+               System.out.println( "Session id : "+id ) ;
+               Enumeration e = _requests.elements() ;
+               while( e.hasMoreElements() ){
+                  System.out.println( " -> "+e.nextElement() ) ;
+               }
               throw new
               Exception( "Unknown session id arrived : "+id ) ;
+            }
             if( rc instanceof PutCompanion ){
                PutCompanion pc     = (PutCompanion)rc ;
                long         size   = pc.getSize() ;
@@ -143,6 +149,12 @@ public class EuroSyncClient implements Runnable {
                }
                try{ _out.close() ; }catch(Exception xx ){}
                try{ _in.close() ; }catch( Exception xx ){}
+               lc.ioOk = true ;
+               synchronized( _pendingLock ){
+                  if( lc.msgOk )_requests.remove(id) ;
+                  _pending-- ;
+                  _pendingLock.notifyAll() ;
+               }
             }
          }catch( Exception ee ){
             if(_debug)System.err.println( "Problem with mover connection : "+ee ) ;
@@ -191,7 +203,7 @@ public class EuroSyncClient implements Runnable {
       }
       RequestCompanion rc = null ;
       if( args.argv(0).equals( "ok" ) ){
-         rc = (RequestCompanion)_requests.remove( args.argv(1) ) ;
+         rc = (RequestCompanion)_requests.get( args.argv(1) ) ;
          if( rc instanceof QueryCompanion ){
             QueryCompanion qc = (QueryCompanion)rc ;
             if( args.argc() < 3 ){
@@ -199,6 +211,7 @@ public class EuroSyncClient implements Runnable {
                return ;
             }
             qc.setReturnCode( 0 , args.argv(2) ) ;
+            _requests.remove( args.argv(1) );
          }else if( rc instanceof ListCompanion ){
             ListCompanion lc = (ListCompanion)rc ;
             if( args.argc() < 2 ){
@@ -207,6 +220,8 @@ public class EuroSyncClient implements Runnable {
             }
             if( args.argv(0).equals("ok") ){
                 lc.setReturnCode( 0 , "" ) ;
+                if( lc.ioOk )_requests.remove( args.argv(1) ) ;
+                else return ;
             }else{
                 int rcd = 33 ;
                 if( args.argc() > 2 ){
@@ -220,6 +235,7 @@ public class EuroSyncClient implements Runnable {
             }
          }else{
             rc.setReturnCode( 99 , "PANIC : Unknown companion found" ) ;
+            _requests.remove( args.argv(1) ) ;
          }
          synchronized( _pendingLock ){
             _pending-- ;
@@ -431,6 +447,8 @@ public class EuroSyncClient implements Runnable {
    
       private String  _command        = null ;
       private String  _outputFileName = null ;
+      private boolean ioOk           = false ;
+      private boolean msgOk          = false ;
       ListCompanion( String command ,
                      String store ,
                      String outputFileName  ) throws Exception {
