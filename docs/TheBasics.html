@@ -95,23 +95,28 @@ config file defines the two movers on eustore2.
 <hr>
 <h3>Terminating <font color=blue>Eurogate</font> </h3>
 <blockquote>
-To shutdown the active eurogate, only 
+The whole system can be shut down at a single point, the
+master server on eustore1.
 <pre>
+On eurostore1
 ./jobs/eurogate stop
 </pre>
-has to be performed. The movers and the pvr will terminate first and
-the masterserver will try to shutdown afterwards.
-<strong>It may take awhile before the server is actually down ( ~ 20 seconds).
-For a not yet understooden reason, it sometimes happens that the master server
-refuses to terminate. You should check with 'ps -ef' if this
-is the case. Use 'kill ...' to make sure the server has finally stopped.</strong>
-All subsystem can be separately terminated by 
-<pre>
-eustore1 :  ./jobs/pvr stop
-eustore1 :  ./jobs/csc stop ( should never be necessary)
-eustore1 :  ./jobs/eustore stop
+The movers and the pvr will terminate first and
+the masterserver will try to shutdown afterwards.<br>
+It may take awhile before the server is actually down ( ~ 20 seconds).
+<p><strong>BUG: </strong>
+Sometimes it happens that the master server
+refuses to terminate. You should check with 'ps' if this
+is the case. Use 'kill ...' to make sure the server will finally stop.
+<p>
+If necessary, all subsystems can be separately terminated : 
 
-eustore2 :  ./jobs/eustore stop
-</pre>
+<table border=1 bgcolor=eeff99>
+<tr><th>Subsystem</th><th>Host</th><th>Shutdown Command</th></tr>
+<tr><td>Pvr</td><td>eustore1</td><td>./jobs/pvr stop</td></tr>
+<tr><td>Movers</td><td>eustore2</td><td>./jobs/eustore stop</td></tr>
+<tr><td>Master Server</td><td>eustore1</td><td>./jobs/eustore stop</td></tr>
+<tr><td>Robot</td><td>eustore1</td><td>./jobs/csc stop (not necessary)</td></tr>
+</table>
 </blockquote>
 </body>
