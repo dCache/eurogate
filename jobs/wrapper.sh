@@ -30,21 +30,68 @@ initDone=true
       weAre=$progname
       return 0
    }
+   #--------------------------------------------------------------
+   #
+   weAreLinux() {
+   #--------------
+      #
+      #         get our location 
+      #
+      PRG=`type -p $0` >/dev/null 2>&1
+      while [ -L "$PRG" ]
+      do
+          newprg=`expr "\`/bin/ls -l "$PRG"\`" : ".*$PRG -> \(.*\)"`
+          expr "$newprg" : / >/dev/null || newprg="`dirname $PRG`/$newprg"
+          PRG="$newprg"
+      done
+      #
+      thisDir=`dirname $PRG`
+      ourHome=${thisDir}/..
+      weAre=`basename $0`
+      return 0
+   }
+   #
+   #--------------------------------------------------------------
+   weAreIrix() {
+
+      PRG=`whence $0 2>/dev/null`
+      while [ -L "$PRG" ]
+      do
+          newprg=`expr "\`/bin/ls -l "$PRG"\`" : ".*$PRG -> \(.*\)"`
+          expr "$newprg" : "\/" >/dev/null || newprg="`dirname $PRG`/$newprg"
+          PRG="$newprg"
+      done
+      #
+      thisDir=$PRG
+      ourHome=$PRG/..
+      weAre=$progname
+      return 0
+
+   }
    os=`uname -s 2>/dev/null` || \
        ( echo "Can\'t determine OS Type" 1>&2 ; exit 4 ) || exit $?
 
 
+   ECHO=echo
    if [ "$os" = "SunOS" ]  ; then
       weAreSolaris
+      ECHO=/usr/ucb/echo
+   elif [ "$os" = "Linux" ] ; then
+      weAreLinux
+   elif [ "$os" = "IRIX64" ] ; then
+      weAreIrix
    else
       echo "Sorry, no support for $os" 1>&2
       exit 3
    fi
    #
+#   echo "thisDir : ${thisDir}"
+#   echo "ourHOme : ${ourHome}"
+#   echo "weAre   : ${weAre}"
+#   exit 0
    bins=$ourHome/bin
    jobs=$thisDir
    info=$ourHome/info
-   ECHO=/usr/ucb/echo
    #
    #  run some needful things
    #

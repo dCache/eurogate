@@ -4,15 +4,10 @@
 #
 #
 getFull() {
-
-   echo $1 | \
-   awk '{
-       if( substr($1,0,1) == "/" ){
-           print $1 ;
-       }else{
-           printf "%s/%s\n",this,$1 ;
-       } ; }' this=$PWD - 2>/dev/null
-   return $?
+   xdc=$1 
+   expr "$xdc" : "\/" >/dev/null 2>&1 || xdc="`pwd`/$xdc"
+   echo $xdc
+   return 0
 }
 checkVar() {
   while [ $# -ne 0 ] ; do
