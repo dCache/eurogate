@@ -5,107 +5,139 @@
 <a href=EuroGuide.html>The Eurogate Guide</a>     <a href=EuroRef.html>The Eurogate Reference</a>
 </pre>
 <hr>
-<center><h1>The Eurogate Reference Manual</h1></center>
+<center><h1>The Eurogate Reference Card</h1></center>
 <h3>The EuroGate User/GroupManagement Commands</h3>
 <blockquote>
-<pre>
-<a href="AclRef.html#createuser">
-create</a> user &lt;userName&gt;
-<a href="AclRef.html#createuser">
-create</a> group &lt;groupName&gt;
-<a href="AclRef.html#createuser">
-destroy</a> principal &lt;principalName&gt;
-<a href="AclRef.html#createuser">
-add</a> principal &lt;principalName&gt; to &lt;groupName&gt;
-<a href="AclRef.html#createuser">
-remove</a> principal &lt;principalName&gt; from &lt;groupName&gt;
-<a href="AclRef.html#createuser">
-set</a> principal "&lt;key&gt;=&lt;value&gt;" ["&lt;key&gt;=&lt;value&gt;"...]
-<a href="AclRef.html#createuser">
-show</a> groups
-<a href="AclRef.html#createuser">
-show</a> group &lt;groupName&gt;
-<a href="AclRef.html#createuser">
-show</a> principal &lt;principalName&gt;
-<a href="AclRef.html#createuser">
-set</a> passwd [-old=&lt;oldPassword&gt;] &lt;newPassword&gt; &lt;newPassword&gt;
-</pre>
+<table border=1>
+<tr><th>Command</th><th>Options</th><th>Required Acl</th></tr>
+
+<tr><td valign=top><a href="AclGuide.html#createuser">create</a> 
+    user &lt;userName&gt;</td>
+    <td></td>
+    <td>user.&lt;userName&gt;.create</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#creategroup">create</a> 
+    group &lt;groupName&gt;</td>
+    <td></td>
+    <td>user.&lt;groupName&gt;.create</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#destroygroup">destroy</a> 
+    principal &lt;principalName&gt;</td>
+    <td></td>
+    <td>user.&lt;principalName&gt;.destroy</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#addprinc">add</a> 
+    &lt;principalName&gt; to &lt;groupName&gt;</td>
+    <td></td>
+    <td>user.&lt;groupName&gt;.add</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#rmprinc">remove</a> 
+    &lt;principalName&gt; from &lt;groupName&gt;</td>
+    <td></td>
+    <td>user.&lt;groupName&gt;.remove</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#setprinc">set</a> 
+    &lt;principalName&gt; "key=value" [...]</td>
+    <td></td>
+    <td>user.&lt;principalName&gt;.modify</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#showgrps">show</a> 
+    groups </td>
+    <td></td>
+    <td align=center>-</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#showgrp">show</a> 
+    group &lt;groupName&gt;</td>
+    <td></td>
+    <td align=center>-</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#showprinc">show</a> 
+    principal &lt;principalName&gt;</td>
+    <td></td>
+    <td align=center>-</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#showpar">show</a> 
+    parents &lt;principalName&gt;</td>
+    <td></td>
+    <td align=center>-</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#setpasswd">set</a> 
+    passwd &lt;newPassword&gt; &lt;verifyPassword&gt;</td>
+    <td>[-oldPasswd=&lt;oldPassword&gt;]<br>
+        [-user=&lt;userName&gt;]</td>
+    <td align=center>user.&lt;userName&gt;.changePassword</td>
+</tr>
+
+</table>
 </blockquote>
 <h3>The EuroGate Acl Management Commands</h3>
 <blockquote>
-<pre>
-<a href="AclRef.html#createacl">
-create</a> acl &lt;aclName&gt;
-<a href="AclRef.html#destroyacl">
-destroy</a> acl &lt;aclName&gt;
-<a href="AclRef.html#showacl">
-show</a> acl &lt;aclName&gt;
-<a href="AclRef.html#addacl">
-add</a> access [-allowed|-denied] &lt;acl&gt; &lt;principal&gt;
-<a href="AclRef.html#letacl">
-let</a>  &lt;destinationAcl&gt; inheritfrom &lt;sourceAcl&gt;
-</pre>
+<table border=1>
+<tr><th>Command</th><th>Options</th><th>Required Acl</th></tr>
+
+<tr><td valign=top><a href="AclGuide.html#createacl">create</a> 
+    acl &lt;acl&gt;</td>
+    <td></td>
+    <td>acl.&lt;acl&gt;.create</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#destroyacl">destroy</a> 
+    acl &lt;acl&gt;</td>
+    <td></td>
+    <td>acl.&lt;acl&gt;.destroy</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#showacl">show</a> 
+    acl &lt;acl&gt;</td>
+    <td>[-resolve]</td>
+    <td align=center>-</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#addaccess">add</a> 
+    access &lt;acl&gt; &lt;principal&gt;</td>
+    <td>[ -allowed | -denied ]</td>
+    <td>acl.&lt;acl&gt;.add</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#rmaccess">remove</a> 
+    access &lt;acl&gt; &lt;principal&gt;</td>
+    <td></td>
+    <td>acl.&lt;acl&gt;.remove</td>
+</tr>
+<tr><td valign=top><a href="AclGuide.html#let">let</a> 
+    &lt;destinationAcl&gt; inheritfrom &lt;sourceAcl&gt;</td>
+    <td></td>
+    <td>acl.&lt;destinationAcl&gt;.modify</td>
+</tr>
+</table>
 </blockquote>
 <p>
 <h3>The EuroGate Pvl/Pvr/Drive Management Commands</h3>
 <blockquote>
-<pre>
-<a href="PvlRef.html#createpvr">
-create</a> pvr &lt;pvrName&gt;
-<a href="PvlRef.html#createpvr">
-create</a> cartridgeDescriptor &lt;name&gt;
-           -type=&lt;cartridgeType&gt;
-<a href="PvlRef.html#createpvr">
-create</a> volumeDescriptor &lt;name&gt; 
-           -size=&lt;volumeSize&gt;
-<a href="PvlRef.html#createpvr">
-create</a> volume &lt;volumeName&gt;   
-           -cart=&lt;cartridgeName&gt;
-           -pvr=&lt;pvrName&gt;
-          [-position=&lt;position&gt;]
-<a href="PvlRef.html#createpvr">
-set</a> volume &lt;volumeName&gt;   
-           -status=&lt;volumeStatus&gt;
-<a href="PvlRef.html#createpvr">
-create</a> volumeSet &lt;volumeSetName&gt;   
-<a href="PvlRef.html#createpvr">
-add</a> volume &lt;volumeName&gt; -vs=&lt;volumeSetName&gt;   
-<a href="PvlRef.html#createpvr">
-create</a> drive &lt;driveName&gt; 
-           -pvr=&lt;pvrName&gt;
-           -dev=&lt;deviceName&gt; 
-           -spec=&lt;specificName&gt; 
-          [-sel=&lt;driveSelection&gt;]
-</pre>
 <table border=1>
 <tr><th>Command</th><th>Options</th><th>Required Acl</th></tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">
-          create</a> pvr &lt;pvrName&gt;</td>
-    <td>
-    </td>
+<tr><td valign=top><a href="PvlGuide.html#createpvr">create</a> 
+    pvr &lt;pvrName&gt;</td>
+    <td></td>
     <td>pvl.&lt;pvlName&gt;.admin</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">create</a> 
+<tr><td valign=top><a href="PvlGuide.html#createcd">create</a> 
     cartridgeDescriptor &lt;name&gt;</td>
     <td>-type=&lt;cartridgeType&gt;</td>
     <td>pvl.&lt;pvlName&gt;.admin</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">create</a> 
+<tr><td valign=top><a href="PvlGuide.html#createvs">create</a> 
     volumeSet &lt;volumeSetName&gt;</td>
     <td></td>
     <td>pvl.&lt;pvlName&gt;.support</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">create</a> 
+<tr><td valign=top><a href="PvlGuide.html#createvd">create</a> 
     volumeDescriptor &lt;name&gt;
     <td>-size=&lt;volumeSize&gt;</td>
     <td>pvl.&lt;pvlName&gt;.admin</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">create</a>
+<tr><td valign=top><a href="PvlGuide.html#createvol">create</a>
     volume &lt;volumeName&gt; 
     <td>-cart=&lt;cartridgeName&gt;<br>
         -pvr=&lt;pvrName&gt;<br>
@@ -114,14 +146,14 @@ create</a> drive &lt;driveName&gt;
     <td>pvl.&lt;pvlName&gt;.&lt;pvrName&gt;.support</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">set</a>
+<tr><td valign=top><a href="PvlGuide.html#setvol">set</a>
     volume &lt;volumeName&gt; 
     <td>-status=&lt;volumeStatus&gt;
     </td>
     <td>pvl.&lt;pvlName&gt;.&lt;pvrName&gt;.operate</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">create</a>
+<tr><td valign=top><a href="PvlGuide.html#createdrive">create</a>
     drive &lt;driveName&gt;</td>
     <td>-pvr=&lt;pvrName&gt;<br>
         -dev=&lt;deviceName&gt;<br> 
@@ -130,10 +162,36 @@ create</a> drive &lt;driveName&gt;
     </td>
     <td>pvr.&lt;pvrName&gt;.admin</td>
 </tr>
-<tr><td valign=top><a href="PvlRef.html#createpvr">add</a> 
+<tr><td valign=top><a href="PvlGuide.html#addvol">add</a> 
     volume &lt;volumeName&gt;</td>
     <td>-vs=&lt;volumeSetName&gt;</td>
     <td>vs.&lt;pvlName&gt;.&lt;volumeSetName&gt;.support</td>
+</tr>
+<tr><td valign=top><a href="PvlGuide.html#enable">enable</a> 
+    &lt;pvrName&gt; &lt;driveName&gt;</td>
+    <td></td>
+    <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+</tr>
+<tr><td valign=top><a href="PvlGuide.html#disable">disable</a> 
+    &lt;pvrName&gt; &lt;driveName&gt;</td>
+    <td></td>
+    <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+</tr>
+<tr><td valign=top><a href="PvlGuide.html#dismount">dismount</a> 
+    &lt;pvrName&gt; &lt;driveName&gt;</td>
+    <td></td>
+    <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+</tr>
+<tr><td valign=top><a href="PvlGuide.html#dismount">update</a> 
+    </td>
+    <td></td>
+    <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+</tr>
+<tr><td valign=top><a href="PvlGuide.html#lsdrive">ls</a> 
+    drive</td>
+    <td>[-t] [-s]<br>
+        [-pvr=&lt;pvr&gt; &lt;drive&gt; ...]</td>
+    <td align=center>-</td>
 </tr>
 </table>
 </blockquote>
