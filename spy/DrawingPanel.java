@@ -23,14 +23,17 @@ public class      DrawingPanel
         private int    _state = 0 ;
         private int    _recPosX = 0 , _recPosY = 0 ;
         private int    _dX =  0 , _dY = 0 ;
-        private Color  _background = new Color(140,140,200) ;
+//        private Color  _background = new Color(140,140,200) ;
+        private Color  _background = new Color(190,200,220) ;
         private Vector _icon = new Vector() ;
-        
+        private Hashtable _hash = new Hashtable() ;
+        private Vector _relations = new Vector() ;
         
         private class Element {
            private Rectangle _rectangle = new Rectangle(0,0,40,40) ;
            private Image     _image     = null ;
            private String    _name      = "" ;
+           private int       id  = 0 ;
            private Element( String name , Image image ){ 
               _name  = name ;
               _image = image ; 
@@ -85,6 +88,20 @@ public class      DrawingPanel
            g.drawLine( 10 , 30  , 20 , 30   ) ;
            return im;
         }
+        private synchronized void addIcon( Element x ){
+            x.id = _icon.size() ;
+           _icon.addElement( x ) ;
+           _hash.put( x.getName() , x ) ;
+        }
+        private void addRelation( String from , String to ){
+          Element f = null , t = null ;
+          if( ( ( f = (Element)_hash.get(from) ) == null ) ||
+              ( ( t = (Element)_hash.get(to)   ) == null )   )return ;
+          
+          Integer [] x = { new Integer(f.id) , new Integer(t.id) } ;
+          
+          _relations.addElement( x ) ; 
+        }
         public void paint( Graphics g ){ 
             //
             // create a tiny little icon ( huaaa )
@@ -93,10 +110,13 @@ public class      DrawingPanel
                _groupIcon = makeGroupIcon() ;
                _userIcon  = makeUserIcon() ;
                System.out.println( "setting icons "+_groupIcon+":"+_userIcon ) ;
-               _icon.addElement( new Element( "DESY" ,  _groupIcon ) ) ;
-               _icon.addElement( new Element( "Zeuthen" , _groupIcon ) ) ;
-               _icon.addElement( new Element( "Otto" , _userIcon ) ) ;
-               _icon.addElement( new Element( "Karl" , _userIcon ) ) ;
+               addIcon( new Element( "DESY" ,  _groupIcon ) ) ;
+               addIcon( new Element( "Zeuthen" , _groupIcon ) ) ;
+               addIcon( new Element( "Otto" , _userIcon ) ) ;
+               addIcon( new Element( "Karl" , _userIcon ) ) ;
+               addRelation( "DESY" , "Otto" ) ;
+               addRelation( "Zeuthen" , "Karl" ) ;
+               addRelation( "DESY" , "Zeuthen" ) ;
                
             }
             refreshAll(g) ;
@@ -104,41 +124,45 @@ public class      DrawingPanel
         }
         public void update( Graphics g ){
             
-           if( _moving > -1  ){
-            
-               Rectangle p     = ((Element)_icon.elementAt(_moving)).getRectangle() ;
-               Image     image = ((Element)_icon.elementAt(_moving)).getImage() ;
-               
-               if( _state == INITIAL ){
-                 //
-                 // initial drawing of rectangle
-                 //
-                 refreshAll(g) ;
-                 g.setXORMode( Color.white ) ;
-                 p.x = _recPosX ;
-                 p.y = _recPosY ;
-                 g.drawImage( image , p.x , p.y , null ) ;
-                 g.setPaintMode() ;
-                 _state = MOVING ;
-               }else if( _state == FINAL ) {
-                 p.x = _recPosX ;
-                 p.y = _recPosY ;
-                 _state = IDLE ;
-                 _moving = -1 ;
-                 refreshAll(g) ;
-               }else if( _state == MOVING ){
-                 g.setXORMode( Color.white ) ;
-                 g.drawImage( image , p.x , p.y , null ) ;
-                 p.x = _recPosX ;
-                 p.y = _recPosY ;
-                 g.drawImage( image , p.x , p.y , null ) ;
-                 g.setPaintMode() ;
-               }
-               
-            }
+           if( _moving > -1  )drawMovingPig( g ) ;
             
         }
+        private void drawMovingPig( Graphics g ){
+           Rectangle p     = ((Element)_icon.elementAt(_moving)).getRectangle() ;
+           Image     image = ((Element)_icon.elementAt(_moving)).getImage() ;
+
+           if( _state == INITIAL ){
+             //
+             // initial drawing of rectangle
+             //
+             refreshAll(g) ;
+             g.setXORMode( Color.white ) ;
+             p.x = _recPosX ;
+             p.y = _recPosY ;
+             g.drawImage( image , p.x , p.y , null ) ;
+             g.setPaintMode() ;
+             _state = MOVING ;
+           }else if( _state == FINAL ) {
+             p.x = _recPosX ;
+             p.y = _recPosY ;
+             _state = IDLE ;
+             _moving = -1 ;
+             refreshAll(g) ;
+           }else if( _state == MOVING ){
+             g.setXORMode( Color.white ) ;
+             g.drawImage( image , p.x , p.y , null ) ;
+             p.x = _recPosX ;
+             p.y = _recPosY ;
+             g.drawImage( image , p.x , p.y , null ) ;
+             g.setPaintMode() ;
+           }
+        }
         private void refreshAll( Graphics g ){
+           drawFrame( g ) ;
+           drawRelations( g ) ;
+           drawPigs( g ) ;
+        }
+        private void drawFrame( Graphics g ){
             g.setColor( _background ) ;
             Dimension d  = getSize() ;
             g.fillRect(0,0,d.width-1,d.height-1);
@@ -148,10 +172,28 @@ public class      DrawingPanel
             g.setColor(_background.darker());
             g.drawLine(0,d.height-1,d.width-1,d.height-1);
             g.drawLine(d.width-1,d.height-1,d.width-1,0);
-            //
-            // now the pics
-            //
-            for( int i = 0 ; i < _icon.size() ; i++ ){
+
+        }
+        private void drawRelations( Graphics g ){
+           //
+           //
+           g.setColor( Color.white ) ;
+           for( int i = 0 ; i < _relations.size() ; i++ ){
+              Integer [] n = (Integer[])_relations.elementAt(i) ;
+              Rectangle e1 = ((Element)_icon.elementAt(n[0].intValue())).getRectangle() ;
+              Rectangle e2 = ((Element)_icon.elementAt(n[1].intValue())).getRectangle() ;
+              int x1 = e1.x + e1.width/2 ;
+              int y1 = e1.y + e1.height/2 ;
+              int x2 = e2.x + e2.width/2 ;
+              int y2 = e2.y + e2.height/2 ;
+              g.drawLine( x1 , y1 , x2 , y2 ) ;
+           }
+        }
+        private void drawPigs( Graphics g ){
+           //
+           // now the pics
+           //
+           for( int i = 0 ; i < _icon.size() ; i++ ){
               //
               // we are not allowed to draw the moving pig in 
               // paint mode.
@@ -166,7 +208,7 @@ public class      DrawingPanel
               g.drawString( e.getName() , 
                             rec.x + rec.width  + 4 ,
                             rec.y + rec.height - 4 ) ;
-            }
+           }
         }
         public void mouseDragged(MouseEvent e){
           if( _moving > -1 ){
