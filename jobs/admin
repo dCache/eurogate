@@ -1,0 +1,6 @@
+java -nojit dmg.cells.applets.login.SshLoginMain \
+            -host=localhost -port=23126 -user=admin \
+            Commander:dmg.cells.applets.login.CommanderPanel \
+            Drive:eurogate.spy.DriveDisplayPanel \
+            Acl:eurogate.spy.AclManagerPanel
+ 
