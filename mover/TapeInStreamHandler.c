@@ -370,18 +370,33 @@ JNIEXPORT jint JNICALL Java_eurogate_mover_TapeInputStream__1read
   int retCode = 0;
   jboolean isCopy = JNI_FALSE;
   
-  
-  jbyte* byteArrayElemens = (*env)->GetByteArrayElements(env, buffer, &isCopy);
   jint arraySize = (*env)->GetArrayLength(env, buffer);
-  
+   
+#if 0
+  jbyte* byteArrayElements = (*env)->GetByteArrayElements(env, buffer, &isCopy);
+#else
+  jbyte *byteArrayElements = (*env)->GetPrimitiveArrayCritical(
+                                                              env,
+                                                              buffer,
+                                                              &isCopy);
+  if (byteArrayElements == NULL) {
+    LOG(ESMVR_FATAL,"out of memory (GetPrimitiveArrayCritical())");
+    return(-1);
+  }
+#endif
+
   envi = env;
   obji = obj;
 
-  retCode = Read(fileDescr, &byteArrayElemens[start], length);
+  retCode = Read(fileDescr, &byteArrayElements[start], length);
   
   if (isCopy == JNI_TRUE) {
     LOG(ESMVR_INFO,"data where copied into a buffer");
-    (*env)->ReleaseByteArrayElements(env, buffer, byteArrayElemens, 0);
+#if 0
+    (*env)->ReleaseByteArrayElements(env, buffer, byteArrayElements, 0);
+#else
+    (*env)->ReleasePrimitiveArrayCritical(env, buffer, byteArrayElements, 0);
+#endif
   }          
   return(retCode);
 }
