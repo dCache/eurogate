@@ -153,5 +153,19 @@ pvlDbPort=23124
 sshPort=23125
 aclPort=23126
 clientPort=28000
+#                                                             
 #  telnetPort=23123
 #  spyPort=23222
+#
+###################################################
+#
+#  PVR stuff
+#
+pvr=yes
+bins=${thisDir}/../bin
+info=${thisDir}/../info
+roboticHost=sunstk2.cern.ch
+pvrLog=${logdir}/pvr.log
+pvrProxyHost=est0
+pvrProxyPort=22125 
+#
