@@ -360,7 +360,7 @@ eurogateStart() {
          log=/dev/null
       fi
    
-      nohup $JAVA  dmg.cells.services.Domain $domainName \
+      nohup $JAVA -nojit  dmg.cells.services.Domain $domainName \
                -param setupFile=$setupFilePath \
                       thisDir=${thisDir}  \
                -tunnel2 ${masterPort} \
