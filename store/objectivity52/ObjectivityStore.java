@@ -81,7 +81,7 @@ public class ObjectivityStore implements EuroStoreable {
                                  BitfileRequest bfreq ) {
     ooHelper o   = (ooHelper) session;
     String bfid   = bfreq.getBfid();
-    String sgroup, volume, error, location;
+    String sgroup, volume, error, location, parameter;
     ooBfid bf = null;
     ooVolume vol = null;
     ooSGroup sg = null;
@@ -102,6 +102,7 @@ public class ObjectivityStore implements EuroStoreable {
         sgroup = sg._sgName;
         location = bf._location;
         size = bf._size;
+	parameter = bf._parameter;
       } else {   // bitfile not found
         esay(error = "bitfile not found (" + bfid + ")");
         bfreq.setReturnValue(14, error);
@@ -126,6 +127,7 @@ public class ObjectivityStore implements EuroStoreable {
     bfreq.setStorageGroup(sgroup);
     bfreq.setFilePosition(location);
     bfreq.setVolume(volume);
+    bfreq.setParameter(parameter);
     
   }
   
@@ -133,7 +135,7 @@ public class ObjectivityStore implements EuroStoreable {
                                     BitfileRequest bfreq ) {
     ooHelper o   = (ooHelper) session;
     String bfid   = bfreq.getBfid();
-    String sgroup, volume, error, location;
+    String sgroup, volume, error, location, parameter;
     ooBfid bf = null;
     ooVolume vol = null;
     ooSGroup sg = null;
@@ -154,6 +156,7 @@ public class ObjectivityStore implements EuroStoreable {
         sgroup = sg._sgName;
         location = bf._location;
         size = bf._size;
+	parameter = bf._parameter;
       } else {   // bitfile not found
         esay(error = "bitfile not found (" + bfid + ")");
         bfreq.setReturnValue(14, error);
@@ -173,6 +176,7 @@ public class ObjectivityStore implements EuroStoreable {
     bfreq.setStorageGroup(sgroup);
     bfreq.setFilePosition(location);
     bfreq.setVolume(volume);
+    bfreq.setParameter(parameter);
   }
   
   public void finalPutRequest( StorageSessionable session ,
@@ -190,6 +194,7 @@ public class ObjectivityStore implements EuroStoreable {
     ooBfid bf = new ooBfid(bfid);
     bf._size = bfreq.getFileSize();
     bf._location = bfreq.getFilePosition();
+    bf._parameter = bfreq.getParameter();
     bf._created = new Timestamp(System.currentTimeMillis());
     bf._lastAccessed = new Timestamp(bf._created.getTime());
     bf._storingDevice = "no idea";
@@ -448,6 +453,7 @@ public class ObjectivityStore implements EuroStoreable {
       if ((v = (ooVolume) o._vhs.get(volume)) != null) {
         v.fetch();
         itr = v.getBitfiles();
+	ve = new Vector(100, 100);
         while(itr.hasNext()) {
           bf = (ooBfid) itr.next();
           bf.fetch();
@@ -485,6 +491,7 @@ public class ObjectivityStore implements EuroStoreable {
       if ((sg = (ooSGroup) o._sghs.get(storageGroup)) != null) {
         sg.fetch();
         itr = sg.getBitfiles();
+	ve = new Vector(100, 100);
         while(itr.hasNext()) {
           bf = (ooBfid) itr.next();
           bf.fetch();
@@ -510,15 +517,23 @@ public class ObjectivityStore implements EuroStoreable {
                                  long cookie ) {
     ooHelper o   = (ooHelper) session;
     String error = null;
-    Object[] sgs;
+    Vector ve = null;
+    ooCollectionIterator itr = null;
+    ooSGroup sg = null;
     
     o._session.join();
     
     o._session.begin();
     try {
-      if ((sgs = o._sghs.toArray()) != null) {
-        o._session.commit();
-        return(new ListCookieEnumeration(sgs, 0));
+      if ((itr = (ooCollectionIterator) o._sghs.iterator()) != null) {
+        ve = new Vector(100, 100);
+        while(itr.hasNext()) {
+          sg = (ooSGroup) itr.next();
+          sg.fetch();
+          ve.addElement(sg._sgName);
+        }
+	o._session.commit();
+        return(new ListCookieEnumeration(ve.toArray(), 0));
       } else {
         o._session.abort();
         esay(error = "empty Hash-Set for storage groups");
