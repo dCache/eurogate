@@ -1,0 +1,41 @@
+#
+#   use 'set printout default all' to get them all
+#
+set printout default all
+set printout CellGlue all
+onerror shutdown
+########################################################################
+#
+#    load the external stuff
+#
+#  check if 'setupFile' is defined. if yes, get it and
+#  run it. Then check for some variables we urgently need.
+#
+#
+check -strong setupFile
+copy file:${setupFile} env:setupFile
+import env setupFile
+#
+check -strong sshPort aclPort
+#
+#
+set context serverKeyFile     ${keyBase}/server_key
+set context hostKeyFile       ${keyBase}/host_key
+set env     securityCell      acm
+set context userPasswordFile  cell:${securityCell}
+#
+create dmg.cells.services.login.SshKeyManager    skm
+#
+create dmg.cells.services.login.LoginManager slm \
+        "${sshPort}  \
+        dmg.cells.services.StreamLoginCell \
+        -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X"
+
+create dmg.cells.services.login.LoginManager aclMgr \
+      "${aclPort}  \
+       dmg.cells.services.login.StreamObjectCell \
+       -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X \
+       eurogate.spy.AclAdmin"
+
+create eurogate.misc.users.AclCell AclCell   \
+         "/home/patrick/cvs-eurogate/eurogate/misc/users/db"
