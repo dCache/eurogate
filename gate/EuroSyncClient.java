@@ -823,16 +823,25 @@ public class EuroSyncClient implements Runnable {
             String storegroup = args.argv(1) ;
             String param      = args.argc() > 2 ? args.argv(2) : null ;
             
-            EuroCompanion com = euro.put( new File( filename ) , 
-                                          store , 
-                                          storegroup , 
-                                          param ) ;
+            String loopString = args.getOpt("loop") ;
+            int loop = 1 ;
+            if( loopString != null ){
+               try{ loop = Integer.parseInt( loopString ) ; }
+               catch(Exception ee ){}
+            }
+            for( int i = 0 ;i < loop ; i++ ){
+               EuroCompanion com = euro.put( new File( filename ) , 
+                                             store , 
+                                             storegroup , 
+                                             param ) ;
 
-            if( ( ret = com.getReturnCode() ) == 0 ){
-               System.out.println( com.getBfid() ) ;
-            }else{ 
-               System.err.println( "Failed "+ret+" "+com.getReturnMessage() ) ;
-            }              
+               if( ( ret = com.getReturnCode() ) == 0 ){
+                  System.out.println( com.getBfid() ) ;
+               }else{ 
+                  System.err.println( "Failed "+ret+" "+com.getReturnMessage() ) ;
+                  break ;
+               }  
+            }            
          }else if( command.equals( "read" ) ){
             //
             // read <bfid> <filename>
@@ -844,13 +853,23 @@ public class EuroSyncClient implements Runnable {
             String bfid       = args.argv(0) ;
             String filename   = args.argv(1) ;
 
-            EuroCompanion com = euro.get( new File( filename ) ,
-                                          store ,
-                                          bfid      ) ;
-                                          
-            if( ( ret = com.getReturnCode() ) != 0 ){
-               System.err.println( "Failed "+ret+" "+com.getReturnMessage() ) ;
-            }              
+            String loopString = args.getOpt("loop") ;
+            int loop = 1 ;
+            if( loopString != null ){
+               try{ loop = Integer.parseInt( loopString ) ; }
+               catch(Exception ee ){}
+            }
+            for( int i = 0 ;i < loop ; i++ ){
+
+               EuroCompanion com = euro.get( new File( filename ) ,
+                                             store ,
+                                             bfid      ) ;
+
+               if( ( ret = com.getReturnCode() ) != 0 ){
+                  System.err.println( "Failed "+ret+" "+com.getReturnMessage() ) ;
+                  break ;
+               } 
+            }             
 
          }else if( command.equals( "rm" ) || command.equals("remove") ){
             //
