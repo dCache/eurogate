@@ -3,7 +3,7 @@ package  eurogate.pvl ;
 import   eurogate.db.pvl.* ;
 import   eurogate.vehicles.* ;
 import   eurogate.misc.* ;
-
+import   eurogate.misc.users.* ;
 import   dmg.cells.nucleus.* ;
 import   dmg.cells.network.* ;
 import   dmg.util.* ;
@@ -34,12 +34,25 @@ public class      PvlCoreV2
    private PvlResourceScheduler    _scheduler = null ; 
    private PvlResourceRequestQueue _queue     = new PvlResourceRequestQueue() ;
    private PvlCommanderV1          _commander = null ;
+   private PvlCommander            _dbCommander = null ;
    private CellNucleus             _nucleus   = null ;
    private GateKeeper              _dbGate    = new GateKeeper() ;
    private Dictionary              _context   = null ;
    private Hashtable               _env       = new Hashtable() ;
    private Args                    _args      = null ;
-   
+   private Thread                  _timer     = null ;   
+   private class ResourceTimer implements Runnable {
+       public void run(){
+         while(true){
+           try{
+              Thread.currentThread().sleep(30000) ;
+              _fifo.push( new PvlResourceTimer() ) ;
+           }catch(InterruptedException ee){
+              break ;
+           }
+         }
+       }
+   }   
    public PvlCoreV2( String name , String args ) throws Exception{
        super( name , args , true ) ;
     
@@ -77,15 +90,29 @@ public class      PvlCoreV2
            _schedulerThread.start() ;  
                
        }catch( Exception e ){
-          say( "Problem in <init> : "+e ) ;
+          esay( "Problem in <init> : "+e ) ;
+          esay(e);
           kill() ;
           throw e ;
        }
        _commander = new PvlCommanderV1( this , _pvlDb , _fifo , _queue ) ;
+       _dbCommander = new PvlCommander( _pvlDb ) ;
+       
+       String aclCell = _args.getOpt("acl") ;
+       if( aclCell != null ){
+          RemotePermission rp = 
+                 new  RemotePermission( this , new CellPath( aclCell ) ) ;
+          _commander.setPermissionCheckable( rp ) ; 
+          _dbCommander.setPermissionCheckable( rp ) ;
+       }
        say( "Commander created" ) ;
        addCommandListener( _commander ) ;
+       addCommandListener( _dbCommander ) ;
        say( "Clearing all drive states ( db only )" ) ;
        resetDrives() ;
+       
+       _timer = _nucleus.newThread( new ResourceTimer() , "timer" );
+       _timer.start() ;
        say( "Started" ) ;    
    }
    ///////////////////////////////////////////////////////////
@@ -93,6 +120,15 @@ public class      PvlCoreV2
    // and the cleanup
    //
    public void cleanUp(){
+      //
+      // timer no longer needed
+      //
+      say( "Stopping timer" ) ;
+      try{
+         _timer.interrupt() ;
+      }catch( Exception ee ){
+         esay( "Problem stopping timer : "+ee ) ;
+      }
       //
       // we could dump the request queue here
       //
@@ -761,6 +797,7 @@ public class      PvlCoreV2
         if( ! wasInDrive )drive.setCartridge( cart  ) ;
         specific   = drive.getSpecificName() ;
         drive.setOwner( "OWNED" ) ;
+        drive.setTime( System.currentTimeMillis() ) ;
         drive.setAction( "scheduler" ) ;
       drive.close( CdbLockable.COMMIT ) ;
 
@@ -1459,6 +1496,7 @@ public class      PvlCoreV2
           DriveHandle drive = pvr.getDriveByName( pvrRequest.getGenericDrive() ) ;
           drive.open( CdbLockable.WRITE ) ;
             drive.setOwner( owner ) ;
+            drive.setTime( System.currentTimeMillis() ) ;
           drive.close( CdbLockable.COMMIT ) ;
    }
    private void sendBack( CellMessage msg ){
