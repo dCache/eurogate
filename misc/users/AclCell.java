@@ -102,6 +102,8 @@ public class       AclCell
             try{
               if( command.equals( "check-password" ) )
                   answer  =  acl_check_password( request ) ;
+              else if( command.equals( "check-permission" ) )
+                  answer  =  acl_check_permission( request ) ;
               else
                   new Exception( "Command not found : "+command ) ;
             }catch( Exception xe ){
@@ -165,6 +167,56 @@ public class       AclCell
       
       response[5] = new Boolean( matchPassword( userName , password ) ) ;
       return response ;
+  }
+  ///////////////////////////////////////////////////////////////////////////
+  //
+  //  r[0] : request
+  //  r[1] : <anything>
+  //  r[2] : check-permission
+  //  r[3] : <principal>
+  //  r[4] : <acl>
+  //
+  //  checks : nothing
+  //
+  //    response
+  //
+  //  r[0] : response
+  //  r[1] : <user>
+  //  r[2] : check-permission
+  //  r[3] : <principal>
+  //  r[4] : <acl>
+  //  r[5] : Boolean(true/false)
+  //
+  private Object 
+          acl_check_permission( Object [] request )
+          throws Exception {
+     
+      if( request.length < 5 )
+         throw new 
+         IllegalArgumentException( 
+         "Not enough arguments for 'check-permission'" ) ;
+      
+      Object [] response = new Object[6] ;
+      for( int i = 0 ;i < 5; i++ )response[i] =  request[i] ;
+      response[1]     = request[3] ;
+      String userName = (String)request[3] ;
+      String acl      = (String)request[4] ;
+      
+      response[5] = new Boolean( checkPermission( userName , acl ) ) ;
+      return response ;
+  }
+  private boolean checkPermission( String user , String acl ) {
+     if( user.equals("admin") )return true ;
+     
+     try{
+        if( _aclDb.check( acl , user , _userDb ) )return true ;
+     }catch(Exception ee ){}
+     
+     try{
+        if( _aclDb.check( "super.access" , user , _userDb ) )return true ;
+     }catch(Exception ee ){}
+     
+     return false ;       
   }
   private static final String DUMMY_ADMIN = "5t2Hw7lNqVock"  ;
   private boolean matchPassword( String userName , String password ){
