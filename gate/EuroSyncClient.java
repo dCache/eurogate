@@ -69,11 +69,11 @@ public class EuroSyncClient implements Runnable {
             String           id = args.argv(1) ;
             RequestCompanion rc = (RequestCompanion)_requests.get(id) ;
             if( rc == null ){
-               System.out.println( "Session id : "+id ) ;
-               Enumeration e = _requests.elements() ;
-               while( e.hasMoreElements() ){
-                  System.out.println( " -> "+e.nextElement() ) ;
-               }
+//               System.out.println( "Session id : "+id ) ;
+//               Enumeration e = _requests.elements() ;
+//               while( e.hasMoreElements() ){
+//                  System.out.println( " -> "+e.nextElement() ) ;
+//               }
               throw new
               Exception( "Unknown session id arrived : "+id ) ;
             }
@@ -97,6 +97,14 @@ public class EuroSyncClient implements Runnable {
                args = new Args( cnt.readUTF() ) ;
                try{ _out.close() ; }catch(Exception xx ){}
                try{ _in.close() ; }catch( Exception yy ){}
+               synchronized( _pendingLock ){
+                  pc.moverOk = true ;
+                  if( pc.bbackOk ){
+                     _requests.remove( rc.getId() ) ;
+                     _pending-- ;
+                     _pendingLock.notifyAll() ;
+                  }
+               }
                
             }else if( rc instanceof GetCompanion ){
                GetCompanion gc = (GetCompanion)rc ;
@@ -122,6 +130,14 @@ public class EuroSyncClient implements Runnable {
                args = new Args( cnt.readUTF() ) ;
                try{ _out.close() ; }catch(Exception xx ){}
                try{ _in.close() ; }catch( Exception yy ){}
+               synchronized( _pendingLock ){
+                  gc.moverOk = true ;
+                  if( gc.bbackOk ){
+                     _requests.remove( rc.getId() ) ;
+                     _pending-- ;
+                     _pendingLock.notifyAll() ;
+                  }
+               }
             }else if( rc instanceof ListCompanion ){
                ListCompanion lc   = (ListCompanion)rc ;
                String        out  = lc.getOutputFile() ;
@@ -151,9 +167,11 @@ public class EuroSyncClient implements Runnable {
                try{ _in.close() ; }catch( Exception xx ){}
                lc.ioOk = true ;
                synchronized( _pendingLock ){
-                  if( lc.msgOk )_requests.remove(id) ;
-                  _pending-- ;
-                  _pendingLock.notifyAll() ;
+                  if( lc.msgOk ){
+                     _requests.remove(id) ;
+                     _pending-- ;
+                     _pendingLock.notifyAll() ;
+                  }
                }
             }
          }catch( Exception ee ){
@@ -221,7 +239,7 @@ public class EuroSyncClient implements Runnable {
             if( args.argv(0).equals("ok") ){
                 lc.setReturnCode( 0 , "" ) ;
                 if( lc.ioOk )_requests.remove( args.argv(1) ) ;
-                else return ;
+                else return ;  // pending not decr.
             }else{
                 int rcd = 33 ;
                 if( args.argc() > 2 ){
@@ -303,14 +321,28 @@ public class EuroSyncClient implements Runnable {
             System.err.println( "server id not found : "+serverId ) ;
             return ;
          }
-         if( _requests.remove( rc.getId() ) == null ){
-            System.err.println( "client id not found : "+rc.getId() ) ;
-            return ;
-         }
          synchronized( _pendingLock ){
+            rc = (RequestCompanion)_requests.get( rc.getId() ) ;
+            if( rc  == null ){
+               System.err.println( "client id not found : "+rc.getId() ) ;
+               return ;
+            }
+            boolean moverOk = false ;
+            if( rc instanceof PutCompanion ){
+                PutCompanion pc = (PutCompanion)rc ;
+                pc.bbackOk = true ;
+                moverOk    = pc.moverOk ;
+            }else if( rc instanceof GetCompanion ){
+                GetCompanion gc = (GetCompanion)rc ;
+                gc.bbackOk = true ;
+                moverOk    = gc.moverOk ;
+            }
             rc.setReturnCode( Integer.parseInt(rcode) , rmsg );
-            _pending-- ;
-            _pendingLock.notifyAll() ;
+            if( moverOk ){
+               _requests.remove( rc.getId() ) ;
+               _pending-- ;
+               _pendingLock.notifyAll() ;
+            }
          }
       }else if( args.argv(0).equals( "NOK" ) ){
          Enumeration e = _requests.elements() ;
@@ -406,6 +438,8 @@ public class EuroSyncClient implements Runnable {
       private OutputStream _dataOut = null ;
       private String       _bfid    = null ;
       private long         _size    = -1 ;
+      private boolean      bbackOk  = false ;
+      private boolean      moverOk  = false ;
       public String       getFilename(){ return _file.toString() ; }
       public OutputStream getOutputStream(){ return _dataOut ; }
       public String       getBfid(){ return _bfid ; }
@@ -493,6 +527,8 @@ public class EuroSyncClient implements Runnable {
       private File        _file   = null ;
       private InputStream _dataIn = null ;
       private String      _bfid   = null ;
+      private boolean      bbackOk  = false ;
+      private boolean      moverOk  = false ;
       
       PutCompanion( File   file  , 
                     String store , 
@@ -738,7 +774,7 @@ public class EuroSyncClient implements Runnable {
             if( ( ret = com.getReturnCode() ) == 0 ){
 //               System.out.println( com.getReturnMessage() ) ;
             }else{ 
-               System.err.println( "Failed "+ret+" "+com.getReturnMessage() ) ;
+               System.err.println( "Failed X "+ret+" "+com.getReturnMessage() ) ;
             }              
          }else if( command.equals( "write" ) ){
             //
