@@ -96,8 +96,8 @@ define context initPvlDatabase endDefine
     add volume V004 -vs=raw
     create drive drive0 -pvr=stk  -dev=/eagle/d00 -spec=0:3:9:3
     create drive drive1 -pvr=stk  -dev=/eagle/d01 -spec=0:3:9:4
-    set drive drive0 -pvr=stk  -status=enabled
-    set drive drive1 -pvr=stk  -status=enabled
+    set drive drive0 -pvr=stk -idle=60  -status=enabled
+    set drive drive1 -pvr=stk -idle=120 -status=enabled
 endDefine
 #
 #   the pvr simulation ( corresponds to the setup above )
@@ -238,7 +238,7 @@ create dmg.cells.services.login.LoginManager dbLogin \
        eurogate.db.pvl.PvlDbLoginCell \
        -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X"
 #
-create eurogate.pvl.PvlCoreV2  ${pvlName} "${scheduler}"
+create eurogate.pvl.PvlCoreV2  ${pvlName} "${scheduler} -acl=${securityCell}"
 #
 ####################################################################
 #
