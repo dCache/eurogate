@@ -33,9 +33,6 @@ public class UserAdminCommands implements  Interpretable {
        if( ! ( args instanceof Authorizable ) )return ;
        String user = ((Authorizable)args).getAuthorizedPrincipal() ;
        if( user.equals("admin") )return ;
-       try{
-          if( _aclDb.check( "super.access" , user , _userDb ) )return ;
-       }catch(Exception ee ){}
        if( ! _aclDb.check(acl,user,_userDb) )
           throw new 
           AclPermissionException( "Acl >"+acl+"< negative for "+user ) ;       
@@ -43,29 +40,26 @@ public class UserAdminCommands implements  Interpretable {
     public String hh_create_user = "<userName>" ;
     public String ac_create_user_$_1( Args args )throws Exception {
        checkDatabase() ;
-       checkPermission( args , "user.*.create" ) ;
        String user = args.argv(0) ;
+       checkPermission( args , "user."+user+".create" ) ;
        _userMetaDb.createUser( user ) ;
-//       String acl = "user."+user+".access" ;
-//       _aclDb.createAclItem( acl ) ;
-//       _aclDb.addAllowed( acl , user ) ;
        return "" ;
     }
     public String hh_create_group = "<groupName>" ;
     public String ac_create_group_$_1( Args args )throws Exception {
        checkDatabase() ;
-       checkPermission( args , "user.*.create" ) ;
        String group = args.argv(0) ;
+       checkPermission( args , "user."+group+".create" ) ;
        _userMetaDb.createGroup( group ) ;
        _userDb.createContainer( group ) ;
-       _aclDb.createAclItem( "user."+group+".access" ) ;
+       _aclDb.createAclItem( "user."+group+".modify" ) ;
        return "" ;
     }
     public String hh_destroy_principal = "<principalName>" ;
     public String ac_destroy_principal_$_1( Args args )throws Exception {
        checkDatabase() ;
-       checkPermission( args , "user.*.create" ) ;
        String user = args.argv(0) ;
+       checkPermission( args , "user."+user+".destroy" ) ;
        try{
           UserMetaDictionary dict = _userMetaDb.getDictionary( user ) ;
           String type = dict.valueOf("type") ;
@@ -117,7 +111,7 @@ public class UserAdminCommands implements  Interpretable {
           CommandSyntaxException( "keyword 'to' missing" ) ;
        String group = args.argv(2) ;
        String princ = args.argv(0) ;
-       checkPermission( args , "user."+group+".access" ) ;
+       checkPermission( args , "user."+group+".add" ) ;
        _userDb.addElement(group, princ);
        return "" ;
     }
@@ -129,7 +123,7 @@ public class UserAdminCommands implements  Interpretable {
           CommandSyntaxException( "keyword 'from' missing" ) ;
        String group = args.argv(2) ;
        String princ = args.argv(0) ;
-       checkPermission( args , "user."+group+".access" ) ;
+       checkPermission( args , "user."+group+".remove" ) ;
        _userDb.removeElement(group,princ);
        return "" ;
     }
@@ -195,7 +189,7 @@ public class UserAdminCommands implements  Interpretable {
        boolean allowed = args.getOpt("denied") == null ;
        String acl   = args.argv(0) ;
        String princ = args.argv(1) ;
-       checkPermission( args , "acl."+acl+".access" ) ;
+       checkPermission( args , "acl."+acl+".add" ) ;
        if( allowed ){
            _aclDb.addAllowed( acl , princ ) ;
        }else{
@@ -207,22 +201,24 @@ public class UserAdminCommands implements  Interpretable {
     public String ac_remove_access_$_2( Args args )throws Exception {
         String acl   = args.argv(0) ;
         String princ = args.argv(1) ;
-        checkPermission( args , "acl."+acl+".access" ) ;
+        checkPermission( args , "acl."+acl+".remove" ) ;
         _aclDb.removeUser( acl , princ );
         return "" ;
     }
     public String hh_create_acl = "<aclName>" ;
     public String ac_create_acl_$_1( Args args )throws Exception {
         checkDatabase() ;
-        checkPermission( args , "super.access");
-        _aclDb.createAclItem(args.argv(0));
+        String aclName = args.argv(0) ;
+        checkPermission( args , "acl."+aclName+".create");
+        _aclDb.createAclItem(aclName);
         return "" ;
     }
     public String hh_destroy_acl = "<aclName>" ;
     public String ac_destroy_acl_$_1( Args args )throws Exception {
         checkDatabase() ;
-        checkPermission( args , "super.access");
-        _aclDb.removeAclItem(args.argv(0));
+        String aclName = args.argv(0) ;
+        checkPermission( args , "acl."+aclName+".destroy");
+        _aclDb.removeAclItem(aclName);
         return "" ;
     }
     public String hh_show_acl = "<aclName> [-resolve]" ;
@@ -233,9 +229,16 @@ public class UserAdminCommands implements  Interpretable {
         Enumeration e = dict.getPrincipals() ;
         String inherits = dict.getInheritance() ;
         StringBuffer sb = new StringBuffer() ;
-        if( inherits == null )sb.append( "<resolved>\n") ;
-        else sb.append("<inherits="+inherits+">\n") ;
-        Hashtable hash = new Hashtable() ;
+        Hashtable  hash = new Hashtable() ;
+        if( ! resolve ){
+           if( inherits == null ){
+              sb.append( "<noinheritance>\n") ;
+              hash.put( "<inheritsFrom>" , "none" ) ;
+           }else{
+              sb.append("<inherits="+inherits+">\n") ;
+              hash.put( "<inheritsFrom>" , inherits ) ;
+           }
+        }
         while( e.hasMoreElements() ){
             String user = (String)e.nextElement() ;
             boolean perm = dict.getPermission(user) ;
@@ -275,7 +278,7 @@ public class UserAdminCommands implements  Interpretable {
     }
     public String hh_set_principal = "<principalName> <key>=<value> [...]" ;
     public String ac_set_principal_$_1_99( Args args )throws Exception {
-        checkPermission( args , "user."+args.argv(0)+".access");
+        checkPermission( args , "user."+args.argv(0)+".modify");
         StringTokenizer st = null ;
         String key = null , value = null ;
         for( int i = 1 ; i < args.argc() ; i++ ){
@@ -292,7 +295,7 @@ public class UserAdminCommands implements  Interpretable {
        if( ! args.argv(1).equals("inheritfrom") )
           throw new
           CommandSyntaxException( "keyword 'inheritfrom' missing" ) ;
-        checkPermission( args , "acl."+args.argv(0)+".access");
+        checkPermission( args , "acl."+args.argv(0)+".modify");
         _aclDb.setInheritance(args.argv(0),args.argv(2));
         return "" ;
     }
