@@ -15,11 +15,13 @@ public class MasterPanel extends Panel  {
    private Component    _current       = null ;
    private Font   _headerFont = 
                          new Font( "SansSerif" , 0 , 18 ) ;
+   private Font   _textFont = new Font( "Courier" , 0 , 12 ) ;
    public MasterPanel( String title ){
       setLayout(_layout) ;
       _titleLabel.setFont(_headerFont) ;
       _titleLabel.setText(title) ;
       
+      _helpText.setFont( _textFont ) ;
       _messages.setForeground(Color.red);
       
       RowColumnLayout rcl = new RowColumnLayout(2,0) ;

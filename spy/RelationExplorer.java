@@ -317,7 +317,7 @@ public class      RelationExplorer
        }   
        protected void sendCommand( String command , int state ){
           System.out.println("Sending : "+command);
-          try{ Thread.currentThread().sleep(500) ; }catch(Exception ee){}
+          try{ Thread.currentThread().sleep(50) ; }catch(Exception ee){}
           try{
              _connection.sendObject( command+" -cellPath=AclCell" , this , state ) ;
           }catch( Exception ee ){

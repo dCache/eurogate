@@ -536,8 +536,57 @@ public class      AclManagerPanel
      } 
      private String _helpText = 
        "    Help for the AclMangerPanel\n"+
-       "    dideldum ... \n" +
-       "" ;
+       "  -----------------------------------\n"+
+       "    User management commnads\n"+
+       "  -----------------------------------\n"+
+       "create user <userName>                          user.<userName>.create\n"+
+       "create group <groupName>                        user.<groupName>.create\n"+
+       "destroy principal <principalName>               user.<principalName>.destroy\n"+
+       "add <principalName> to <groupName>              user.<groupName>.add\n"+
+       "remove</a>  <principalName> from <groupName>    user.<groupName>.remove\n"+
+       "set <principalName> \"key=value\" [...]           user.<principalName>.modify\n"+
+       "show groups\n"+ 
+       "show group <groupName>\n"+
+       "show principal <principalName>\n"+
+       "show  parents <principalName>\n"+
+       "set passwd <newPassword> <verifyPassword>\n"+
+       "      [-oldPasswd=<oldPassword>]\n"+
+       "      [-user=<userName>]                        user.<userName>.changePassword\n"+
+       "\nThe EuroGate Acl Management Commands\n"+
+       "-------------------------------------------\n"+
+       "create  acl <acl>                                   acl.<acl>.create\n"+
+       "destroy acl <acl>                                   acl.<acl>.destroy\n"+
+       "show  acl <acl> [-resolve]\n"+
+       "add access <acl> <principal> [ -allowed | -denied ] acl.<acl>.add\n"+
+       "remove access <acl> <principal>                     acl.<acl>.remove\n"+
+       "let <destinationAcl> inheritfrom <sourceAcl>        alkacl.<destinationAcl>.modify\n"+
+       "\nThe EuroGate Pvl/Pvr/Drive Management Commands\n"+
+       "---------------------------------------------------\n"+
+       "create pvr <pvrName>                   pvl.<pvlName>.admin\n"+
+       "create cartridgeDescriptor <name>\n"+ 
+       "       -type=<cartridgeType>           pvl.<pvlName>.admin\n"+
+       "create volumeSet <volumeSetName>       pvl.<pvlName>.support\n"+
+       "create volumeDescriptor <name>\n"+ 
+       "       -size=<volumeSize>              pvl.<pvlName>.admin\n"+
+       "create volume <volumeName>\n"+  
+       "       -cart=<cartridgeName>\n"+
+       "       -pvr=<pvrName>\n"+
+       "       [-position=<position>]          pvl.<pvlName>.<pvrName>.support\n"+
+       "set  volume <volumeName>\n"+  
+       "     -status=<volumeStatus>            pvl.<pvlName>.<pvrName>.operate\n"+
+       "create drive <driveName>\n"+
+       "       -pvr=<pvrName>\n"+
+       "       -dev=<deviceName>\n"+
+       "       -spec=<specificName>\n"+
+       "       [-sel=<driveSelection>]         pvr.<pvrName>.admin\n"+
+       "add volume <volumeName> \n"+
+       "    -vs=<volumeSetName>                vs.<pvlName>.<volumeSetName>.support\n"+
+       "enable  <pvrName> <driveName>          drive.<pvrName>.<driveName>.expert\n"+
+       "disable <pvrName> <driveName>          drive.<pvrName>.<driveName>.expert\n"+
+       "dismount <pvrName> <driveName>         drive.<pvrName>.<driveName>.expert\n"+
+       "update                                 drive.<pvrName>.<driveName>.expert\n"+
+       "ls drive [-t] [-s] [-pvr=<pvr> <drive> ...]\n"+
+       "\n" ;
      public String getHelpText(){
         return _helpText ;
      }
