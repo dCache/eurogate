@@ -100,6 +100,7 @@ public class      PvlCoreV2
        
        String aclCell = _args.getOpt("acl") ;
        if( aclCell != null ){
+          say( "Using Security Cell : "+aclCell ) ;
           RemotePermission rp = 
                  new  RemotePermission( this , new CellPath( aclCell ) ) ;
           _commander.setPermissionCheckable( rp ) ; 
@@ -113,6 +114,7 @@ public class      PvlCoreV2
        
        _timer = _nucleus.newThread( new ResourceTimer() , "timer" );
        _timer.start() ;
+       setCommandExceptionEnabled( true ) ;
        say( "Started" ) ;    
    }
    ///////////////////////////////////////////////////////////
