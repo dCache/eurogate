@@ -15,14 +15,15 @@
 #     jobs/eurogate.sh start
 #     jobs/eurogate.sh initPvl
 #   
-databaseRoot=/export/home/patrick/eurogateDb
+databaseRoot=/home/patrick/eurogateDb
+storeClass=eurogate.store.sldb.SldbStoreV1
 #cellClasses=/export/home/patrick/v5
 #cellClasses=/export/home/martin/cvs-eurogate:/export/home/patrick/v5/hideEurogate:/usr/object/java/lib/oojava.jar
-cellClasses=/export/home/patrick/v5:/export/home/martin/cvs-eurogate:/usr/object/java/lib/oojava.jar
+cellClasses=/home/patrick/cvs-classes
 spyPort=23222
 pvlDbPort=23124
 sshPort=23125
 clientPort=28000
 telnetPort=22123
-#cellBatch=desyEurogate.batch
-cellBatch=cernSimEurogate.batch
+cellBatch=elchHome.batch
+#cellBatch=cernSimEurogate.batch

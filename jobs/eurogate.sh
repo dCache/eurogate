@@ -3,8 +3,8 @@
 #   some constants
 #
 setupFile=eurogateSetup
-SSH=/export/home/patrick/ssh
-JAVA=/usr/java1.2/bin/java
+SSH=ssh
+JAVA=java
 LOGFILE=/tmp/eugate.log
 LD_LIBRARY_PATH=/usr/object/lib
 export LD_LIBRARY_PATH
@@ -69,7 +69,7 @@ fi
 #
 #   run the setup file
 #
-if [ -f /usr/etc/$setupFile ] ; then
+if [ -f /xusr/etc/$setupFile ] ; then
    setup=/usr/etc/$setupFile
 elif [ -f $eurogateHome/$setupFile ] ; then
    setup=$eurogateHome/$setupFile
@@ -251,7 +251,7 @@ eugateStart() {
    fi
    #
    #
-   nohup $JAVA -Xss2000000 dmg.cells.services.Domain euroGate \
+   nohup $JAVA  dmg.cells.services.Domain euroGate \
             -param setupFile=$fullSetup \
                    keyBase=$eurogateHome \
             -batch $BATCHFILE  \

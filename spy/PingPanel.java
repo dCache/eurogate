@@ -28,7 +28,7 @@ public class      PingPanel
         private String _destination = null ;
         private String _command     = null ;
         private long   _last        = System.currentTimeMillis() ;
-        private boolean _isOk       = true ;
+        private boolean _isOk       = false ;
         public Insets getInsets(){ return new Insets( 10 , 10 ,10 , 10 ) ; }
         private PingLabel( String label , String command ){
             super(label,Label.CENTER) ;
@@ -50,7 +50,10 @@ public class      PingPanel
         }
         public void run(){
            while(true){
-               _connection.send( _destination , _command , this ) ;
+               System.out.println("PIng ... " ) ;
+               synchronized( _connection ){
+                   _connection.send( _destination , _command , this ) ;
+               }
 	       try{ 
 	           Thread.currentThread().sleep(10000) ;
 	       }catch(InterruptedException ie ){
@@ -65,7 +68,7 @@ public class      PingPanel
         }
         public void frameArrived( MessageObjectFrame frame ){
             Object obj = frame.getObject() ;
-//            System.out.println( "Frame arrived : "+obj ) ;
+            System.out.println( "Frame arrived : "+obj ) ;
             if( obj instanceof Exception){
 //               System.out.println( "Exception arrived : "+obj.toString() ) ;
                 setStatus( false ) ;
