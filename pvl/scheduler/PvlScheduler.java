@@ -91,7 +91,7 @@ public class PvlScheduler implements PvlResourceScheduler {
    protected void say( String msg ){
       System.out.println( "SCHEDULER : "+msg ) ;
    }
-   public PvlResourceModifier 
+   public PvlResourceModifier []
       nextEvent( PvlResourceRequestQueue requestQueue ,
                  PvlResourceModifier []  modifierList   )
                  
