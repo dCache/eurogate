@@ -536,53 +536,54 @@ public class      AclManagerPanel
      } 
      private String _helpText = 
        "    Help for the AclMangerPanel\n"+
-       "  -----------------------------------\n"+
-       "    User management commnads\n"+
-       "  -----------------------------------\n"+
-       "create user <userName>                          user.<userName>.create\n"+
-       "create group <groupName>                        user.<groupName>.create\n"+
-       "destroy principal <principalName>               user.<principalName>.destroy\n"+
-       "add <principalName> to <groupName>              user.<groupName>.add\n"+
-       "remove</a>  <principalName> from <groupName>    user.<groupName>.remove\n"+
-       "set <principalName> \"key=value\" [...]           user.<principalName>.modify\n"+
-       "show groups\n"+ 
-       "show group <groupName>\n"+
-       "show principal <principalName>\n"+
-       "show  parents <principalName>\n"+
-       "set passwd <newPassword> <verifyPassword>\n"+
-       "      [-oldPasswd=<oldPassword>]\n"+
-       "      [-user=<userName>]                        user.<userName>.changePassword\n"+
+       "  -----------------------------------\n\n"+
+       "    User management\n"+
+       "    ------------------------\n"+
+       "create  user <userName>                         user.<userName>.create\n\n"+
+       "create  group <groupName>                       user.<groupName>.create\n\n"+
+       "destroy principal <principalName>               user.<principalName>.destroy\n\n"+
+       "add     <principalName> to <groupName>          user.<groupName>.add\n\n"+
+       "remove  <principalName> from <groupName>        user.<groupName>.remove\n\n"+
+       "set     <principalName> key=value [...]         user.<principalName>.modify\n\n"+
+       "set     passwd <newPassword> <verifyPassword>   user.<userName>.changePassword\n"+
+       "         [-oldPasswd=<oldPassword>]\n"+
+       "         [-user=<userName>]\n\n"+
+       "show    groups\n\n"+ 
+       "show    group <groupName>\n\n"+
+       "show    principal <principalName>\n\n"+
+       "show    parents   <principalName>\n\n"+
        "\nThe EuroGate Acl Management Commands\n"+
        "-------------------------------------------\n"+
-       "create  acl <acl>                                   acl.<acl>.create\n"+
-       "destroy acl <acl>                                   acl.<acl>.destroy\n"+
-       "show  acl <acl> [-resolve]\n"+
-       "add access <acl> <principal> [ -allowed | -denied ] acl.<acl>.add\n"+
-       "remove access <acl> <principal>                     acl.<acl>.remove\n"+
-       "let <destinationAcl> inheritfrom <sourceAcl>        alkacl.<destinationAcl>.modify\n"+
+       "create  acl <acl>                                  acl.<acl>.create\n"+
+       "destroy acl <acl>                                  acl.<acl>.destroy\n"+
+       "show    acl <acl> [-resolve]\n"+
+       "add     access <acl> <principal>                   acl.<acl>.add\n"+
+       "         [ -allowed | -denied ]\n"+
+       "remove  access <acl> <principal>                   acl.<acl>.remove\n"+
+       "let     <destinationAcl> inheritfrom <sourceAcl>   acl.<destinationAcl>.modify\n"+
        "\nThe EuroGate Pvl/Pvr/Drive Management Commands\n"+
        "---------------------------------------------------\n"+
-       "create pvr <pvrName>                   pvl.<pvlName>.admin\n"+
-       "create cartridgeDescriptor <name>\n"+ 
-       "       -type=<cartridgeType>           pvl.<pvlName>.admin\n"+
-       "create volumeSet <volumeSetName>       pvl.<pvlName>.support\n"+
-       "create volumeDescriptor <name>\n"+ 
-       "       -size=<volumeSize>              pvl.<pvlName>.admin\n"+
-       "create volume <volumeName>\n"+  
+       "create pvr <pvrName>                   pvl.<pvlName>.admin\n\n"+
+       "create cartridgeDescriptor <name>      pvl.<pvlName>.admin\n"+ 
+       "       -type=<cartridgeType>\n\n"+
+       "create volumeSet <volumeSetName>       pvl.<pvlName>.support\n\n"+
+       "create volumeDescriptor <name>         pvl.<pvlName>.admin\n"+ 
+       "       -size=<volumeSize>\n\n"+
+       "create volume <volumeName>             pvl.<pvlName>.<pvrName>.support\n"+  
        "       -cart=<cartridgeName>\n"+
        "       -pvr=<pvrName>\n"+
-       "       [-position=<position>]          pvl.<pvlName>.<pvrName>.support\n"+
-       "set  volume <volumeName>\n"+  
-       "     -status=<volumeStatus>            pvl.<pvlName>.<pvrName>.operate\n"+
-       "create drive <driveName>\n"+
+       "       [-position=<position>]\n\n"+
+       "set  volume <volumeName>               pvl.<pvlName>.<pvrName>.operate\n"+  
+       "     -status=<volumeStatus>\n\n"+
+       "create drive <driveName>               pvr.<pvrName>.admin\n"+
        "       -pvr=<pvrName>\n"+
        "       -dev=<deviceName>\n"+
        "       -spec=<specificName>\n"+
-       "       [-sel=<driveSelection>]         pvr.<pvrName>.admin\n"+
-       "add volume <volumeName> \n"+
-       "    -vs=<volumeSetName>                vs.<pvlName>.<volumeSetName>.support\n"+
-       "enable  <pvrName> <driveName>          drive.<pvrName>.<driveName>.expert\n"+
-       "disable <pvrName> <driveName>          drive.<pvrName>.<driveName>.expert\n"+
+       "       [-sel=<driveSelection>]\n\n"+
+       "add volume <volumeName>                vs.<pvlName>.<volumeSetName>.support\n"+
+       "    -vs=<volumeSetName>\n\n"+
+       "enable   <pvrName> <driveName>         drive.<pvrName>.<driveName>.expert\n"+
+       "disable  <pvrName> <driveName>         drive.<pvrName>.<driveName>.expert\n"+
        "dismount <pvrName> <driveName>         drive.<pvrName>.<driveName>.expert\n"+
        "update                                 drive.<pvrName>.<driveName>.expert\n"+
        "ls drive [-t] [-s] [-pvr=<pvr> <drive> ...]\n"+
