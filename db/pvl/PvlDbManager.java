@@ -19,20 +19,27 @@ import java.net.* ;
 public class      PvlDbManager 
        extends    CellAdapter    {
  
-   private PvlDb          _pvlDb     = null ;
- 
+   private PvlDb  _pvlDb     = null ;
+   private Args   _args      = null ;
+         
    public PvlDbManager( String name , String args )
           throws Exception {
           
        super( name , args , false ) ;
-    
-       setPrintoutLevel( 0xff ) ;
+       _args = getArgs() ;
        try{
-           Dictionary dict = getDomainContext() ;
-           String dbName   = (String) dict.get( "databaseName" ) ;
-           if( dbName == null )
-              throw new
-              IllegalArgumentException( "databaseName not defined" ) ;
+           String     dbName = null ;
+           Dictionary dict   = getDomainContext() ;
+           
+           if( _args.argc() > 0 ){
+              dbName  = _args.argv(0) ;
+           }else{
+              dbName  = (String) dict.get( "databaseName" ) ;
+              if( dbName == null )
+                 throw new
+                 IllegalArgumentException( "databaseName not defined" ) ;
+                 
+           }
            File dbFile = new File( dbName ) ;
            try{
               //

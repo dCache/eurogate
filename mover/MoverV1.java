@@ -161,7 +161,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
    }
    private void runWhatever(){
       try{
-         Thread.currentThread().sleep(4000) ;      
+         Thread.currentThread().sleep(1000) ;      
       }catch( InterruptedException e){}
       returnFinal(0,"Done") ;
    }

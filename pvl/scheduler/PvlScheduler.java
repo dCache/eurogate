@@ -149,8 +149,7 @@ public class PvlScheduler implements PvlResourceScheduler {
       }else if( action.equals( "newRequest" ) ){
          result = newRequestAction( requestQueue , modifier ) ;
       }else{
-        throw new 
-        IllegalArgumentException( " action not supported : "+action );
+         result = otherAction( requestQueue , modifier ) ;
       }
       
       PvlResourceModifier [] resultList = new PvlResourceModifier[1] ;
@@ -205,6 +204,13 @@ public class PvlScheduler implements PvlResourceScheduler {
       
    }
    public PvlResourceModifier newGetRequest(
+                    PvlResourceRequestQueue requestQueue ,
+                    PvlResourceRequest      request        ) throws Exception {
+                    
+      throw new IllegalArgumentException("newGetRequest not supported" ) ;
+                    
+   }
+   public PvlResourceModifier otherRequest(
                     PvlResourceRequestQueue requestQueue ,
                     PvlResourceRequest      request        ) throws Exception {
                     

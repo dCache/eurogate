@@ -11,7 +11,7 @@ import   dmg.util.cdb.* ;
 
 import java.util.* ;
 import java.lang.reflect.* ;
-
+import java.io.File ;
 
 /**
   *  
@@ -661,7 +661,7 @@ public class      PvlCoreV2
             fileCount -- ;
             say( "processRemove : volume "+volumeName+
                  " : new filecount : "+fileCount ) ;
-
+          
             if( fileCount <= 0 ){
                //
                // the tape is free again.
@@ -682,6 +682,19 @@ public class      PvlCoreV2
                 volume.setFileCount( fileCount ) ;
             }
          volume.close( CdbLockable.COMMIT ) ;
+         //
+         // if we are simulating the robot we have to
+         // remove the file from disk. ( should be done
+         // by the mover )
+         String disk = (String)_context.get( "robotSpace" ) ;
+         if( disk != null ){
+            String filename = cartridgeName+":"+volumeId+":"+fileCount ;
+            new File( filename ).delete() ;
+            if( fileCount <= 0 ){
+                filename = cartridgeName+":"+volumeId+":label" ;
+                new File( filename ).delete() ;
+            }
+         }
       }catch( Exception ee ){
          problem = "processRemove : Database Exception : "+ee ;
          esay( problem ) ;

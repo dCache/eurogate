@@ -1,0 +1,88 @@
+#
+#  specify the printout levels 
+#
+set printout default     none 
+set printout CellGlue    none 
+set printout RoutingMgr  none
+#
+set context alwaysDismount drive1,drive0
+#
+set env clientListenPort     28000
+set env pvlDbListenPort      22124
+set env databaseRoot         /home/patrick/cvs-eurogate/eurogate/jobs/db
+#
+#
+set env storeDatabase        ${databaseRoot}/store
+set env pvlDatabase          ${databaseRoot}/pvl
+set env moverData            ${databaseRoot}/drives
+#
+# as long as we simulating the robot,
+# the pvl has to remove the file from disk.
+# Therefor it need to know where the disk is.
+#
+set context robotSpace       ${moverData}
+#
+set env scheduler            eurogate.pvl.scheduler.BasicScheduler
+#
+
+#
+set env  pvlName             pvl
+#
+#   this will start the door on request ...
+#
+create dmg.cells.services.login.LoginManager EuroGate \
+     "${clientListenPort}    \
+     eurogate.gate.EuroGate  \
+      -prot=raw"
+#
+#   The store
+#
+create eurogate.store.StarGateV1 MAIN-store  \
+       "${storeDatabase}  ${pvlName}"
+#
+#
+#   The pvl  :  pvlDbManager , pvlLogin and pvl itself.
+#
+#  the previous version would have needed :
+#  set context databaseName ${databaseRoot}/pvl
+#   
+#
+create eurogate.db.pvl.PvlDbManager PvlManager  ${pvlDatabase}
+#
+create dmg.cells.services.login.LoginManager dbLogin \
+        "${pvlDbListenPort} \
+         eurogate.db.pvl.PvlDbLoginCell \
+         -prot=telnet"
+
+#
+create eurogate.pvl.PvlCoreV2  ${pvlName} "${scheduler}"
+#
+#
+#
+create eurogate.pvr.DummyPvrCell stk      \
+       "${databaseRoot}/pvr/stk -minWait=3 -maxWait=7"
+#
+#
+create eurogate.mover.MoverV1 drive0  "pvl ${moverData}"
+create eurogate.mover.MoverV1 drive1  "pvl ${moverData}"
+#
+define context initDatabase endDefine
+    create pvr stk
+    create volumeDescriptor  vd-9840    -size=20000000000
+    create cartridgeDescriptor cd-9840  -type=9840
+    create cartridge R01261-R01264      -cd=cd-9840  -pvr=stk
+    create volume V001 -cart=R01261 -pvr=stk  -vd=vd-9840
+    create volume V002 -cart=R01262 -pvr=stk  -vd=vd-9840
+    create volume V003 -cart=R01263 -pvr=stk  -vd=vd-9840
+    create volume V004 -cart=R01264 -pvr=stk  -vd=vd-9840
+    create volumeSet  raw
+    create volumeSet  dst
+    add volume V001 -vs=raw
+    add volume V002 -vs=raw
+    add volume V003 -vs=raw
+    add volume V004 -vs=raw
+    create drive drive0 -pvr=stk  -dev=/eagle/d00 -spec=0:3:9:3
+    create drive drive1 -pvr=stk  -dev=/eagle/d01 -spec=0:3:9:4
+    set drive drive0 -pvr=stk  -status=enabled
+    set drive drive1 -pvr=stk  -status=enabled
+endDefine

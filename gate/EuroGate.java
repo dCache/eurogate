@@ -16,10 +16,12 @@ public class EuroGate extends CellAdapter implements Runnable {
     private Thread            _readerThread = null ;
     private String            _state   = "init" ;
     private Object            _ioLock  = new Object() ;
-    private int  _removeCounter = 0 , _readCounter = 0 , _writeCounter = 0 ;
-    private int  _replies = 0 ;
-    private Socket            _socket = null ;
-    private String            _remotePeer = "" ;
+    private int     _removeCounter = 0 , 
+                    _readCounter   = 0 ,
+                    _writeCounter  = 0 ;
+    private int     _replies       = 0 ;
+    private Socket  _socket        = null ;
+    private String  _remotePeer    = "" ;
     
     public EuroGate( String name , Socket socket ) throws IOException {
         super( name , "" , true ) ;
@@ -37,6 +39,23 @@ public class EuroGate extends CellAdapter implements Runnable {
 	_remotePeer   = _socket.getInetAddress().toString()+":"+
 	                _socket.getPort() ;
         
+    }
+    public EuroGate( String name , StreamEngine engine ) throws Exception {
+        super( name , "" , false ) ;
+        
+        try{
+	   _socket = null ;
+           _input  = new DataInputStream( engine.getInputStream() ) ;
+           _output = new DataOutputStream( engine.getOutputStream() ) ;
+        }catch(Exception ee ){
+           start() ;
+           kill() ;
+           throw ee ;
+        }
+        _readerThread = new Thread( this ) ;
+        _readerThread.start() ;
+	_remotePeer   = engine.getInetAddress().toString()  ;
+        start() ;
     }
     public void cleanUp(){
        say( "clean up triggerd" ) ;
