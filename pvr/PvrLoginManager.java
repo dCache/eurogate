@@ -70,6 +70,7 @@ public class      PvrLoginManager
           //
           _serverSocket  = new ServerSocket( _listenPort ) ;
        }catch( Exception e ){
+          esay(e);
           //
           // something went wrong, so we start, kill and exit
           //
@@ -85,10 +86,6 @@ public class      PvrLoginManager
        
        _listenThread  = new Thread( this , "listenThread" ) ;       
        _listenThread.start() ;
-       
-       _nucleus.setPrintoutLevel( 0xf ) ;
-       
-  
   }
   public void say( String str ){ pin( str ) ; super.say( str ) ; }
   public void esay( String str ){ pin( str ) ; super.esay( str ) ; }
