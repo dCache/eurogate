@@ -56,7 +56,8 @@ public class StarGateVX extends CellAdapter implements Logable  {
           throw new 
           IllegalArgumentException( de.toString() ) ;
        }
-
+       say( "Exporting Store" ) ;
+       export() ;
        start() ;
    
    }
