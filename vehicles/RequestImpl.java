@@ -130,7 +130,7 @@ public class      RequestImpl
     public void   setServerReqId( long serverReqId ){
        _serverReqId = serverReqId ;
     }
-    public void   setClientReqid( String clientReqId ){
+    public void   setClientReqId( String clientReqId ){
        _clientReqId = clientReqId ;
     }
     public void   setVolume( String volumeName ) {
@@ -154,7 +154,7 @@ public class      RequestImpl
        _volumePosition = volumePosition ;
        _eorPosition    = eorPosition ;
     }
-    public void setPosition( String volumePosition ){
+    public void setFilePosition( String volumePosition ){
        _volumePosition = volumePosition ;
     }
     public String getEorPosition(){ return _eorPosition ; }
