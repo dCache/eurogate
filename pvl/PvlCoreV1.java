@@ -932,7 +932,7 @@ public class      PvlCoreV1
       pvlReq.setVolumeId( volumeId ) ;
 
       say( "processGet : request added to fifo") ;
-      _fifo.push( new PvlResourceRequest( msg , req ) ) ;
+      _fifo.push( pvlReq ) ;
    }
    private void processPut( CellMessage msg , PvlRequest req ){
    
