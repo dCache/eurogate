@@ -93,7 +93,8 @@ public class      DriveDisplayPanel
         private Button _updateButton   = new Button("Update") ;
         private Button _backButton     = new Button("Back") ;
         private Label  _messages       = new Label("")  ;
-        
+        private String _enableString   = "Enable Drive" ;
+        private String _disableString  = "Disable Drive" ;
         private DomainConnection _connection = null ;
         
         private SingleDrivePanel( DomainConnection connection ){
@@ -105,6 +106,8 @@ public class      DriveDisplayPanel
             _enableButton.addActionListener(this) ;
             _updateButton.addActionListener(this) ;
             _backButton.addActionListener(this) ;
+            
+            _selectionText.addActionListener(this);
             
             _driveLabel.setFont( _headerFont ) ;
             _pvrLabel.setFont( _headerFont ) ;
@@ -149,6 +152,8 @@ public class      DriveDisplayPanel
             top.add( centeredDrivePanel  ) ;
             top.add( selectionPanel ) ;
             top.add( buttonPanel ) ;
+            
+            _messages.setForeground( Color.red ) ;
             top.add( _messages ) ;
             
             add( top ) ;
@@ -172,16 +177,24 @@ public class      DriveDisplayPanel
         }
         private void displayDrive( Hashtable list ){
            String res = null ;
-           if( ( res = (String)list.get("status") ) != null )
+           if( ( res = (String)list.get("status") ) != null ){
                _modeLabel.setText(res) ;
-           if( ( res = (String)list.get("cartridge") ) != null )
+               _enableButton.setLabel( res.equals("enabled" )?
+                                      _disableString : 
+                                      _enableString ) ;
+           }
+           if( ( res = (String)list.get("cartridge") ) != null ){
                _cartridgeLabel.setText(res) ;
+               _dismountButton.setEnabled( ! res.equals("empty") ) ;   
+           }
            if( ( res = (String)list.get("owner") ) != null )
                _ownerLabel.setText(res) ;
            if( ( res = (String)list.get("action") ) != null )
                _actionLabel.setText(res) ;
            if( ( res = (String)list.get("selection") ) != null )
                _selectionText.setText(res) ;
+           _actionLabel.invalidate();
+           validate() ;
         }
         public void domainAnswerArrived( Object obj , int id ){
 
@@ -190,6 +203,12 @@ public class      DriveDisplayPanel
                   displayDrive( (Hashtable) obj ) ;
                   setText("") ;
                   return ;
+              }else if( obj instanceof CommandThrowableException ){
+                  CommandThrowableException cte =
+                  (CommandThrowableException)obj ;
+                  setText( cte.getTargetException().toString() ) ;
+              }else if( obj instanceof CommandException ){
+                  setText( ((Exception)obj).getMessage() ) ;
               }else{
                   setText( obj.toString() ) ;
               }   
@@ -200,18 +219,49 @@ public class      DriveDisplayPanel
         private void setText( String text ){
            _messages.setText( text ) ;
         }
-        public void actionPerformed( ActionEvent event ) {
-          Object source = event.getSource() ;
-          if( source == _updateButton ){
-              try{
-                    _connection.sendObject( 
-                     "ls drive -pvr="+_pvrLabel.getText()+
-                     " "+_driveLabel.getText()+" -cellPath=pvl" , this , 0 ) ;
+        private void sendCommand( String command , String args ){
+             try{
+                 _connection.sendObject( 
+                  command+
+                  " drive -pvr="+_pvrLabel.getText()+
+                  " "+_driveLabel.getText()+" -cellPath=pvl " +
+                  args , this , 0 ) ;
              }catch( Exception eee ){
                  setText( "Send failed : "+eee ) ;
              }
+        }
+        private void sendCommand( String command ){
+             try{
+                 _connection.sendObject( 
+                  command+
+                  " -cellPath=pvl " ,
+                  new DomainConnectionListener(){
+                     public void domainAnswerArrived( Object obj , int id ){
+                         sendCommand( "ls" , "" ) ;
+                     }
+                  } ,
+                  0 ) ;
+             }catch( Exception eee ){
+                 setText( "Send failed : "+eee ) ;
+             }
+        }
+        public void actionPerformed( ActionEvent event ) {
+          Object source = event.getSource() ;
+          if( source == _updateButton ){
+             sendCommand( "ls" , "" ) ;
           }else if( source == _backButton){
              swapBack() ;
+          }else if( source == _selectionText){
+             sendCommand( "set" , "-sel=\""+_selectionText.getText()+"\"" ) ;
+          }else if( source == _enableButton){
+             boolean enable = ((Button)source).getLabel().equals(_enableString) ;
+             sendCommand( (enable?"disable":"enable") +
+                          _pvrLabel.getText()+" "+
+                          _driveLabel.getText()    ) ;
+          }else if( source == _dismountButton){
+             sendCommand( "dismount " +
+                          _pvrLabel.getText()+" "+
+                          _driveLabel.getText()    ) ;
           }
 
         }
