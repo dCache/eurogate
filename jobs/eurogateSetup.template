@@ -1,3 +1,20 @@
+#
+#  the database Root for the simulation is the
+#  base directory for the pvl, store, pvr and drive
+#  databases.
+#  The structure which is assumed in $databaseRoot is
+#    <databaseRoot>/store/raw
+#    <databaseRoot>/store/dst
+#    <databaseRoot>/pvr/stk
+#    <databaseRoot>/pvl
+#    <databaseRoot>/drives
+#  These directories must exist BEFORE the eurogate
+#  is started the first time. They all must be
+#  empty.
+#  Then :
+#     jobs/eurogate.sh start
+#     jobs/eurogate.sh initPvl
+#   
 databaseRoot=/home/patrick/eurogateDb
 #cellClasses=/home/patrick/sim/cells.jar:/home/patrick/sim/eurogate.jar:/home/patrick/sim
 cellClasses=/home/patrick/sim/cells.jar
