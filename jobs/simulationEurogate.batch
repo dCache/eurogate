@@ -73,7 +73,20 @@ create dmg.cells.services.login.LoginManager aclMgr \
        dmg.cells.services.login.StreamObjectCell \
        -prot=ssh -auth=dmg.cells.services.login.SshSAuth_A \
        eurogate.spy.AclAdmin"
+#
+#
+#   The http part
+#
+copy file:${documents}/docs/home.html context:home
 
+define context HttpServerSetup endDefine
+   set alias images directory ${documents}/docs/images 
+   set alias <home> context home
+   set alias x directory ${documents}
+   set alias online class eurogate.misc.HttpEurogateService
+   set alias system class dmg.cells.services.HttpSystemService
+endDefine
+create dmg.cells.services.HttpServiceCell  HttpServer 23080
 #
 ########################################################################
 #

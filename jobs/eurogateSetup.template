@@ -44,6 +44,10 @@
 #ssh=${thisDir}/../bin/ssh
 keyBase=${thisDir}
 #
+# must be the full path without /../
+#
+documents=/home/patrick/cvs-cern-eurogate/eurogate
+#
 #    - The database paths
 #    -----------------
 #
@@ -68,7 +72,7 @@ keyBase=${thisDir}
 #
 #     jobs/eurogate start
 #
-databaseRoot=/home/patrick/eurogateDb
+databaseRoot=${thisDir}/db
 #
 #   - The log directory
 #   -----------------
