@@ -20,9 +20,11 @@ public class      DrawingFrame
     private Button _button7 = null ;
     private Button _button8 = null ;
     private Button _button9 = null ;
+    private Button _button10 = null ;
+    private Button _button11 = null ;
     private TextField _nameText = null ;
     private JumpingPigs _jumpingPigs = null ;
-    
+    private String      _setup = null ;
     public DrawingFrame( DomainConnection connection ){
         super( "Group Relations") ;
         setBorderSize( 20 ) ;
@@ -51,8 +53,12 @@ public class      DrawingFrame
         _button7.addActionListener(this);
         _button8 = new Button("Remove Relation") ;
         _button8.addActionListener(this);
-        _button9 = new Button("Nothin'") ;
+        _button9 = new Button("StoreSetup") ;
         _button9.addActionListener(this);
+        _button10 = new Button("RestoreSetup") ;
+        _button10.addActionListener(this);
+        _button11 = new Button("Rescale") ;
+        _button11.addActionListener(this);
         buttonPanel.add( _button1 ) ;
         buttonPanel.add( _button2 ) ;
         buttonPanel.add( _button3 ) ;
@@ -62,6 +68,9 @@ public class      DrawingFrame
         buttonPanel.add( _button7 ) ;
         buttonPanel.add( _button8 ) ;
         buttonPanel.add( _button9 ) ;
+        buttonPanel.add( _button10 ) ;
+        buttonPanel.add( _button11 ) ;
+        buttonPanel.add( new Label("Dummy") ) ;
         
         _jumpingPigs = new JumpingPigs() ;
         
@@ -86,7 +95,6 @@ public class      DrawingFrame
        _button6.setEnabled(en) ;
        _button7.setEnabled(en) ;
        _button8.setEnabled(en) ;
-       _button9.setEnabled(en) ;
     }
     public void actionPerformed( ActionEvent e ){
         setMessage( "" ) ;
@@ -94,27 +102,42 @@ public class      DrawingFrame
         try{
            if( source == _button1 ){
              _jumpingPigs.addContainer(_nameText.getText()) ;
+             _jumpingPigs.switchPigs() ;
            }else if( source == _button2 ){
              _jumpingPigs.addTerminal(_nameText.getText()) ;
+             _jumpingPigs.switchPigs() ;
            }else if( source == _button3 ){
              _jumpingPigs.removeItem(_nameText.getText()) ;
+             _jumpingPigs.switchPigs() ;
            }else if( source == _button4 ){
              _jumpingPigs.removeAll() ;
+             _jumpingPigs.switchPigs() ;
            }else if( source == _button5 ){
-             _jumpingPigs.showProgressBar(_nameText.getText()) ;
+             _jumpingPigs.setProgressTitle(_nameText.getText()) ;
+             _jumpingPigs.switchProgressBar() ;
            }else if( source == _button6 ){
-             _jumpingPigs.setProgressBar(Integer.parseInt(_nameText.getText())) ;
+             _jumpingPigs.setProgressBar(
+                 Double.valueOf(_nameText.getText()).doubleValue()) ;
+             _jumpingPigs.switchProgressBar() ;
            }else if( source == _button7 ){
              StringTokenizer st = new StringTokenizer(_nameText.getText()) ;
              String left = st.nextToken() ;
              String right = st.nextToken() ;
              _jumpingPigs.addRelation( left , right ) ;
+             _jumpingPigs.switchPigs() ;
            }else if( source == _button8 ){
              StringTokenizer st = new StringTokenizer(_nameText.getText()) ;
              String left = st.nextToken() ;
              String right = st.nextToken() ;
              _jumpingPigs.removeRelation( left , right ) ;
+             _jumpingPigs.switchPigs() ;
            }else if( source == _button9 ){
+             _setup = _jumpingPigs.getSetup() ;
+             System.out.println("Setup : "+_setup);
+           }else if( source == _button10 ){
+             if( _setup != null )_jumpingPigs.setSetup(_setup);
+           }else if( source == _button11 ){
+             _jumpingPigs.rescale() ;
            }
          }catch(Exception ee ){
            setMessage( ee.toString() ) ;
