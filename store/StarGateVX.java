@@ -153,6 +153,8 @@ public class StarGateVX extends CellAdapter implements Logable  {
            
            _eurostore = (EuroStoreable)obj ;
        }catch( InvocationTargetException ite ){
+           Throwable t = ite.getTargetException() ;
+           esay( "Problem in loadStoreClass : "+t ) ;
            throw ite.getTargetException() ;
        }
        say( "EuroStorable created : "+_euroClass ) ;
@@ -375,18 +377,25 @@ public class StarGateVX extends CellAdapter implements Logable  {
       }
    
    }
-   public String hh_ls_group = "[-l] <storageGroup>" ;
+   public String hh_ls_group = "[-l] <storageGroup> [-cookie=<cookie>]" ;
    public String ac_ls_group_$_1( Args args ) throws Exception {
       StringBuffer sb    = new StringBuffer();
-      String       group = args.argv(0) ;
+      String  cookieString = args.getOpt("cookie") ;
+      String  group        = args.argv(0) ;
+      long    cookie       = 0L ;
+     
+      if( cookieString != null ){
+         try{cookie = Long.parseLong( cookieString )  ;
+         }catch(Exception e){}
+      }
       
-      boolean longList = args.optc() > 0 ;
+      boolean longList = args.getOpt("l") != null ;
       sb.append( "  Bitfile List\n" ) ;
       
       Session s = _sessionHandler.getSession(1) ;
       try{
-         Enumeration e =   
-            _eurostore.getBfidsByStorageGroup(s.get(), group , 0 ) ;
+         CookieEnumeration e =   
+            _eurostore.getBfidsByStorageGroup(s.get(), group , cookie ) ;
          dumpBfs( s.get() , sb , e , longList ) ;
       }finally{
          _sessionHandler.releaseSession(s) ;
@@ -396,15 +405,23 @@ public class StarGateVX extends CellAdapter implements Logable  {
    }
    public String hh_ls_volume = "[-l] <volume>" ;
    public String ac_ls_volume_$_1( Args args ) throws Exception {
-      StringBuffer sb    = new StringBuffer();
-      String       volume = args.argv(0) ;
+      StringBuffer sb      = new StringBuffer();
+      String  volume       = args.argv(0) ;
+      long    cookie       = 0L ;
+      String  cookieString = args.getOpt("cookie") ;
+     
+      if( cookieString != null ){
+         try{cookie = Long.parseLong( cookieString )  ;
+         }catch(Exception e){}
+      }
       
-      boolean longList = args.optc() > 0 ;
+      boolean longList = args.getOpt("l") != null ;
       sb.append( "  Bitfile List\n" ) ;
       
       Session s = _sessionHandler.getSession(1) ;
       try{
-         Enumeration e = _eurostore.getBfidsByVolume(s.get(),volume , 0 ) ;
+         CookieEnumeration 
+           e = _eurostore.getBfidsByVolume(s.get(),volume , cookie ) ;
          dumpBfs( s.get() , sb , e , longList ) ;
       }finally{
          _sessionHandler.releaseSession(s) ;
@@ -412,12 +429,13 @@ public class StarGateVX extends CellAdapter implements Logable  {
       
       return sb.toString();
    }
-   private void dumpBfs( 
-                         StorageSessionable sessionable ,
+   private void dumpBfs( StorageSessionable sessionable ,
                          StringBuffer sb , 
-                         Enumeration e , boolean longList ){
+                         CookieEnumeration e , 
+                         boolean longList        ){
       DateFormat   df    = new SimpleDateFormat("MMM d, hh.mm.ss" ) ;
-      while( e.hasMoreElements() ){
+      int count = 0 ;
+      for( count = 0 ;  e.hasMoreElements() ; count ++ ){
          String bfid = (String)e.nextElement() ;
          if( longList ){
             BfRecordable bitfileid = 
@@ -426,7 +444,7 @@ public class StarGateVX extends CellAdapter implements Logable  {
                append( bitfileid.getStatus().charAt(0) ) ;
             sb.append( "  "+bitfileid.getFileSize() ).append( "  " ) ;
             sb.append( df.format(bitfileid.getCreationDate()) ).append( "\n" ) ;
-            if( bitfileid.getStatus().equals( "persistent" ) ){
+            if( bitfileid.getStatus().startsWith( "p" ) ){
 
                 sb.append("   ") ;
                 sb.append( Formats.field( ""+bitfileid.getAccessCounter() , 
@@ -443,6 +461,8 @@ public class StarGateVX extends CellAdapter implements Logable  {
              sb.append( "     "+bfid+"\n" ) ;
          }
       }
+      if( count > 0 )sb.append( "-cookie="+e.getCookie() ) ;
+      return  ;
    
    }
    public String hh_ls_groups = "" ;
