@@ -10,6 +10,7 @@ import   dmg.util.* ;
 import   dmg.util.cdb.* ;
 
 import java.util.* ;
+import java.text.* ;
 import java.lang.reflect.* ;
 
 
@@ -24,7 +25,8 @@ public class PvlCommanderV1 {
    private CellAdapter _cell  = null ;
    private PvlDb       _pvlDb = null ;
    private FifoY       _fifo  = null ;
-   private PvlResourceRequestQueue _queue = null ;
+   private PermissionCheckable _permission  = null ;
+   private PvlResourceRequestQueue   _queue = null ;
    
    public PvlCommanderV1( CellAdapter cell , 
                           PvlDb pvlDb , 
@@ -35,18 +37,30 @@ public class PvlCommanderV1 {
       _fifo  = fifo ;   
       _queue = queue ;
    }
+   public void setPermissionCheckable( PermissionCheckable permission ){
+       _permission = permission ;
+   }
+   private void checkPermission( Args args , String acl ) throws AclException{
+      if( ( _permission == null ) || ! ( args instanceof Authorizable ) )return ;
+
+      _permission.checkPermission( (Authorizable)args , acl ) ;
+
+   }
    public void say( String msg ){
       _cell.say( msg ) ;
    }
    public void esay( String msg ){
       _cell.esay( msg ) ;
    }
-   public String hh_ls_drive = "" ;
+   public String ac_interrupted( Args args ){ return "" ; }
+   public String hh_ls_drive = "[-t]" ;
    public String ac_ls_drive( Args args )throws Exception {
      String [] pvrNameList = _pvlDb.getPvrNames() ;
-     String pvrName = null ;
-     StringBuffer sb          = new StringBuffer() ;
-    
+     String pvrName     = null ;
+     long         time  = 0 ;
+     StringBuffer sb    = new StringBuffer() ;
+     boolean      st    = args.getOpt("t") != null ; 
+     DateFormat   df    = new SimpleDateFormat("hh.mm.ss" ) ;
      for( int j = 0 ; j < pvrNameList.length ; j++ ){
         pvrName = pvrNameList[j] ;
         PvrHandle    pvr         = _pvlDb.getPvrByName( pvrName ) ;
@@ -57,22 +71,70 @@ public class PvlCommanderV1 {
         for( int i = 0 ; i < driveNames.length ; i++ ){
            drive = pvr.getDriveByName( driveNames[i] ) ;
            drive.open( CdbLockable.READ ) ;
-           status    = drive.getStatus() ;
-           cartridge = drive.getCartridge() ;
-           owner     = drive.getOwner() ;
-           action    = drive.getAction() ;
+              status    = drive.getStatus() ;
+              cartridge = drive.getCartridge() ;
+              owner     = drive.getOwner() ;
+              action    = drive.getAction() ;
+              time      = drive.getTime() ;
            drive.close( CdbLockable.COMMIT ) ;
            sb.append( Formats.field( driveNames[i]  , 12 ) ).
               append( Formats.field( status         , 12 ) ).
               append( Formats.field( cartridge      , 12 ) ).
               append( Formats.field( pvrNameList[j] , 8  ) ).
               append( Formats.field( owner          , 8  ) ).
-              append( Formats.field( action         , 12  ) ).
-              append("\n") ;
+              append( Formats.field( action         , 12  ) ) ;
+           if(st)sb.append(df.format(new Date(time))) ; 
+           sb.append("\n") ;
         }
      }
      return sb.toString() ;
    
+   }
+   public String hh_update = "" ;
+   public String ac_update( Args args )throws Exception {
+     String [] pvrNameList = _pvlDb.getPvrNames() ;
+     String pvrName     = null ;
+     StringBuffer error = new StringBuffer() ;
+     for( int j = 0 ; j < pvrNameList.length ; j++ ){
+                     pvrName     = pvrNameList[j] ;
+        PvrHandle    pvr         = _pvlDb.getPvrByName( pvrName ) ;
+        String []    driveNames  = pvr.getDriveNames() ;
+        DriveHandle  drive       = null ;
+        String       specific    = null ;
+        String       acl         = "pvr."+pvrName+".expert" ;
+        try{
+           checkPermission( args , acl ) ;
+        }catch( Exception eee){
+           error.append( pvrName ).
+                 append(" : you don't own ").
+                 append(acl).
+                 append("\n");
+           continue ;
+        }
+        for( int i = 0 ; i < driveNames.length ; i++ ){
+           try{
+              drive = pvr.getDriveByName( driveNames[i] ) ;
+              drive.open( CdbLockable.WRITE ) ;
+                 specific = drive.getSpecificName() ;
+              drive.close( CdbLockable.COMMIT ) ;
+
+              PvrRequest pvrReq = 
+                   new PvrRequestImpl( "newdrive" , 
+                                       pvrName ,
+                                       "" , 
+                                       driveNames[i] , 
+                                       specific ) ;
+              
+              sendRequest( pvrName , pvrReq ) ;     
+           }catch(Exception ee ){
+              error.append(driveNames[i]).
+                    append(" : ").
+                    append(ee.getMessage()).
+                    append("\n");
+           }
+        }
+     }
+     return error.toString();
    }
    public String hh_ls_request = "" ;
    public String ac_ls_request( Args args )throws Exception {
@@ -84,14 +146,15 @@ public class PvlCommanderV1 {
       return sb.toString() ;
    
    }
-   public String hh_dismount = "<pvr> <drive>" ;
+   public String hh_xdismount = "<pvr> <drive>" ;
    
-   public String ac_dismount_$_2(Args args ) throws Exception {
+   public String ac_xdismount_$_2(Args args ) throws Exception {
    
    
        String pvrName   = args.argv(0) ;
        String driveName = args.argv(1) ;
        
+       checkPermission( args , "pvr."+pvrName+".expert" ) ;
        PvrHandle pvr = null ;
        try{
           pvr = _pvlDb.getPvrByName( pvrName ) ;
@@ -114,21 +177,22 @@ public class PvlCommanderV1 {
        if( drive.getCartridge().equals("empty") )
          return "Drive "+driveName+" is empty" ;
 
-       drive.open( CdbLockable.WRITE ) ;
-       drive.setCartridge("empty") ;
-       drive.close( CdbLockable.COMMIT ) ;
+//       drive.open( CdbLockable.WRITE ) ;
+//       drive.setCartridge("empty") ;
+//       drive.close( CdbLockable.COMMIT ) ;
    
       _fifo.push( new PvlDismountModifier( 
                             pvrName ,
                             driveName ,
                             cart    )            ) ;
-      return "Queued" ;
+      return "" ;
    }
    public String hh_deallocate = "<pvr> <drive>" ;
    
    public String ac_deallocate_$_2(Args args ) throws Exception {
        String pvrName   = args.argv(0) ;
        String driveName = args.argv(1) ;
+       checkPermission( args , "pvr."+pvrName+".expert" ) ;
        
        PvrHandle pvr = null ;
        try{
@@ -220,6 +284,8 @@ public class PvlCommanderV1 {
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
       String      cartName  = args.argv(2) ;
+      checkPermission( args , "pvr."+pvrName+".expert" ) ;
+
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
       
@@ -241,12 +307,46 @@ public class PvlCommanderV1 {
 
       return "Queued" ;
    }
+   public String hh_dismount = "<pvr> <drive1> [<drive2>...]" ;
+   public String ac_dismount_$_2_99( Args args )throws Exception {
+
+      String      pvrName = args.argv(0) ;
+      checkPermission( args , "pvr."+pvrName+".manageDrives" ) ;
+      PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
+      args.shift() ;
+      StringBuffer error  = new StringBuffer() ;
+      int d = args.argc() ;
+      for( int i = 0 ; i < d ; i++ ){
+          String      driveName = args.argv(0) ;
+          try{
+            DriveHandle drive   = pvr.getDriveByName( driveName ) ;
+
+            drive.open( CdbLockable.WRITE ) ;
+               String specific = drive.getSpecificName() ;
+               drive.setAction( "dismounting" ) ;
+            drive.close( CdbLockable.COMMIT ) ;
+            PvrRequest pvrReq = 
+                  new PvrRequestImpl( "dismount" , 
+                                      pvrName ,
+                                      "*" ,
+                                      driveName ,
+                                      specific       ) ;
+
+            sendRequest( pvrName , pvrReq ) ;     
+         }catch(Exception ee ){
+            error.append(driveName).append(" : ").
+                  append(ee.getMessage()).append("\n");
+         }
+      }   
+      return error.toString() ;
+   }
    public String hh_pvr_dismount = "<pvr> <drive> <cartridge>" ;
    public String ac_pvr_dismount_$_3( Args args )throws Exception {
 
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
       String      cartName  = args.argv(2) ;
+      checkPermission( args , "pvr."+pvrName+".expert" ) ;
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
       
@@ -260,19 +360,25 @@ public class PvlCommanderV1 {
                                            driveName ,
                                            specific       ) ;
 
-      CellMessage msg = _cell.getThisMessage() ;
-      msg.setMessageObject( pvrReq ) ;
-      msg.getDestinationPath().add( pvrName ) ;  
-      msg.nextDestination() ;                                  
-      _cell.sendMessage( msg ) ;     
+      sendRequest( pvrName , pvrReq ) ;     
 
       return "Queued" ;
+   }
+   private void sendRequest( String destination , Object request )
+           throws Exception{
+      CellMessage msg = _cell.getThisMessage() ;
+      msg.setMessageObject( request ) ;
+      msg.getDestinationPath().add( destination ) ;  
+      msg.nextDestination() ;                                  
+      _cell.sendMessage( msg ) ;     
+           
    }
    public String hh_pvr_newdrive = "<pvr> <drive>" ;
    public String ac_pvr_newdrive_$_2( Args args )throws Exception {
 
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
+      checkPermission( args , "pvr."+pvrName+".expert" ) ;
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
       
@@ -286,11 +392,7 @@ public class PvlCommanderV1 {
                                            driveName , 
                                            specific ) ;
 
-      CellMessage msg = _cell.getThisMessage() ;
-      msg.setMessageObject( pvrReq ) ;
-      msg.getDestinationPath().add( pvrName ) ;                                    
-      msg.nextDestination() ;                                  
-      _cell.sendMessage( msg ) ;     
+      sendRequest( pvrName , pvrReq ) ;     
 
       return "Queued" ;
    }
@@ -299,6 +401,7 @@ public class PvlCommanderV1 {
 
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
+      checkPermission( args , "pvr."+pvrName+".expert" ) ;
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
       
@@ -320,5 +423,68 @@ public class PvlCommanderV1 {
       _cell.sendMessage( msg ) ;     
 
       return "Queued" ;
+   }
+   public String hh_enable = "<pvr> [<drive1> [ <drive2>...]]" ;
+   public String ac_enable_$_1_99( Args args )throws Exception {
+      String      pvrName   = args.argv(0) ;
+      checkPermission( args , "pvr."+pvrName+".manageDrives" ) ;
+   
+      args.shift() ;
+
+      return handle_drives( pvrName , true , args ) ;         
+      
+   }
+   public String hh_disable = "<pvr> [<drive1> [ <drive2>...]]" ;
+   public String ac_disable_$_1_99( Args args )throws Exception {
+      String      pvrName   = args.argv(0) ;
+      checkPermission( args , "pvr."+pvrName+".manageDrives" ) ;
+   
+      args.shift() ;
+
+      return handle_drives( pvrName , false , args ) ;         
+      
+   }
+   private  String handle_drives( String pvrName , 
+                                  boolean enable , 
+                                  Args drives  )throws Exception {
+
+      String newMode    =  enable ? "enabled" : "disabled" ;
+      PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
+      int d = drives.argc() ;
+      Enumeration driveNames = null ;
+      if( d == 0 ){ 
+         Vector v = new Vector() ;
+         String [] names = pvr.getDriveNames() ; 
+         for( int i = 0 ; i < names.length ; i++ )
+             v.addElement( names[i] ) ;
+         driveNames = v.elements() ;
+      }else{
+         Vector v = new Vector() ;
+         for( int i = 0 ; i < d ; i++ )
+             v.addElement( drives.argv(i) ) ;
+         driveNames = v.elements() ;
+      }
+      StringBuffer errors = new StringBuffer() ;
+      DriveHandle  drive  = null ;
+      while( driveNames.hasMoreElements() ){
+          
+          String  driveName = (String)driveNames.nextElement() ;
+          try{
+             drive = pvr.getDriveByName( driveName ) ;
+             drive.open( CdbLockable.WRITE ) ;
+                drive.setStatus( newMode ) ;
+                drive.setAction("none");
+                drive.setOwner("-");
+             drive.close( CdbLockable.COMMIT ) ;
+          }catch(Exception ee ){
+             errors.append(driveName).
+                    append(" : ").
+                    append(ee.getMessage()).
+                    append("\n");
+          }
+      }
+      if( enable )_fifo.push( new PvlResourceKicker() ) ;
+
+      return errors.toString() ;
    }
 }
