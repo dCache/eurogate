@@ -88,6 +88,7 @@ public class      DriveDisplayPanel
         private Label _actionLabel    = new Label("")  ;
         private Label _ownerLabel     = new Label("")  ;
         private TextField _selectionText = new TextField() ;
+        private TextField _timeoutText = new TextField() ;
         private Button _dismountButton = new Button("Dismount") ;
         private Button _enableButton   = new Button("Enable Drive") ;
         private Button _updateButton   = new Button("Update") ;
@@ -108,6 +109,7 @@ public class      DriveDisplayPanel
             _backButton.addActionListener(this) ;
             
             _selectionText.addActionListener(this);
+            _timeoutText.addActionListener(this);
             
             _driveLabel.setFont( _headerFont ) ;
             _pvrLabel.setFont( _headerFont ) ;
@@ -128,6 +130,8 @@ public class      DriveDisplayPanel
             driveParas.add( _actionLabel ) ;
             driveParas.add( new Label( "Owner" , Label.CENTER ) ) ;
             driveParas.add( _ownerLabel ) ;
+            driveParas.add( new Label( "Dismount Timeout" , Label.CENTER ) ) ;
+            driveParas.add( _timeoutText ) ;
             
             
             Panel centeredDrivePanel = new Panel( new CenterLayout() ) ;
@@ -193,6 +197,8 @@ public class      DriveDisplayPanel
                _actionLabel.setText(res) ;
            if( ( res = (String)list.get("selection") ) != null )
                _selectionText.setText(res) ;
+           if( ( res = (String)list.get("idle") ) != null )
+               _timeoutText.setText(res) ;
            _actionLabel.invalidate();
            validate() ;
         }
@@ -200,17 +206,9 @@ public class      DriveDisplayPanel
 
            try{ 
               if( obj instanceof Hashtable ){
-                  displayDrive( (Hashtable) obj ) ;
-                  setText("") ;
-                  return ;
-              }else if( obj instanceof CommandThrowableException ){
-                  CommandThrowableException cte =
-                  (CommandThrowableException)obj ;
-                  setText( cte.getTargetException().toString() ) ;
-              }else if( obj instanceof CommandException ){
-                  setText( ((Exception)obj).getMessage() ) ;
+                 displayDrive( (Hashtable) obj ) ;
               }else{
-                  setText( obj.toString() ) ;
+                 displayThrowable( (Throwable)obj ) ;
               }   
            }catch( Exception ee ){
               setText( ee.toString() ) ;
@@ -219,46 +217,85 @@ public class      DriveDisplayPanel
         private void setText( String text ){
            _messages.setText( text ) ;
         }
-        private void sendCommand( String command , String args ){
+        private void updateDisplay(){
              try{
                  _connection.sendObject( 
-                  command+
-                  " drive -pvr="+_pvrLabel.getText()+
-                  " "+_driveLabel.getText()+" -cellPath=pvl " +
-                  args , this , 0 ) ;
+                  "ls drive -pvr="+_pvrLabel.getText()+
+                  " "+_driveLabel.getText()+
+                  " -cellPath=pvl " , this , 0 ) ;
              }catch( Exception eee ){
                  setText( "Send failed : "+eee ) ;
              }
         }
+        private void displayThrowable( Throwable obj ){
+           if( obj instanceof CommandThrowableException ){
+               CommandThrowableException cte =
+               (CommandThrowableException)obj ;
+               Throwable t = cte.getTargetException() ;
+               if( t instanceof AclException ){
+                  setText( "No Permission : "+t.getMessage() ) ; 
+               }else{
+                  setText( t.toString() ) ;
+               }
+           }else if( obj instanceof CommandException ){
+               setText( ((Exception)obj).getMessage() ) ;
+           }else{
+               setText( obj.toString() ) ;
+           }   
+        }
+        private class UpdateDomainListener implements DomainConnectionListener {
+           public void domainAnswerArrived( Object obj , int id ){
+              if( obj instanceof Throwable ){
+                  displayThrowable( (Throwable)obj ) ;
+                  return ;
+              }   
+              updateDisplay() ;
+           }
+        }
+        private UpdateDomainListener _updateListener = new UpdateDomainListener() ;
+        private void sendCommand( String command , String args ){
+           try{
+               _connection.sendObject( 
+                command+
+                " drive -pvr="+_pvrLabel.getText()+
+                " "+_driveLabel.getText()+" -cellPath=pvl " +
+                args , _updateListener , 0 ) ;
+           }catch( Exception eee ){
+               setText( "Send failed : "+eee ) ;
+           }
+        }
         private void sendCommand( String command ){
-             try{
-                 _connection.sendObject( 
-                  command+
-                  " -cellPath=pvl " ,
-                  new DomainConnectionListener(){
-                     public void domainAnswerArrived( Object obj , int id ){
-                         sendCommand( "ls" , "" ) ;
-                     }
-                  } ,
-                  0 ) ;
-             }catch( Exception eee ){
-                 setText( "Send failed : "+eee ) ;
-             }
+           try{
+               _connection.sendObject( 
+                command+" -cellPath=pvl " , 
+                _updateListener ,
+                0 ) ;
+           }catch( Exception eee ){
+               setText( "Send failed : "+eee ) ;
+           }
         }
         public void actionPerformed( ActionEvent event ) {
           Object source = event.getSource() ;
           if( source == _updateButton ){
-             sendCommand( "ls" , "" ) ;
+             setText("");
+             updateDisplay() ;
           }else if( source == _backButton){
+             setText("");
              swapBack() ;
           }else if( source == _selectionText){
+             setText("");
              sendCommand( "set" , "-sel=\""+_selectionText.getText()+"\"" ) ;
+          }else if( source == _timeoutText){
+             setText("");
+             sendCommand( "set" , "-idle=\""+_timeoutText.getText()+"\"" ) ;
           }else if( source == _enableButton){
+             setText("");
              boolean enable = ((Button)source).getLabel().equals(_enableString) ;
-             sendCommand( (enable?"disable":"enable") +
+             sendCommand( (enable?"enable ":"disable ") +
                           _pvrLabel.getText()+" "+
                           _driveLabel.getText()    ) ;
           }else if( source == _dismountButton){
+             setText("");
              sendCommand( "dismount " +
                           _pvrLabel.getText()+" "+
                           _driveLabel.getText()    ) ;
@@ -340,6 +377,24 @@ public class      DriveDisplayPanel
             _messages = new Label("") ;
             add( _messages  , "South" ) ;
             
+            addComponentListener(
+               new ComponentListener(){
+                   public void componentResized(ComponentEvent e){}
+                   public void componentMoved(ComponentEvent e){}
+                   public void componentShown(ComponentEvent e){
+                      System.out.println( "Showing component" ) ;
+                      updateDisplay() ;
+                   }
+                   public void componentHidden(ComponentEvent e){}
+               }
+            ) ;
+            
+         }
+         private void updateDisplay(){
+            try{
+               _connection.sendObject( "ls drive -cellPath=pvl" , this , 0 ) ;
+            }catch(Exception ee ){}
+         
          }
          private void setText( String text ){ _messages.setText( text ) ; }
          
