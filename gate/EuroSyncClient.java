@@ -102,17 +102,29 @@ public class EuroSyncClient implements Runnable {
                   if( pc.bbackOk ){
                      _requests.remove( rc.getId() ) ;
                      _pending-- ;
-                     _pendingLock.notifyAll() ;
                   }
+                  _pendingLock.notifyAll() ;
+                  
                }
                
             }else if( rc instanceof GetCompanion ){
                GetCompanion gc = (GetCompanion)rc ;
-               long         size = gc.getSize() ;
+               long         size = -1 ;
+               synchronized( _pendingLock ){
+                  if(_debug)System.err.println("Waiting for filesize");
+                  while( ( size = gc.getSize() ) < 0 ){
+                     try{_pendingLock.wait() ;
+                     }catch(Exception ex ){
+                        System.err.print("Get lock interrupted");}
+                  
+                  }
+                  if(_debug)System.err.println("Could get size : "+size);               
+               }
                byte []      data = new byte[1024] ;
                OutputStream fileOut = gc.getOutputStream() ;
                int now , count ;
                long rest = size ;
+               if(_debug)System.err.println("Expecting : "+rest ) ;
                try{
                   while( rest > 0 ){
 
@@ -141,8 +153,9 @@ public class EuroSyncClient implements Runnable {
                   if( gc.bbackOk ){
                      _requests.remove( rc.getId() ) ;
                      _pending-- ;
-                     _pendingLock.notifyAll() ;
                   }
+                  _pendingLock.notifyAll() ;
+                  
                }
             }else if( rc instanceof ListCompanion ){
                ListCompanion lc   = (ListCompanion)rc ;
@@ -313,10 +326,14 @@ public class EuroSyncClient implements Runnable {
          if( rc instanceof PutCompanion ){
              PutCompanion pc = (PutCompanion)rc ;
              pc.setBfid( args.argv(2) ) ;
+             pc.okOK = true ;
          }else if( rc instanceof GetCompanion ){
              GetCompanion gc = (GetCompanion)rc ;
              gc.setSize( Long.parseLong( args.argv(2) ) ) ;
+             gc.okOK = true ;
          }
+         synchronized( _pendingLock ){ _pendingLock.notifyAll() ; }
+         
       }else if( args.argv(0).equals( "BBACK" ) ){
          String serverId = args.argv(1) ;
          String bfid     = args.argv(2) ;
@@ -347,8 +364,10 @@ public class EuroSyncClient implements Runnable {
             if( moverOk ){
                _requests.remove( rc.getId() ) ;
                _pending-- ;
-               _pendingLock.notifyAll() ;
             }
+            // we need to notify because bbackOk changed.
+             _pendingLock.notifyAll() ;
+            
          }
       }else if( args.argv(0).equals( "NOK" ) ){
          Enumeration e = _requests.elements() ;
@@ -446,6 +465,7 @@ public class EuroSyncClient implements Runnable {
       private long         _size    = -1 ;
       private boolean      bbackOk  = false ;
       private boolean      moverOk  = false ;
+      private boolean      okOK     = false ;
       public String       getFilename(){ return _file.toString() ; }
       public OutputStream getOutputStream(){ return _dataOut ; }
       public String       getBfid(){ return _bfid ; }
@@ -535,6 +555,7 @@ public class EuroSyncClient implements Runnable {
       private String      _bfid   = null ;
       private boolean      bbackOk  = false ;
       private boolean      moverOk  = false ;
+      private boolean      okOK     = false ;
       
       PutCompanion( File   file  , 
                     String store , 
