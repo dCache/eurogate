@@ -85,6 +85,7 @@ initDone=true
       exit 3
    fi
    #
+   expr ${thisDir} : "/.*"  >/dev/null || thisDir=`pwd`/${thisDir}
 #   echo "thisDir : ${thisDir}"
 #   echo "ourHOme : ${ourHome}"
 #   echo "weAre   : ${weAre}"
@@ -135,7 +136,7 @@ if [ ! -f ${jobs}/${lib} ] ; then
    echo "Library not  found : $lib"
    exit 4
 fi
-echo "Running ${lib}"
+#echo "Running ${lib}"
 . ${jobs}/${lib}
 x="${ourBaseName}Switch $*"
 #echo "Execute : $x"
