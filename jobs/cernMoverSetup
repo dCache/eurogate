@@ -90,7 +90,7 @@ logdir=/tmp
 #  file.
 #  
 jardir=${thisDir}/../bin
-eurogateClasses=${thisDir}/../..
+eurogateClasses=/home/martin/cvs-eurogate:${thisDir}/../..
 #
 #    - The movers
 #    -----------------
@@ -104,7 +104,8 @@ eurogateClasses=${thisDir}/../..
 #moverData=${databaseRoot}/mover
 #javaOnly=false
 #
-sharedLibraries=${thisDir}/../lib
+#sharedLibraries=/home/martin/cvs-eurogate/eurogate/mover:${thisDir}/../lib
+sharedLibraries=/home/martin/cvs-eurogate/eurogate/mover
 javaOnly=false
 #
 #
