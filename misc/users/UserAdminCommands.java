@@ -133,11 +133,41 @@ public class UserAdminCommands implements  Interpretable {
        _userDb.removeElement(group,princ);
        return "" ;
     }
+    public String hh_show_parents = "<principal>" ;
+    public Object ac_show_parents_$_1_( Args args )throws Exception{
+        String  user     = args.argv(0) ;
+        boolean isBinary = args.getOpt("binary") != null  ;
+        
+        _userMetaDb.getDictionary( user ) ; // check exists
+        try{
+           Enumeration e = _userDb.getParentsOf(user) ;
+           return isBinary ?  sendBinary( e ) : (Object) sendAscii( e ) ;
+        }catch(NoSuchElementException eee ){
+           Vector v = new Vector() ;
+           return isBinary ? ((Object)new Vector()) : (Object)"" ;
+        }
+    }
     public String hh_show_group = "<group>" ;
     public Object ac_show_group_$_1( Args args )throws Exception {
-        Enumeration  e  = _userDb.getElementsOf(args.argv(0)) ;
-        return args.getOpt("binary") == null ?
-               (Object) sendAscii( e ) : sendBinary( e ) ;
+        Enumeration  ee  = _userDb.getElementsOf(args.argv(0)) ;
+        Enumeration  ep  = _userDb.getParentsOf(args.argv(0)) ;
+        if( args.getOpt("binary") == null ){
+           StringBuffer sb = new StringBuffer() ;
+           sb.append( "Parents : \n" ) ;
+           while( ep.hasMoreElements() ){
+              sb.append( "  "+ep.nextElement().toString() ).append("\n") ;
+           }
+           sb.append( "Elements : \n" ) ;
+           while( ee.hasMoreElements() ){
+              sb.append( "  "+ee.nextElement().toString() ).append("\n") ;
+           }
+           return sb.toString() ;
+        }else{
+           Object [] v = new Vector[2] ;
+           v[0] = sendBinary( ep ) ;
+           v[1] = sendBinary( ee ) ;
+           return v ;
+        }
     }
     public String hh_show_groups = "" ;
     public Object ac_show_groups( Args args )throws Exception {
