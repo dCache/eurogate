@@ -20,7 +20,7 @@ public class ObjectivityStore implements EuroStoreable {
   private static ooHelper[] _ssessions;
   private Logable _log = null;
   
-  private static final int numSessions = 5;
+  private static final int numSessions = 1;
   private static final int _dbMajor = 0;
   private static final int _dbMinor = 1;
 
@@ -74,7 +74,9 @@ public class ObjectivityStore implements EuroStoreable {
   
   public void initialPutRequest( StorageSessionable session ,
                                  BitfileRequest bfreq ) {
+    say("initialPutRequest() in");
     bfreq.setBfid(new Bfid().toString());
+    say("initialPutRequest() out");
   }
   
   public void initialGetRequest( StorageSessionable session ,
@@ -87,6 +89,7 @@ public class ObjectivityStore implements EuroStoreable {
     ooSGroup sg = null;
     long size;
 
+    say("initialGetRequest() in");
     o._session.join();
     
     o._session.begin();
@@ -107,6 +110,7 @@ public class ObjectivityStore implements EuroStoreable {
         esay(error = "bitfile not found (" + bfid + ")");
         bfreq.setReturnValue(14, error);
         o._session.abort();
+	say("initialGetRequest() eout");
         return;
       }
     } /* catch (ObjyException oe) {
@@ -118,6 +122,7 @@ public class ObjectivityStore implements EuroStoreable {
       LogDB.Log(_log, ore.errors());
       o._session.abort();
       bfreq.setReturnValue(13, "Objectivity DB runtime error");
+      say("initialGetRequest() eout");
       return;
     }
     o._session.commit();
@@ -128,7 +133,7 @@ public class ObjectivityStore implements EuroStoreable {
     bfreq.setFilePosition(location);
     bfreq.setVolume(volume);
     bfreq.setParameter(parameter);
-    
+    say("initialGetRequest() out");
   }
   
   public void initialRemoveRequest( StorageSessionable session ,
@@ -140,6 +145,8 @@ public class ObjectivityStore implements EuroStoreable {
     ooVolume vol = null;
     ooSGroup sg = null;
     long size;
+
+    say("initialRemoveRequest() in");
 
     o._session.join();
     
@@ -161,12 +168,14 @@ public class ObjectivityStore implements EuroStoreable {
         esay(error = "bitfile not found (" + bfid + ")");
         bfreq.setReturnValue(14, error);
         o._session.abort();
+	say("initialRemoveRequest() eout");
         return;
       }
     } catch (ObjyRuntimeException ore) {
       LogDB.Log(_log, ore.errors());
       o._session.abort();
       bfreq.setReturnValue(13, "Objectivity DB runtime error");
+      say("initialRemoveRequest() eout");
       return;
     }
     o._session.commit();
@@ -177,6 +186,9 @@ public class ObjectivityStore implements EuroStoreable {
     bfreq.setFilePosition(location);
     bfreq.setVolume(volume);
     bfreq.setParameter(parameter);
+
+    say("initialRemoveRequest() out");
+
   }
   
   public void finalPutRequest( StorageSessionable session ,
@@ -184,6 +196,8 @@ public class ObjectivityStore implements EuroStoreable {
     
     if (bfreq.getReturnCode() != 0)  // easy going
       return;
+
+    say("finalPutRequest() in");
                                    
     ooHelper o   = (ooHelper) session;
     String group  = bfreq.getStorageGroup();
@@ -254,15 +268,18 @@ public class ObjectivityStore implements EuroStoreable {
       o._session.abort();
       error = "Objectivity Store DB runtime error";
       bfreq.setReturnValue(13, error);
+      say("finalPutRequest() eout");
       return;
     } catch (Exception e) {
       esay(error = "Exception in create bitfile");
       e.printStackTrace();
       o._session.abort();
       bfreq.setReturnValue(15, error);
+      say("finalPutRequest() eout");
       return;
     }
     o._session.commit();
+    say("finalPutRequest() out");
   }
   
   public void finalGetRequest( StorageSessionable session ,
@@ -272,6 +289,9 @@ public class ObjectivityStore implements EuroStoreable {
     String bfid   = bfreq.getBfid();
     String error = null;
     ooBfid bf = null;
+
+
+    say("finalGetRequest() in");
 
     o._session.join();
     
@@ -291,15 +311,18 @@ public class ObjectivityStore implements EuroStoreable {
         if (bfreq.getReturnCode() == 0)
           bfreq.setReturnValue(14, error);
         o._session.abort();
+	say("finalGetRequest() eout");
         return;
       }
     } catch (ObjyRuntimeException ore) {
       LogDB.Log(_log, ore.errors());
       bfreq.setReturnValue(13, "Objectivity DB runtime error");
       o._session.abort();
+      say("finalGetRequest() eout");
       return;
     }
     o._session.commit();
+    say("finalGetRequest() out");
   }
   
   public void finalRemoveRequest( StorageSessionable session ,
@@ -311,6 +334,8 @@ public class ObjectivityStore implements EuroStoreable {
     ooVolume vol = null;
     ooSGroup sg = null;
     long size;
+
+    say("finalRemoveRequest() in");
 
     o._session.join();
     
@@ -331,21 +356,25 @@ public class ObjectivityStore implements EuroStoreable {
           esay(error = "error removing bitfile " + bfid + " from Tree-Set");
           bfreq.setReturnValue(15, error);
           o._session.abort();
+	  say("finalRemoveRequest() eout");
           return;
         }
       } else {   // bitfile not found
         esay(error = "bitfile not found (" + bfid + ")");
         bfreq.setReturnValue(14, error);
         o._session.abort();
+	say("finalRemoveRequest() eout");
         return;
       }
     } catch (ObjyRuntimeException ore) {
       LogDB.Log(_log, ore.errors());
       o._session.abort();
       bfreq.setReturnValue(13, "Objectivity DB runtime error");
+      say("finalRemoveRequest() eout");
       return;
     }
     o._session.commit();
+    say("finalRemoveRequest() out");
   }
 
   private class BfRecord implements BfRecordable {
