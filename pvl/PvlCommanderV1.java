@@ -53,6 +53,51 @@ public class PvlCommanderV1 {
       _cell.esay( msg ) ;
    }
    public String ac_interrupted( Args args ){ return "" ; }
+   private Object dumpSingleDrive( String pvrName , String driveName  )
+           throws Exception {
+           
+     if( pvrName == null )
+       throw new 
+       CommandException( "-pvr=<pvr> must be given for <drive>") ;
+     PvrHandle pvr       = _pvlDb.getPvrByName( pvrName ) ;
+     if( pvr == null )
+       throw new
+       IllegalArgumentException( "pvr not found : "+pvrName) ;        
+     DriveHandle drive = pvr.getDriveByName( driveName ) ;
+     if( drive == null )
+       throw new
+       IllegalArgumentException( "drive not found : "+driveName) ;        
+     String status = null , cartridge = null , owner = null ,
+            selection = null , specific = null , device = null ,
+            action    = null ;
+     int    idle   = 0 , minimalBlock = 0 , maximalBlock = 0 ,
+            bestBlock = 0 ;
+     long   time   = 0 ;
+     drive.open( CdbLockable.READ ) ;
+        status    = drive.getStatus() ;
+        cartridge = drive.getCartridge() ;
+        owner     = drive.getOwner() ;
+        selection = drive.getSelectionString() ;
+        idle      = drive.getIdleTime() ;
+        specific  = drive.getSpecificName() ;
+        device    = drive.getDeviceName() ;
+        minimalBlock = drive.getMinimalBlockSize() ;
+        maximalBlock = drive.getMaximalBlockSize() ;
+        bestBlock    = drive.getBestBlockSize() ;
+        action       = drive.getAction() ;
+        time         = drive.getTime() ;
+     drive.close( CdbLockable.COMMIT ) ;
+     Hashtable h = new Hashtable() ;
+     h.put( "status"    , status ) ;
+     h.put( "cartridge" , cartridge ) ;
+     h.put( "owner"     , owner ) ;
+     h.put( "selection" , selection ) ;
+     h.put( "selection" , selection ) ;
+     h.put( "action"    , action ) ;
+     
+     return h ;
+           
+   }
    private void dumpSingleDrive( String pvrName , 
                                  String driveName ,
                                  StringBuffer sb      )
@@ -120,13 +165,16 @@ public class PvlCommanderV1 {
      boolean      st    = args.isOneCharOption('t') ; 
      boolean      ss    = args.isOneCharOption('s') ; 
      DateFormat   df    = new SimpleDateFormat("hh.mm.ss" ) ;
-     
      if( args.argc() > 0 ){
-        for( int i = 0 ; i < args.argc() ; i++ ){
-           dumpSingleDrive( pvrName , args.argv(i) , sb ) ;
-           sb.append("\n") ;
+        if( isBinary ){
+           return dumpSingleDrive( pvrName , args.argv(0) ) ;
+        }else{
+           for( int i = 0 ; i < args.argc() ; i++ ){
+              dumpSingleDrive( pvrName , args.argv(i) , sb ) ;
+              sb.append("\n") ;
+           }
+           return sb.toString() ;
         }
-        return sb.toString() ;
      }
      Object [] result = new Object[pvrNameList.length*2] ;
      for( int j = 0 ; j < pvrNameList.length ; j++ ){
