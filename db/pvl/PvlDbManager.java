@@ -21,8 +21,10 @@ public class      PvlDbManager
  
    private PvlDb          _pvlDb     = null ;
  
-   public PvlDbManager( String name , String args ){
-       super( name , args , true ) ;
+   public PvlDbManager( String name , String args )
+          throws Exception {
+          
+       super( name , args , false ) ;
     
        setPrintoutLevel( 0xff ) ;
        try{
@@ -49,11 +51,12 @@ public class      PvlDbManager
        
        }catch( Exception e ){
           say( "Problem in <init> : "+e ) ;
+          start();
           kill() ;
-          return ;
+          throw e  ;
        }
     
-    
+       start() ;
    }
     
 }

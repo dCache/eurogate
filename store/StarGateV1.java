@@ -129,7 +129,7 @@ public class StarGateV1 extends CellAdapter  {
        say( "Found bfid : "+bfid + " in group : "+group ) ;
        req.setStorageGroup( group ) ;
        req.setFileSize( bitfile.getSize() ) ;
-       req.setPosition( bitfile.getPosition() ) ;
+       req.setFilePosition( bitfile.getPosition() ) ;
        req.setVolume( bitfile.getVolume() ) ;
        
        return true ;
@@ -181,7 +181,7 @@ public class StarGateV1 extends CellAdapter  {
        say( "Found bfid : "+bfid + " in group : "+group ) ;
        req.setStorageGroup( group ) ;
        req.setFileSize( bitfile.getSize() ) ;
-       req.setPosition( bitfile.getPosition() ) ;
+       req.setFilePosition( bitfile.getPosition() ) ;
        req.setVolume( bitfile.getVolume() ) ;
        //
        //  send the first BB-OK
