@@ -13,4 +13,12 @@ ln -s wrapper.sh eurogate >/dev/null 2>/dev/null
 #
 rm -rf ../store/bdb ../store/objectivity52 ../pvl/regexp >/dev/null 2>/dev/null
 #
+if [ -f eurogateSetup ] ; then
+   echo "Found a version of 'eurogateSetup'"
+   echo " -->>>> Make sure it's up to date <<<<----"
+else
+   echo "--->>> 'eurogateSetup' must be tuned, to fit your needs <<<---" 
+   cp eurogateSetup.template eurogateSetup
+fi
+#
 exit 0
