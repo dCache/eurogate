@@ -176,13 +176,18 @@ public class       AclCell
       
       try{
          if( userName.equals("admin" ) ){
-            if( _egPassword == null ){
-               pswd = DUMMY_ADMIN ;
-            }else{
-               pswd = _egPassword.getPassword(userName) ;
-               if( pswd == null )pswd = DUMMY_ADMIN ;
-            }
+            if( ( _sysPassword == null ) ||
+                ( ( pswd = _sysPassword.getPassword(userName) ) == null ) ){
+                               
+               if( ( _egPassword == null ) ||
+                   ( ( pswd = _egPassword.getPassword(userName) ) == null ) ){
+
+                   pswd = DUMMY_ADMIN ;
+               }
+                
+            }               
             return _crypt.crypt( pswd , password ).equals(pswd) ;
+            
          }else{
             //
             // the user must have been created.
@@ -195,23 +200,17 @@ public class       AclCell
             String dis = dict.valueOf("login") ;
             if( ( dis != null ) && ( dis.equals("no") ) )return false ;
             
-            if( _sysPassword == null )return false ;
-            //
-            // first check in /etc/shadow
-            //
-            pswd = _sysPassword.getPassword(userName) ;
-            //
-            // only if not found here we allow the user
-            // to be in the eurogate passwdFile.
-            // ( if the user is in /etc/shadow, but the
-            //   passwd is wrong, we DONT check in 
-            //   in the eurogatePasswd )
-            //
-            if( pswd == null )
-               pswd = _egPassword.getPassword(userName) ;
+            if( ( _sysPassword == null ) ||
+                ( ( pswd = _sysPassword.getPassword(userName) ) == null ) ){
+                               
+               if( ( _egPassword == null ) ||
+                   ( ( pswd = _egPassword.getPassword(userName) ) == null ) ){
 
-            if( pswd != null )
-               return _crypt.crypt( pswd , password ).equals(pswd) ;
+                   return false ;
+               }
+                
+            }               
+            return _crypt.crypt( pswd , password ).equals(pswd) ;
  
          }
       }catch( Throwable t ){
@@ -236,7 +235,77 @@ public class       AclCell
   //
   //   the interpreter
   //
+  private void checkPermission( Args args , String acl ) throws Exception {
+     if( ! ( args instanceof Authorizable ) )
+        throw new 
+        AclPermissionException( "Command not authorizable" ) ;       
+     String user = ((Authorizable)args).getAuthorizedPrincipal() ;
+     if( user.equals("admin") )return ;
+     try{
+        if( _aclDb.check( "super.access" , user , _userDb ) )return ;
+     }catch(Exception ee ){}
+     if( ! _aclDb.check(acl,user,_userDb) )
+        throw new 
+        AclPermissionException( "Acl >"+acl+"< negative for "+user ) ;       
+  }
   public String ac_interrupted( Args args )throws CommandException {
      return "\n" ;
+  }
+  public String hh_set_passwd = 
+         "[-user=<userName>] [-old=<oldPasswd>] newPswd verifyPswd";
+  public String ac_set_passwd_$_2( Args args )throws Exception {
+     if( _egPassword == null )
+        throw new
+        AclPermissionException( "No private password file found" ) ;
+     if( ! ( args instanceof Authorizable ) )
+        throw new 
+        AclPermissionException( "Command not authorizable" ) ;       
+     String pswd1 = args.argv(0) ;
+     String pswd2 = args.argv(1) ;
+     if( ! pswd1.equals( pswd2 ) )
+        throw new
+        IllegalArgumentException( "pswd1 doesn't match pswd2" ) ;
+        
+     String auth  = ((Authorizable)args).getAuthorizedPrincipal() ;
+     String user  = args.getOpt("user") ;
+     user = user == null ? auth : user ;
+     String old   = args.getOpt("old");
+     String acl   = "user."+user+".setpassword" ;
+     String [] record = null ;
+     if( ! ( auth.equals("admin" ) || _aclDb.check( acl , auth , _userDb ) ) ){
+        if( auth.equals(user) ){
+           if( old == null )
+              throw new
+              IllegalArgumentException("-old=<oldPassword> option missing" ) ;
+        }else{
+           throw new 
+           AclPermissionException( "Acl >"+acl+"< negative for "+auth ) ;       
+        } 
+                
+        if( ( pswd2 = _egPassword.getPassword(user) ) == null  )
+          throw new
+          IllegalArgumentException("User not found in private passwd file");
+
+        if( ! _crypt.crypt( pswd2 , old ).equals(pswd2) )
+           throw new
+           IllegalArgumentException( "Old password doesn't match" ) ;
+        record = _egPassword.getRecord(user) ;
+        if( record == null )
+           throw new
+           IllegalArgumentException("User "+user+" doesn't exist") ;
+     }else{
+        record = _egPassword.getRecord(user) ;
+        if( record == null ){
+            record = new String[2] ;
+            record[0] = user ;
+        }
+        
+        
+     }
+     record[1] = _crypt.crypt( user.substring(0,2) , pswd1 ) ; ;
+     _egPassword.addRecord( record ) ;
+     _egPassword.commit() ;
+     return "" ;
+        
   }
 }
