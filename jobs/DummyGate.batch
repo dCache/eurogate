@@ -1,0 +1,13 @@
+#
+#  specify the printout levels 
+#
+set printout default     all 
+set printout CellGlue    none 
+
+set env clientListenPort    28000
+
+create dmg.cells.services.login.LoginManager EuroGate \
+     "${clientListenPort}    \
+     eurogate.gate.DummyGate  \
+      -prot=raw"
+ 

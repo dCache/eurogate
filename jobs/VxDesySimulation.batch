@@ -5,7 +5,7 @@ set printout default     all
 set printout CellGlue    none 
 set printout RoutingMgr  none
 #
-set context alwaysDismount drive1,drive0
+#set context alwaysDismount drive1,drive0
 #
 set env clientListenPort     28000
 set env pvlDbListenPort      22124
