@@ -159,6 +159,11 @@ public class PvlScheduler implements PvlResourceScheduler {
       
    }
    public PvlResourceModifier 
+      otherAction( PvlResourceRequestQueue requestQueue ,
+                        PvlResourceModifier  modifier  ){
+      return null ;
+   }
+   public PvlResourceModifier 
       newRequestAction( PvlResourceRequestQueue requestQueue ,
                         PvlResourceModifier  modifier  )
 
