@@ -232,6 +232,27 @@ eugateLogin() {
 #
 ##################################################################
 #
+#       eurogate.spy     
+#
+eugateSpy() {
+
+   checkVar spyPort || exit 4
+   checkJava || exit $?
+  
+   $JAVA dmg.cells.applets.spy.Spy localhost $spyPort 1>/dev/null 2>&1 &
+   spyId=$!
+   echo "Spy has been forked (Id=$spyId)"
+   sleep 3
+   kill -0 $spyId 2>/dev/null
+   if [ $? -ne 0 ] ; then
+       echo "Forking Spy seems to have failed"
+       exit 4
+   fi
+   exit 0
+   
+}
+##################################################################
+#
 #       eugate.check      
 #
 eugateCheck() {
