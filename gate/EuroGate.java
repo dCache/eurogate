@@ -16,7 +16,6 @@ public class EuroGate extends CellAdapter implements Runnable {
     private Thread            _readerThread = null ;
     private String            _state   = "init" ;
     private Object            _ioLock  = new Object() ;
-    private Pinboard          _status  = new Pinboard(200) ;
     private int  _removeCounter = 0 , _readCounter = 0 , _writeCounter = 0 ;
     private int  _replies = 0 ;
     private Socket            _socket = null ;
@@ -100,7 +99,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        Object obj = msg.getMessageObject() ;
        if( obj instanceof RequestImpl ){
           RequestImpl req = (RequestImpl)obj ;
-          _status.pin( "<<< "+req ) ;
+          pin( "<<< "+req ) ;
           _replies ++ ;
           if( req.getType().equals("remove") ){
              returnBbOK( req ) ;
@@ -163,11 +162,11 @@ public class EuroGate extends CellAdapter implements Runnable {
 
     }
     public String ac_SESSION_WELCOME_$_1( Args args ){
-       _status.pin(  "Session created : Version = "+args.argv(0) ) ;
+       pin(  "Session created : Version = "+args.argv(0) ) ;
        return "OK 0" ;
     }
     public String ac_SESSION_CLOSE( Args args ){
-       _status.pin(  "Session closed" ) ;
+       pin(  "Session closed" ) ;
        return "OK 0"  ;
     }
     public String ac_REMOVEDATASET_$_2_( Args args ) 
@@ -176,7 +175,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        String store     = args.argv(0) ;
        String bfid      = args.argv(1) ;
        _removeCounter ++ ;
-       _status.pin( "REMOVE  bfid="+bfid) ;
+       pin( "REMOVE  bfid="+bfid) ;
        RequestImpl shuttle =
            new RequestImpl( "remove" ,
                                store , bfid  ) ;
@@ -196,7 +195,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        String sessionID  = args.argv(7) ;
        String params     = args.argv(8) ;
        _writeCounter ++ ;
-       _status.pin( "WRITE sg="+group+
+       pin( "WRITE sg="+group+
                     ";size="+size+
 		    ";host="+host+":"+port+
 		    ";cid="+sessionID        ) ;
@@ -222,7 +221,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        String sessionID  = args.argv(5) ;
        String params     = args.argv(6) ;
        _readCounter++ ;
-       _status.pin( "READ bfid="+bfid+
+       pin( "READ bfid="+bfid+
 		    ";host="+host+":"+port+
 		    ";cid="+sessionID        ) ;
        RequestImpl shuttle =
@@ -252,15 +251,4 @@ public class EuroGate extends CellAdapter implements Runnable {
         
         }         
     }
-   public String ac_show_pinboard = "<last n lines>" ;
-   public String ac_show_pinboard_$_0_1( Args args )throws CommandException {
-       StringBuffer sb = new StringBuffer(); ;
-       int count = 20 ;
-       try{
-          if( args.argc() > 0 )count = Integer.parseInt( args.argv(0) ) ;
-       }catch( Exception eee ){ }
-       sb.append( " ---- Pinboard at "+ new Date().toString()+"\n" ) ;
-       _status.dump( sb , count ) ;
-       return sb.toString() ;
-   }
 }

@@ -29,8 +29,7 @@ public class      PvlV1
    private Gate      _finishGate      = new Gate() ; 
    private Hashtable _pending         = new Hashtable() ;
    private Object    _sendLock        = new Object() ;
-   private Pinboard  _status          = new Pinboard(200) ;
-   private PvlResourceScheduler    _scheduler = null ; 
+  private PvlResourceScheduler    _scheduler = null ; 
    private PvlResourceRequestQueue _queue     = new PvlResourceRequestQueue() ;
                                                
    private Class [] schedulerConstructorArgs = {       
@@ -67,7 +66,7 @@ public class      PvlV1
           return ;
        }
     
-       _status.pin( "Started" ) ;    
+       pin( "Started" ) ;    
    }
    private PvlResourceScheduler initiateScheduler( String name )
         throws Exception {
@@ -222,11 +221,11 @@ public class      PvlV1
       _fifo.push( modifier ) ;
    }
    public void say( String msg ){
-       _status.pin( msg ) ;
+       pin( msg ) ;
        super.say( msg ) ;
    }
    public void esay( String msg ){
-       _status.pin( "ERROR : "+msg ) ;
+       pin( "ERROR : "+msg ) ;
        super.say( msg ) ;
    }
    private void processPutReply( CellMessage msg , PvrRequest pvrReq ){
@@ -1150,17 +1149,6 @@ public class      PvlV1
                                    cart         )   ) ;
       return "Queued" ;
 
-   }
-   public String ac_show_pinboard = "<last n lines>" ;
-   public String ac_show_pinboard_$_0_1( Args args )throws CommandException {
-       StringBuffer sb = new StringBuffer(); ;
-       int count = 20 ;
-       try{
-          if( args.argc() > 0 )count = Integer.parseInt( args.argv(0) ) ;
-       }catch( Exception eee ){ }
-       sb.append( " ---- Pinboard at "+ new Date().toString()+"\n" ) ;
-       _status.dump( sb , count ) ;
-       return sb.toString() ;
    }
    public Object ac_x_lsdrive( Args args ) throws Exception {
    

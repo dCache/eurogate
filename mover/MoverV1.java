@@ -31,7 +31,6 @@ public class MoverV1 extends CellAdapter implements Runnable {
    private double           _rate           = 0.0 ;
    private long             _problemCounter = 1 ;
    private Exception        _lastException  = null ;
-   private Pinboard         _status         = new Pinboard(200) ;
    private boolean          _stopOnError    = false ;
    private int              _ioCounter      = 0 ;
    private int              _delay          = 0 ; // artifitial delay (debug only)
@@ -56,7 +55,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
       _weAreOnline = true ;
       _weAreBusy   = false ;
       start() ;
-      _status.pin( "Started" ) ;
+      pin( "Started" ) ;
 //      setPrintoutLevel( 0xff) ;
    }
    public void cleanUp(){
@@ -66,7 +65,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
       if( _spray == null )return ;
       _spray.setInfo( _info = new StateInfo( getCellName() , false ) ) ;
       _weAreOnline = false ;
-      _status.pin( "Forced Unregistering" ) ;
+      pin( "Forced Unregistering" ) ;
    }
    public void getInfo( PrintWriter pw ){
       super.getInfo( pw ) ;
@@ -145,7 +144,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
                              
           _activeRequest.setPosition( "" , "1" ) ;
           File dataFile = new File( _devBase , extention ) ;
-          _status.pin( "Labeling Datafile : "+dataFile) ; 
+          pin( "Labeling Datafile : "+dataFile) ; 
           PrintWriter pw = new PrintWriter(
                            new FileWriter( dataFile ) ) ;
           pw.println( "LABEL="+_activeRequest.getCartridge()+
@@ -155,7 +154,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
           _lastException = pe ;
           esay( error = "PANIC : "+pe ) ;
           returnFinal( 44 , error ) ;
-	  _status.pin( "<<< "+error ) ;
+	  pin( "<<< "+error ) ;
           return ;
        }
       returnFinal(0,"Done") ;
@@ -215,7 +214,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
        int    port      = _activeRequest.getHostPort() ;
              _fileSize  = _activeRequest.getFileSize() ;
        String clientId  = _activeRequest.getClientReqId() ;
-       _status.pin(">>> PUT "+_activeRequest) ;
+       pin(">>> PUT "+_activeRequest) ;
        
        try{
           String eor = _activeRequest.getEorPosition() ;
@@ -231,28 +230,28 @@ public class MoverV1 extends CellAdapter implements Runnable {
                              eor ;
           _activeRequest.setPosition( eor , ""+newEor ) ;
           dataFile = new File( _devBase , extention ) ;
-          _status.pin( "Using Datafile : "+dataFile) ;                 
+          pin( "Using Datafile : "+dataFile) ;                 
        }catch( Exception pe ){
 	  if( _stopOnError )unregister() ;
           _lastException = pe ;
           esay( error = "PANIC : "+pe ) ;
           returnFinal( 44 , error ) ;
-	  _status.pin( "<<< "+error ) ;
+	  pin( "<<< "+error ) ;
           return ;
        }
        try{
           if( _delay > 0 ){
-	     _status.pin( "Warning : delaying by "+_delay+" seconds" ) ;
+	     pin( "Warning : delaying by "+_delay+" seconds" ) ;
 	     try{ Thread.currentThread().sleep(_delay*1000) ;}
 	     catch(InterruptedException ie ){}
-	     _status.pin( "Woken up" ) ;
+	     pin( "Woken up" ) ;
 	  }
           outputStream   = new DataOutputStream(
                                 new FileOutputStream( dataFile ) 
                            ) ;
-          _status.pin( "Trying to connect to "+host+":"+port+")" ) ;
+          pin( "Trying to connect to "+host+":"+port+")" ) ;
           moverSocket  = new Socket( host , port ) ;
-          _status.pin( "Connected ... waiting for "+_fileSize+
+          pin( "Connected ... waiting for "+_fileSize+
                        " bytes ; id="+clientId ) ;
           inputStream   = new DataInputStream( moverSocket.getInputStream() ) ;
           controlStream = new DataOutputStream( moverSocket.getOutputStream() ) ;
@@ -260,9 +259,9 @@ public class MoverV1 extends CellAdapter implements Runnable {
           controlStream.flush() ;
              _rest = _fileSize ;
           int pos  = 0 ;
-          _status.pin( "Starting data tranfer" ) ;
+          pin( "Starting data tranfer" ) ;
           if( _havingProblems && ( ( _problemCounter++ % 4 ) == 0 ) ){
-	      _status.pin( error = "Simulated IOException" ) ;
+	      pin( error = "Simulated IOException" ) ;
 	      throw new IOException( error ) ;
 	  }
           long start = System.currentTimeMillis() ;
@@ -272,7 +271,7 @@ public class MoverV1 extends CellAdapter implements Runnable {
              r = ((long)dataBuffer.length) < _rest ? dataBuffer.length : (int)_rest ;
              while( r > 0 ){
                 rc = inputStream.read( dataBuffer , pos , r ) ;
-                _status.pin( "inputStream.read : "+rc ) ;
+                pin( "inputStream.read : "+rc ) ;
 		_ioCounter ++ ;
                 if( rc <= 0 )break ;
                 pos  += rc ;
@@ -284,11 +283,11 @@ public class MoverV1 extends CellAdapter implements Runnable {
               
           }
 	  if( _fileSize == 0 ){
-             _status.pin( "Zero byte file transfered" );
+             pin( "Zero byte file transfered" );
 	  }else if( rc > 0 ){
              long   now  = System.currentTimeMillis() ;
                    _rate = ( (double)_fileSize / (double)(now-start) )  ;
-             _status.pin( ""+_fileSize+" Bytes transferred with "+_rate+" KBytes/sec" );
+             pin( ""+_fileSize+" Bytes transferred with "+_rate+" KBytes/sec" );
           }
        }catch(Exception e ){
 	  if( _stopOnError )unregister() ;
@@ -297,34 +296,34 @@ public class MoverV1 extends CellAdapter implements Runnable {
           returnFinal( 11 , error ) ;
           dataFile.delete() ;
 	  _lastException = e ;
-	  _status.pin( "<<< "+error ) ;
+	  pin( "<<< "+error ) ;
           return ;
        }finally{
-          _status.pin( "Closing file output streams" ) ;
+          pin( "Closing file output streams" ) ;
           try{ outputStream.close()  ; }catch(Exception eee){} 
        }
        if( rc <= 0 ){
 	  if( _stopOnError )unregister() ;
           esay( error = "PANIC : unexpected end of stream rc="+rc ) ;
-	  _status.pin( error ) ;
+	  pin( error ) ;
           returnFinal( 12 , error ) ;
           dataFile.delete() ;
        }else{
           try{
              controlStream.writeUTF( "MACK "+clientId+" 0 "+_fileSize ) ;       
-             _status.pin( "Data Mover finished successfully" ) ;
+             pin( "Data Mover finished successfully" ) ;
              _activeRequest.setRealBytes( _fileSize + 0x100 ) ;
              returnFinal( 0 , "Done" ) ;
           }catch( Exception eee ){
 	     _lastException = eee ;
              esay( error = "IOException in sending MACK : "+eee) ;
-             _status.pin( error ) ;
+             pin( error ) ;
              returnFinal( 13 , error ) ;
           }
        }
-       _status.pin( "Closing net input stream" ) ;
+       pin( "Closing net input stream" ) ;
        try{ moverSocket.close() ; }catch(Exception eee){}
-       _status.pin( "<<< Done" ) ;
+       pin( "<<< Done" ) ;
        return ;
       
    }
@@ -347,42 +346,42 @@ public class MoverV1 extends CellAdapter implements Runnable {
              _fileSize  = _activeRequest.getFileSize() ;
        String clientId  = _activeRequest.getClientReqId() ;
 
-       _status.pin(">>> GET "+_activeRequest) ;
+       pin(">>> GET "+_activeRequest) ;
        try{
           String extention = _activeRequest.getCartridge()+":"+
                              _activeRequest.getVolumeId()+":"+
                              _activeRequest.getPosition() ;
           dataFile = new File( _devBase , extention ) ;
-          _status.pin( "Using Datafile : "+dataFile) ;                 
+          pin( "Using Datafile : "+dataFile) ;                 
        }catch( Exception pe ){
 	  if( _stopOnError )unregister() ;
           _lastException = pe ;
           esay( error = "PANIC : "+pe.getMessage() ) ;
           returnFinal( 44 , error ) ;
-	  _status.pin( "<<< "+error ) ;
+	  pin( "<<< "+error ) ;
           return ;
        }
        try{
           if( _delay > 0 ){
-	     _status.pin( "Warning : delaying by "+_delay+" seconds" ) ;
+	     pin( "Warning : delaying by "+_delay+" seconds" ) ;
 	     try{ Thread.currentThread().sleep(_delay*1000) ; }
 	     catch(InterruptedException ie ){}
-	     _status.pin( "Woken up" ) ;
+	     pin( "Woken up" ) ;
 	  }
           inputStream   = new DataInputStream(
                                 new FileInputStream( dataFile ) 
                            ) ;
-          _status.pin( "Trying to connect to "+host+":"+port+")" ) ;
+          pin( "Trying to connect to "+host+":"+port+")" ) ;
           moverSocket  = new Socket( host , port ) ;
-          _status.pin( "Connected ... will send "+_fileSize+" bytes" ) ;
+          pin( "Connected ... will send "+_fileSize+" bytes" ) ;
           controlStream = new DataOutputStream( moverSocket.getOutputStream() ) ;
           outputStream  = controlStream ;
           controlStream.writeUTF( "Hello-EuroStore-Client "+clientId ) ;
              _rest = (int) _fileSize ;
           int pos  = 0 ;
-          _status.pin( "Starting data tranfer" ) ;
+          pin( "Starting data tranfer" ) ;
           if( _havingProblems && ( ( _problemCounter++ % 4 ) == 0 ) ){
-	      _status.pin( error = "Simulated IOException" ) ;
+	      pin( error = "Simulated IOException" ) ;
 	      throw new IOException( error ) ;
 	  }
           long start = System.currentTimeMillis() ;
@@ -403,11 +402,11 @@ public class MoverV1 extends CellAdapter implements Runnable {
               
           }
 	  if( _fileSize == 0 ){
-             _status.pin( "Zero byte file transfered" );
+             pin( "Zero byte file transfered" );
 	  }else if( rc > 0 ){
              long   now  = System.currentTimeMillis() ;
                    _rate = ( (double)_fileSize / (double)(now-start) )  ;
-             _status.pin( ""+_fileSize+" Bytes transferred with "+_rate+" KBytes/sec" );
+             pin( ""+_fileSize+" Bytes transferred with "+_rate+" KBytes/sec" );
           }
        }catch(Exception e ){
 	  if( _stopOnError )unregister() ;
@@ -415,32 +414,32 @@ public class MoverV1 extends CellAdapter implements Runnable {
           esay( error = "Exception in connection to "+host+":"+port+" : "+e ) ;
           returnFinal( 11 , error ) ;
 	  _lastException = e ;
-	  _status.pin( "<<< "+error ) ;
+	  pin( "<<< "+error ) ;
           return ;
        }finally{
-          _status.pin( "Closing file input streams" ) ;
+          pin( "Closing file input streams" ) ;
           try{ inputStream.close()  ; }catch(Exception eee){} 
        }
        if( rc <= 0 ){
 	  if( _stopOnError )unregister() ;
           esay( error = "PANIC : unexpected end of stream" ) ;
-	  _status.pin( error ) ;
+	  pin( error ) ;
           returnFinal( 12 , error ) ;
        }else{
           try{
              controlStream.writeUTF( "MACK "+clientId+" 0 "+_fileSize ) ;       
-             _status.pin( "Data Mover finished successfully" ) ;
+             pin( "Data Mover finished successfully" ) ;
              returnFinal( 0 , "Done" ) ;
           }catch( Exception eee ){
 	     _lastException = eee ;
              esay( error= "IOException in sending MACK : "+eee ) ;
-	     _status.pin( error ) ;
+	     pin( error ) ;
              returnFinal( 13 , error ) ;
           }
        }
-       _status.pin( "Closing net input stream" ) ;
+       pin( "Closing net input stream" ) ;
        try{ moverSocket.close() ; }catch(Exception eee){}
-       _status.pin( "<<< Done" ) ;
+       pin( "<<< Done" ) ;
        return ;
       
    }
@@ -513,16 +512,5 @@ public class MoverV1 extends CellAdapter implements Runnable {
    public String ac_set_destinationhost_$_1( Args args ){
        _fakeHost = args.argv(0).equals("true") ? null : args.argv(0) ;
        return "" ; 
-   }
-   public String ac_show_pinboard = "<last n lines>" ;
-   public String ac_show_pinboard_$_0_1( Args args )throws CommandException {
-       StringBuffer sb = new StringBuffer(); ;
-       int count = 20 ;
-       try{
-          if( args.argc() > 0 )count = Integer.parseInt( args.argv(0) ) ;
-       }catch( Exception eee ){ }
-       sb.append( " ---- Pinboard at "+ new Date().toString()+"\n" ) ;
-       _status.dump( sb , count ) ;
-       return sb.toString() ;
    }
 }

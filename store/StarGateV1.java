@@ -17,7 +17,6 @@ public class StarGateV1 extends CellAdapter  {
    private long        _nextServerReqId = 100 ;
    private CellPath        _pvlPath     = null ;
    private BitfileDatabase _dataBase    = null ;
-   private Pinboard        _status      = new Pinboard(200) ;
    
    public StarGateV1( String name , String args ){
    
@@ -50,11 +49,11 @@ public class StarGateV1 extends CellAdapter  {
    
    }
    public void say( String msg ){
-       _status.pin( msg ) ;
+       pin( msg ) ;
        super.say( msg ) ;
    }
    public void esay( String msg ){
-       _status.pin( "ERROR : "+msg ) ;
+       pin( "ERROR : "+msg ) ;
        super.say( msg ) ;
    }
    public void messageArrived( CellMessage msg ){
@@ -329,17 +328,6 @@ public class StarGateV1 extends CellAdapter  {
    //
    // command interface
    //
-   public String ac_show_pinboard = "<last n lines>" ;
-   public String ac_show_pinboard_$_0_1( Args args )throws CommandException {
-       StringBuffer sb = new StringBuffer(); ;
-       int count = 20 ;
-       try{
-          if( args.argc() > 0 )count = Integer.parseInt( args.argv(0) ) ;
-       }catch( Exception eee ){ }
-       sb.append( " ---- Pinboard at "+ new Date().toString()+"\n" ) ;
-       _status.dump( sb , count ) ;
-       return sb.toString() ;
-   }
    public String hh_create_group = "<groupName>" ;
    public String ac_create_group_$_1( Args args ) throws CommandException {
        String group = args.argv(0) ;

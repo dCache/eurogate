@@ -29,7 +29,6 @@ public class      PvlCoreV1
    private Gate      _finishGate      = new Gate() ; 
    private Hashtable _pending         = new Hashtable() ;
    private Object    _sendLock        = new Object() ;
-   private Pinboard  _status          = new Pinboard(200) ;
    private PvlResourceScheduler    _scheduler = null ; 
    private PvlResourceRequestQueue _queue     = new PvlResourceRequestQueue() ;
    private PvlCommanderV1          _commander = null ;
@@ -437,11 +436,11 @@ public class      PvlCoreV1
       _fifo.push( modifier ) ;
    }
    public void say( String msg ){
-       _status.pin( msg ) ;
+       pin( msg ) ;
        super.say( msg ) ;
    }
    public void esay( String msg ){
-       _status.pin( "ERROR : "+msg ) ;
+       pin( "ERROR : "+msg ) ;
        super.say( msg ) ;
    }
    private void processPutReply( CellMessage msg , PvrRequest pvrReq ){
@@ -1252,17 +1251,6 @@ public class      PvlCoreV1
          return ;
       }
       esay( "processModifier Panic : "+ modifier.getActionEvent() ) ;
-   }
-   public String ac_show_pinboard = "<last n lines>" ;
-   public String ac_show_pinboard_$_0_1( Args args )throws CommandException {
-       StringBuffer sb = new StringBuffer(); ;
-       int count = 20 ;
-       try{
-          if( args.argc() > 0 )count = Integer.parseInt( args.argv(0) ) ;
-       }catch( Exception eee ){ }
-       sb.append( " ---- Pinboard at "+ new Date().toString()+"\n" ) ;
-       _status.dump( sb , count ) ;
-       return sb.toString() ;
    }
   
 }
