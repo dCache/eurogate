@@ -1,0 +1,94 @@
+<html>
+<head><title>EuroGate Acl Setup at CERN</title></head>
+<body bgcolor=white>
+<pre>
+<a href=EuroGuide.html>The Eurogate Guide</a>     <a href=EuroRef.html>The Eurogate Reference</a>
+</pre>
+<hr>
+<h1>EuroGate Acl Setup at CERN</h1>
+Caused by the vast flexibility of the Acl subsystem,
+the configuration my appear a bit long winded mainly because
+the solutions are ambiguous.
+To cut the possiblities down to a convenient arrangement,
+we provide an acl setup for the CERN prototype.
+The different acls are mapped to predefined groups.
+So permissions are given to individuals by adding these to the
+appropriate groups.
+<p>
+The group relations are illustrated in the graph below.
+The users simply serve as an example.
+<p>
+<center><img src=cernSetup.gif></center>
+<p>
+The following sequence of commands will produce the
+above picture. The commands must be issued under the
+admin account as long as no acls are defined.
+<p>
+<strong>Remark about the admin user : </strong>
+<blockquote>
+   The admin user exists per default in some kind of
+   zombie state. It can formally be used to log into
+   the system but it has no further attributes.
+   So as soon as the password for this account needs 
+   to be changed, the account must be created.
+</blockquote>
+<pre>
+#
+#  create the admin user
+#
+create user admin
+#
+# and now the groups
+#
+create group public
+create group operating
+create group support
+create group developers
+create group user-admin
+#
+#  not to forget the group relations
+#
+add operating  to public
+add support    to operating
+add developers to support
+add user-admin to public   # not in picture
+#
+#  create the acls and assign them to the groups.
+#
+create acl user.*.*
+create acl pvl.*.admin
+create acl pvl.*.support
+create acl pvl.*.operate
+create acl vs.*.support
+create acl pvr.*.admin
+create acl pvr.*.operate
+create acl drive.*.support
+create acl drive.*.operate
+create acl drive.*.expert
+#
+add access -allowed user.*.*        user-admin
+add access -allowed drive.*.export  developers
+add access -allowed pvl.*.admin     support
+add access -allowed pvl.*.support   support
+add access -allowed vs.*.support    support
+add access -allowed pvr.*.admin     support
+add access -allowed drive.*.support support
+add access -allowed pvl.*.operate   operating
+add access -allowed pvr.*.operate   operating
+add access -allowed drive.*.operate operating
+#
+# create the example users
+#
+create user ingoa
+set principal ingoa "fullName=Ingo Augustin" "eMail=ingoa@cern.ch"
+create user hnms
+set principal hnms "fullName=Helenic National Meteologic Services"
+#
+add ingoa to user-admin
+add hnms  to operating
+#
+#   and so on
+#
+</pre>
+</body>
+</html>
