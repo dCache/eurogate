@@ -187,7 +187,7 @@ eugateStart() {
    echo "Trying to start Eurogate"
    printf "Please wait ... "
    #
-   eurogateCheck
+   eugateCheck
    if [ $? -ne 0 ] ; then
       echo "System already running" 
       exit 4 
