@@ -641,6 +641,12 @@ public class EuroSyncClient implements Runnable {
    
    }
    public EuroCompanion
+          dummy( String store ) 
+          throws Exception {
+    
+      return null ;      
+   }
+   public EuroCompanion
           get( File   file ,  String store , String bfid ) 
           throws Exception {
                
@@ -785,6 +791,8 @@ public class EuroSyncClient implements Runnable {
             }else{ 
                System.err.println( "Failed "+ret+" "+com.getReturnMessage() ) ;
             }              
+         }else if( command.equals( "dummy" ) ){
+            EuroCompanion com = euro.dummy( "dummy" ) ;
          }else if( command.equals( "list-volume" ) ){
             //
             // list-volume <volume>
