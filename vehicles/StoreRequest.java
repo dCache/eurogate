@@ -7,7 +7,7 @@ public class StoreRequest implements java.io.Serializable {
    private String _id        = null ;
    private String _store     = null ;
    private String _bfidName  = null ;
-   private BitfileId _bfid   = null ; 
+   private BfRecordable _bfid   = null ; 
    private String    _retMsg = "" ;
    private int    _retCode   = 0 ;
    private String _host      = null ;
@@ -22,8 +22,8 @@ public class StoreRequest implements java.io.Serializable {
        _store    = store ;
        _bfidName = bfidName ;                    
    }
-   public BitfileId getBitfileId(){ return _bfid ; }
-   public void      setBitfileId( BitfileId bfid ){ _bfid = bfid ; }
+   public BfRecordable getBitfileId(){ return _bfid ; }
+   public void      setBitfileId( BfRecordable bfid ){ _bfid = bfid ; }
    public String getStore(){ return _store ; }
    public String getId(){ return _id ; }
    public String getCommand(){ return _command ; }
@@ -41,4 +41,5 @@ public class StoreRequest implements java.io.Serializable {
        _retCode = retCode ;
        _retMsg  = retMsg ;
    } 
+   public String toString(){ return "SR="+_command+"(id="+_id+")" ; }
 }

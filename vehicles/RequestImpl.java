@@ -5,7 +5,7 @@ import java.io.* ;
 
 public class      RequestImpl 
        extends    EurogateRequestImpl
-       implements MoverRequest, PvlRequest, PvrRequest         {
+       implements MoverRequest, PvlRequest, PvrRequest , BitfileRequest {
        
     private String _hostName     = null ;
     private int    _hostPort     = 0 ; 
@@ -170,6 +170,7 @@ public class      RequestImpl
     }
     public String getEorPosition(){ return _eorPosition ; }
     public String getPosition(){ return _volumePosition ; }
+    public String getFilePosition(){ return _volumePosition ; }
     public String getVolumeId(){ return _volumeId ; }
     public void   setVolumeId( String volId ){ _volumeId = volId ; }
     public String getGenericDrive(){ return _driveName ; }
