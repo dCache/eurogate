@@ -187,7 +187,11 @@ eugateStart() {
    echo "Trying to start Eurogate"
    printf "Please wait ... "
    #
-   ( ! eugateCheck ) || ( echo "System already running" ; exit 4 ; ) || exit $?
+   eurogateCheck
+   if [ $? -ne 0 ] ; then
+      echo "System already running" 
+      exit 4 
+   fi
    #
    #
    nohup $JAVA  dmg.cells.services.Domain euroGate \
