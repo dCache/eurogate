@@ -127,7 +127,12 @@ public class EuroSyncClient implements Runnable {
                }finally{
                   try{ fileOut.close() ; }catch(Exception xe){}
                }
-               args = new Args( cnt.readUTF() ) ;
+               try{
+                   args = new Args( cnt.readUTF() ) ;
+               }catch( Exception eee ){
+                   if( _debug)System.err.println( 
+                     "Problem in reading last UTF" ) ;
+               }
                try{ _out.close() ; }catch(Exception xx ){}
                try{ _in.close() ; }catch( Exception yy ){}
                synchronized( _pendingLock ){
