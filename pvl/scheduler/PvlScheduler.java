@@ -504,7 +504,7 @@ public class PvlScheduler implements PvlResourceScheduler {
           while( f.hasMoreElements() ){
              DriveInfo drive = (DriveInfo)f.nextElement() ;
              if(  ( ! drive.usable    )  ||
-                  ( ! drive.allocated )  ||
+                  ( drive.allocated )  ||
                   ( drive.cartridge.equals("empty" ) ) )continue ;
                  
              Hashtable  volumeHash = (Hashtable)pvrHash.get( drive.pvrName ) ;
