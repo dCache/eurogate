@@ -4,11 +4,16 @@ package eurogate.pvl.scheduler ;
 import eurogate.db.pvl.* ;
 import eurogate.pvl.* ;
 import dmg.util.cdb.* ;
+import dmg.util.*;
 import java.util.* ;
 
 public class PvlScheduler implements PvlResourceScheduler {
 
-   private PvlDb _pvlDb = null ;
+   private PvlDb      _pvlDb   = null ;
+   private Dictionary _env     = null ;
+   private Dictionary _context = null ;
+   private Logable    _log     = null ;
+   private Args       _args    = null ;
    
    public class DriveInfo {
        public String  cartridge ;
@@ -24,7 +29,10 @@ public class PvlScheduler implements PvlResourceScheduler {
          this.usable    = usable ;                 
        }
        public String toString(){
-          return "Drive="+name+";cart="+cartridge+";u="+usable+";a="+allocated ;
+          return "Drive="+name+
+                 ";cart="+cartridge+
+                 ";u="+usable+
+                 ";a="+allocated ;
        }
    }
    public class PvrInfo {
@@ -86,10 +94,33 @@ public class PvlScheduler implements PvlResourceScheduler {
    
    public PvlScheduler( PvlDb pvlDb ){
        _pvlDb = pvlDb ;
-       say( "PvlScheduler ready" ) ;
+       say( "PvlScheduler (V1) ready" ) ;
+   }
+   public PvlScheduler( PvlDb pvlDb , Dictionary environment ){
+       _pvlDb    = pvlDb ;
+       _env      = environment ;
+       _log      = (Logable)_env.get( "logable" ) ;
+       _args     = (Args)_env.get( "args" ) ;
+       _context  = (Dictionary)_env.get( "context" ) ;
+       say( "PvlScheduler (V2) ready" ) ;
+   }
+   protected String getOption( String key ){
+       return _args == null ? null : _args.getOpt(key) ;
+   }
+   protected Object getContext( String key ){
+       return _context == null ? null : _context.get(key) ;
    }
    protected void say( String msg ){
-      System.out.println( "SCHEDULER : "+msg ) ;
+      if( _log == null )
+         System.out.println( "SCHEDULER : "+msg ) ;
+      else 
+         _log.log( "(S) "+msg ) ;
+   }
+   protected void esay( String msg ){
+      if( _log == null )
+         System.out.println( "SCHEDULER(E) : "+msg ) ;
+      else 
+         _log.elog( msg ) ;
    }
    public PvlResourceModifier []
       nextEvent( PvlResourceRequestQueue requestQueue ,
