@@ -6,19 +6,29 @@
 </pre>
 <hr>
 <h1>Access Control Lists</h1>
+<h3>Content</h3>
+<ul>
+<li><a href=#intro>Introduction</a>
+<li><a href=#rules>EuroGate Acl Rules</a>
+<li><a href=#aclin>Acl Inheritance</a>
+<li><a href=#examples>Examples</a>
+<li><a href=AclCern.html>EuroGate Acl Setup @CERN</a>
+</ul>
+<hr>
+<a name=intro></a>
 <h3>Introduction</h3>
 Access Control Lists (<i>ACL's</i>) are a common way to control
 the access of users, groups, processes etc. to resources or
 objects in general. In the case of the Eurogate implementation,
 not the object is protected by the ACL but the actions on the object.
 So each action on an object has its own ACL which is different from
-most other implementations, where only on ACL belongs to an
-object an the individual actions are associated to so called
+most other implementations, where only one ACL belongs to an
+object and the individual actions are associated to so called
 <i>Access Control Elements</i>.
-Within eurogate the ACL is a named object with a canonical
+Within eurogate the ACL is a named object with the canonical
 name of <i>&lt;objectClass&gt;.&lt;objectName&gt;.&lt;action&gt;</i>.
 Because of the fact that an ACL is an object as well, ACLs can be
-created to protect actions on other ACL's.
+created to protect actions on other ACLs.
 <p>
 <strong>Example : </strong>Not everybody should be allowed to disable a drive,
 lets say driveX within a robot.
@@ -43,22 +53,24 @@ to allow or disallow certain actions. But the most common way
 to deligate permissions is to create groups with fixed profiles
 and to add users to these groups which should share these
 permissions.
+<hr>
+<a name=rules></a>
 <h3>Eurogate ACL rules</h3>
 There is a small set of rules which have to be taken into account.
 <ul>
 <li>'Principal' is  the common name for users and groups as long as
-    there is no need to distiguesh between them.
-<li>Actions, which do not have an ACL associated, are disallowed for
-    everybody, except the <i>admin</i> account and principals possitively
-    listed in the <i>super.access</i> ACL.
-<li>If a principal is neither directly nor indirecty ( through groups )
+    there is no need to distinguish between them.
+<li>Actions, which do not have an ACL associated, will follow the rules
+    destribed in <a href=#aclin>Acl Inheritance</a>.
+<li>If a principal is neither directly nor indirecty (through groups 
+    or inheritance)
     mentioned in a certain ACL, this principal is not allowed to perform 
     the action associated with this ACL.
-<li>If a principal belongs to more than one group and at least one of these
+<li>If a principal belongs to more then one group and at least one of these
     groups is member of the 'allow' list of an ACL, this principal is
     allowed to perform the related action, independend of the
     permissions of the other groups.
-<li>Assuming, a principal belongs to a group which themself belongs to a group
+<li>Assuming, a principal belongs to a group which itself belongs to a group
     and so on.
     <pre>
       principal-T (belongs to) group-A (belongs to) group-B (.....) group-X
@@ -76,6 +88,8 @@ There is a small set of rules which have to be taken into account.
 </ul>
 There is a <a href=Acls.html>list</a> of the ACLs associated with 
 Eurogate commands.
+<hr>
+<a name=aclin></a>
 <h3>Acl Inheritance</h3>
 What does acl inheritance mean ? If acl-a inherits from acl-b,
 acl-a adds all principal entries from acl-b to its own list,
@@ -134,23 +148,45 @@ depend on the value of the principal entry (allowed or denied).
    The last acl merged is the superuser acl <i>*.*.*</i>.<br>
    Nonexisting acls will simply be skipped.
 </blockquote>
-<h3>Some examples</h3>
-<strong>Two groups, two ACLs</strong>
+<hr>
+<a name=examples></a>
+<h3>Examples</h3>
+<strong>Drive Management</strong>
 <blockquote>
-There are two different ACLs associated with the Eurogate drives.
+EuroGate supports a large set of commands on drives for configuration,
+adiminstration and operating purposes. These commands are of more or less interrest
+for different people in charge for running the EuroGate system.
+Therefore the command set is devided into three groups.
 <ul>
-<li><i>pvr.&lt;pvrName&gt;.manageDrives</i> which controls the
-       enable, disable and dismount actions on drives belonging
-       to &lt;pvrName&gt;.
-<li><i>pvr.&lt;pvrName&gt;.modify</i> which allows to set 
-       attributes like drive idle time and the selection string of
-       all drives belonging to &lt;pvrName&gt;.
+<li>Commands for experts only. These commands are mainly for debugging
+    and problem tracing.
+<li>Configuration commands which allow to define the behaviour of the
+    drive, like idle timer and the drive selection facility.
+<li>Commands to operate the drive like enable/disable and dismounting
+    drives.
 </ul>
-While the enable/disable/dismount commands are usually needed to operate 
-a robot to allow maintaining periods a.s.o., the different 'set drive' variants
-are used to define the behaviour of the drive. The first command
-set is typically of interrest of the operating team, the 'set drive' command
-set should be restricted to the experts.
+To fit these needs, three different action types on drives are defined
+concerning the access control.
+<table border=1>
+<tr><th>Application</th><th>Acl</th><th>commands</th></tr>
+<tr><td>Operating</td>
+    <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.operate</td>
+    <td>enable, disable, dismount</td>
+</tr>
+<tr><td>Support<br>Configuration<br>Tuning</td>
+    <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.support</td>
+    <td>set drive</td>
+</tr>
+<tr><td>Debugging</td>
+    <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+    <td>deallocate<br>pvr mount|dismount|newdrive|unload</td>
+</tr>
+</table>
+<p>
+A common way to map these abilities to different people is to
+create the appropriate number of groups with the 
+correct acl profile and to add the related people to these groups.
+<p>
 The following commands realize exactly this scheme. Although
 these commands could be delegated to other users, we assume that
 we are currently holding the 'admin' account.
@@ -181,15 +217,15 @@ add access -allowed drive.stk.*.support  support
 #
 #  add users to the different groups.
 #
-add snoopy to experts
-add magnum to operating
+add trude  to support
+add snoopy to operating
 </pre>
 So, all users added to the group operating will have the drive.stk.*.operate
-priviliges and all users added to the support group will have 
+priviliges and all users added to the support group will have the
 drive.stk.*.support
 permission. But this is not exactly what we need. The support people should
 as well be allowed to enable/disable/dismount drives.
-We have at least 3 possibility to solve the problem.
+We have at least 3 possibility to realize this idea.
 <p><strong>Easy way</strong>
 <blockquote>
 <pre>
@@ -229,5 +265,7 @@ AclCell(admin) >> check pvr.stk.drive0.support operating
 <font color=red>Denied</font>
 </pre>
 </blockquote>
+<hr>
+<address>TrudeWare (C)</address>
 </body>
 </html>
