@@ -299,6 +299,30 @@ makePackage() {
 #
 ##################################################################
 #
+#       eurogate gui start
+#
+eurogateGuiStart() {
+   #
+   # we need some variables
+   #
+   #
+   checkVar aclPort  || exit $?
+   checkForJava      || exit $?
+   username=`whoami 2>/dev/null`
+   if [ $? -ne 0 ] ; then username="admin" ; fi
+   #
+   $JAVA -nojit dmg.cells.applets.login.SshLoginMain \
+            -host=localhost -port=${aclPort} -user=${username} \
+            Drive-Mgr:eurogate.spy.DriveDisplayPanel \
+            Acl-Mgr:eurogate.spy.AclManagerPanel \
+            User/Group-Mgr:eurogate.spy.PrincipalManagerPanel \
+            Relation-Mgr:eurogate.spy.RelationExplorer \
+            Commander:dmg.cells.applets.login.CommanderPanel \
+            1>/dev/null 2>/dev/null &
+   exit 0
+}
+##################################################################
+#
 #       eurogate start
 #
 eurogateStart() {
@@ -445,14 +469,16 @@ eurogateAdmin() {
 
 eurogateHelp() {
    echo "Usage : eurogate start"
-   echo "        eurogate login"
+#   echo "        eurogate login"
    echo "        eurogate stop"
    echo "        eurogate admin"
+   echo "        eurogate gui"
    return 0
 }
 eurogateSwitch() {
    case $1 in
      *start)       eurogateStart $* ;;
+     *gui)         eurogateGuiStart $* ;;
      *stop)        eurogateStop  $* ;;
      *login)       eurogateLogin  $* ;;
      *admin)       eurogateAdmin  $* ;;
