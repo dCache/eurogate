@@ -11,8 +11,10 @@ public class EuroClient implements Runnable {
    private DataInputStream   _in     = null ;
    private DataOutputStream  _out    = null ;
    private Socket            _socket = null ;
-   private Thread            _comThread = null ;
-   private Hashtable         _requests  = new Hashtable() ;
+   private Thread            _comThread   = null ;
+   private Hashtable         _requests    = new Hashtable() ;
+   private Object            _pendingLock = new Object() ;
+   private int               _pending     = 0 ;
    
    public EuroClient( String host , int port ) throws Exception {
        _socket = new Socket( host , port ) ;
@@ -61,6 +63,9 @@ public class EuroClient implements Runnable {
                
             String           id = args.argv(1) ;
             RequestCompanion rc = (RequestCompanion)_requests.get(id) ;
+            if( rc == null )
+              throw new
+              Exception( "Unknown session id arrived : "+id ) ;
             if( rc instanceof PutCompanion ){
                PutCompanion pc     = (PutCompanion)rc ;
                long         size   = pc.getSize() ;
@@ -74,6 +79,7 @@ public class EuroClient implements Runnable {
                        _out.write( data , 0 , count ) ;               
                    }
                }catch( Exception ee ){
+                  System.err.println( "Problem in I/O : "+ee ) ;
                }finally{
                   try{ fileIn.close() ; }catch(Exception xe){}
                }
@@ -81,6 +87,30 @@ public class EuroClient implements Runnable {
                try{ _out.close() ; }catch(Exception xx ){}
                try{ _in.close() ; }catch( Exception yy ){}
                
+            }else if( rc instanceof GetCompanion ){
+               GetCompanion gc = (GetCompanion)rc ;
+               long         size = gc.getSize() ;
+               byte []      data = new byte[1024] ;
+               OutputStream fileOut = gc.getOutputStream() ;
+               int now , count ;
+               long rest = size ;
+               try{
+                  while( rest > 0 ){
+
+                     now = (int)(  rest > (long)data.length ? data.length : rest ) ;
+                     count = _in.read( data , 0 , now ) ; 
+                     if( count <= 0 )break ;
+                     fileOut.write( data , 0 , count ) ;
+                     rest -= count ;
+                  }
+               }catch( Exception ee ){
+                  System.err.println( "Problem in I/O : "+ee ) ;
+               }finally{
+                  try{ fileOut.close() ; }catch(Exception xe){}
+               }
+               args = new Args( cnt.readUTF() ) ;
+               try{ _out.close() ; }catch(Exception xx ){}
+               try{ _in.close() ; }catch( Exception yy ){}
             }
          }catch( Exception ee ){
             System.err.println( "Problem with mover connection : "+ee ) ;
@@ -131,12 +161,31 @@ public class EuroClient implements Runnable {
       if( args.argv(0).equals( "OK" ) ){
       
          if( args.argc() < 4 ){
-            System.err.print( "invalid OK from server (noId) : " ) ;
+            //
+            // REMOVEX request 
+            //
+            if( args.argc() != 2 ){
+               System.err.println( "invalid OK from server (noId)" ) ;
+               return ;
+            }
+            rc = (RequestCompanion)_requests.remove( args.argv(1) ) ;
+            if( rc == null ){
+               System.err.println( "we were not waiting for this request : "+args.argv(1) ) ;
+               return ;
+            }
+            synchronized( _pendingLock ){
+               rc.setReturnCode( 0 , "o.k." );
+               _pending-- ;
+               _pendingLock.notifyAll() ;
+            }            
             return ;
          }
+         
+         
          rc = (RequestCompanion)_requests.get( args.argv(3) ) ;
+         
          if( rc == null ){
-            System.err.print( "we were not waiting for this request : " ) ;
+            System.err.println( "we were not waiting for this request : "+args.argv(3) ) ;
             return ;
          }
          rc.setServerId( args.argv(1) ) ;
@@ -144,6 +193,9 @@ public class EuroClient implements Runnable {
          if( rc instanceof PutCompanion ){
              PutCompanion pc = (PutCompanion)rc ;
              pc.setBfid( args.argv(2) ) ;
+         }else if( rc instanceof GetCompanion ){
+             GetCompanion gc = (GetCompanion)rc ;
+             gc.setSize( Long.parseLong( args.argv(2) ) ) ;
          }
       }else if( args.argv(0).equals( "BBACK" ) ){
          String serverId = args.argv(1) ;
@@ -159,10 +211,10 @@ public class EuroClient implements Runnable {
             System.err.println( "client id not found : "+rc.getId() ) ;
             return ;
          }
-         if( rc instanceof PutCompanion ){
-            System.out.println( ((PutCompanion)rc).getBfid() ) ;
-         }else{
-            System.out.println( "Done" ) ;
+         synchronized( _pendingLock ){
+            rc.setReturnCode( Integer.parseInt(rcode) , rmsg );
+            _pending-- ;
+            _pendingLock.notifyAll() ;
          }
       }else{
          System.err.print( "Nok from server : " ) ;
@@ -172,16 +224,32 @@ public class EuroClient implements Runnable {
          return ;      
       }
    }
+   public void close() throws InterruptedException { sync() ; }
+   public void sync() throws InterruptedException {
+      while( true ){
+         
+          synchronized( _pendingLock ){
+              System.err.println( "Pending : "+_pending ) ;
+              if( _pending <= 0 )return ;
+              _pendingLock.wait() ;
+          }
+         
+      
+      }
+   }
    ////////////////////////////////////////////////////////////////
    //
    //     the request companions
    //
-   class RequestCompanion {
+   abstract class RequestCompanion implements EuroCompanion {
        private String _id    = null ;
        private String _store = null ;
        private String _host  = null ;
        private int    _port  = 0 ;
-       private String _serverId = null ;
+       private String  _serverId = null ;
+       private boolean _finished = false ;
+       private int     _returnCode = -1 ;
+       private String  _returnMsg  = "inProgress" ;
        RequestCompanion( String store ) throws Exception {
           _store = store ;
           _id    = getNextRequestId() ;
@@ -194,51 +262,154 @@ public class EuroClient implements Runnable {
        public String getStore(){ return _store ; }
        public String getId(){ return _id ;}
        public String getHost(){ return _host ; }
+       public void   setReturnCode( int rc , String rMsg ){
+          _returnCode = rc ;
+          _returnMsg  = rMsg ;
+          _finished   = true ;
+       }
+       //
+       // Eurocomanion interface
+       //
+       public boolean isFinished(){ return _finished ; }
+       public int     getReturnCode(){ return _returnCode ; }
+       public String  getReturnMessage(){ return _returnMsg ; }
+       public String  toString(){ return "RC("+_returnCode+";"+_returnMsg+")" ; }
+   }
+   class GetCompanion extends RequestCompanion {
+   
+      private File         _file    = null ;
+      private OutputStream _dataOut = null ;
+      private String       _bfid    = null ;
+      private long         _size    = -1 ;
+      public String       getFilename(){ return _file.toString() ; }
+      public OutputStream getOutputStream(){ return _dataOut ; }
+      public String       getBfid(){ return _bfid ; }
+      public void         setSize( long size ){ _size = size ; }
+      public long         getSize(){ return _size ; }
+      GetCompanion( File   file  , 
+                    String store , 
+                    String bfid    ) throws Exception {
+         super( store ) ;
+         if( file.exists() )
+            throw new 
+            IllegalArgumentException( "File exists : "+file);
+         _bfid  = bfid ;
+         _file  = file  ;
+       
+         _dataOut = new FileOutputStream( _file ) ;
+      }
+      public String toString(){ 
+              return "[get,size="+_size+";"+super.toString()+"]" ;};
+   
+   }
+   class RemoveCompanion extends RequestCompanion {
+   
+      private String       _bfid    = null ;
+      
+      RemoveCompanion( String store , 
+                       String bfid    ) throws Exception {
+         super( store ) ;
+         _bfid  = bfid ;
+      }
+      public String toString(){ 
+              return "[remove,bfid="+_bfid+";"+super.toString()+"]" ;
+      }
+      public String getBfid(){ return _bfid ; }
+      public long   getSize(){ return -1 ; }
+   
    }
    class PutCompanion extends RequestCompanion {
-      private long   _size  = 0 ;
-      private String _group = null ;
-      private String _name  = null ;
+      private long        _size   = 0 ;
+      private String      _group  = null ;
+      private File        _file   = null ;
       private InputStream _dataIn = null ;
       private String      _bfid   = null ;
       
-      PutCompanion( String filename , 
+      PutCompanion( File   file  , 
                     String store , 
-                    String group , 
-                    long size      ) throws Exception {
+                    String group    ) throws Exception {
          super( store ) ;
+         if( ! file.exists() )
+            throw new 
+            IllegalArgumentException( "File not found : "+file);
          _group = group ;
-         _size  = size ;
-         _name  = filename ;
+         _size  = file.length() ;
+         _file  = file  ;
        
-         _dataIn = new FileInputStream( new File( _name ) ) ;
+         _dataIn = new FileInputStream( _file ) ;
       }
       public String getGroup(){ return _group ; }
       public long   getSize(){ return _size ; }
-      public String getFilename(){ return _name ; }
+      public String getFilename(){ return _file.toString() ; }
       public InputStream getInputStream(){ return _dataIn ; }
       public void   setBfid( String bfid ){ _bfid = bfid ; }
       public String getBfid(){ return _bfid ; }
+      public String toString(){ return "[put,bfid="+_bfid+";"+super.toString()+"]" ;};
    }
-   public void put( String filename , 
-                    String store , 
-                    String group , 
-                    long   size         ) throws Exception {
+   public EuroCompanion
+          remove( String store , String bfid ) 
+          throws Exception {
                
       
-      RequestCompanion rc = new PutCompanion( filename , store , group , size ) ;
+      RequestCompanion rc = new RemoveCompanion( store , bfid ) ;
+      StringBuffer r = new StringBuffer() ;
+      r.append( "REMOVEDATASETX " ) ;
+      r.append( store ).append( " " ).
+        append( bfid ).append(" ").append( rc.getId() ) ;
+      
+      synchronized( _pendingLock ){
+         _requests.put( rc.getId() , rc ) ;
+         _out.writeUTF( r.toString() ) ;
+         _pending++ ;
+      }
+        
+      return rc ;  
+   
+   }
+   public EuroCompanion
+          put( File   file ,  String store , String group ) 
+          throws Exception {
+               
+      
+      RequestCompanion rc = new PutCompanion( file , store , group ) ;
       StringBuffer r = new StringBuffer() ;
       r.append( "WRITEDATASET " ) ;
       r.append( store ).append( " " ) ;
       r.append( group ).append( " " ) ;
       r.append( "nomig" ).append( " " ) ;
-      r.append( size ).append( " " ) ;
+      r.append( file.length() ).append( " " ) ;
       r.append( rc.getHost() ).append(" ").append(rc.getPort()).append(" ??? ") ;
       r.append( rc.getId() ).append( " noparams" ) ;
       
-      _requests.put( rc.getId() , rc ) ;
-      _out.writeUTF( r.toString() ) ;
-          
+      synchronized( _pendingLock ){
+         _requests.put( rc.getId() , rc ) ;
+         _out.writeUTF( r.toString() ) ;
+         _pending++ ;
+      }
+        
+      return rc ;  
+   
+   }
+   public EuroCompanion
+          get( File   file ,  String store , String bfid ) 
+          throws Exception {
+               
+      
+      RequestCompanion rc = new GetCompanion( file , store , bfid ) ;
+      StringBuffer r = new StringBuffer() ;
+      r.append( "READDATASET " ) ;
+      r.append( store ).append( " " ) ;
+      r.append( bfid ).append( " " ) ;
+      r.append( rc.getHost() ).append(" ").append(rc.getPort()).append(" ??? ") ;
+      r.append( rc.getId() ).append( " noparams" ) ;
+      
+      synchronized( _pendingLock ){
+         _requests.put( rc.getId() , rc ) ;
+         _out.writeUTF( r.toString() ) ;
+         _pending++ ;
+      }
+        
+      return rc ;  
    
    }
    private int          _dataListenPort     = 0 ;
@@ -253,12 +424,74 @@ public class EuroClient implements Runnable {
       }
       return _dataListenPort ;
    }
-   public static void main( String [] args ) throws Exception {
+    public static void main( String [] args ) throws Exception {
       String host = "localhost" ;
       int    port = 28000 ;
-      EuroClient euro = new EuroClient( host , port ) ;
-      File f = new File( "/etc/group" ) ;
-      euro.put( "/etc/group" , "MAIN" , "raw" , f.length() ) ;
-      euro.put( "/etc/passwd" , "MAIN" , "raw" , f.length() ) ;
+      
+      if( args.length == 0 ){
+          System.err.println( "Usage : ... req [ req ]  ... " ) ;
+          System.err.println( "  req :  write <filename> <storageGroup>" ) ;
+          System.err.println( "  req :  read  <bfid>     <filename>" ) ;
+          System.err.println( "  req :  rm|remove  <bfid>" ) ;
+          System.exit(3);
+      }
+      Vector v = new Vector() ;
+      for( int i= 0 ; i < args.length ; i++ )v.addElement(args[i]) ;
+      Enumeration e = v.elements() ;
+      Vector r = new Vector() ;
+      while( e.hasMoreElements() ){
+         String command = (String)e.nextElement() ;
+         if( command.equals( "write" ) ){
+            String filename   = (String)e.nextElement() ;
+            String storegroup = (String)e.nextElement() ;
+            r.addElement( new EuroContainer( "put" , filename , storegroup ) ) ;         
+         }else if( command.equals( "read" ) ){
+            String bfid       = (String)e.nextElement() ;
+            String filename   = (String)e.nextElement() ;
+            r.addElement( new EuroContainer( "get" , bfid , filename ) ) ;         
+         }else if( command.equals( "rm" ) || command.equals("remove") ){
+            String bfid       = (String)e.nextElement() ;
+            r.addElement( new EuroContainer( "rm" , bfid , null ) ) ;         
+         }else
+            throw new 
+            IllegalArgumentException( "Illegal command : "+command ) ;
+      }
+      try{
+         EuroClient euro = new EuroClient( host , port ) ;
+
+         for( e = r.elements() ; e.hasMoreElements() ;  ){
+
+             EuroContainer ec = (EuroContainer)e.nextElement() ;
+
+             if( ec.getDirection().equals( "put" ) ){
+                ec.addCompanion( 
+                      euro.put( new File(ec.getFilename()) , 
+                               "MAIN" , 
+                               ec.getGroup() ) 
+                               ) ;
+             }else if( ec.getDirection().equals( "get" ) ){
+                ec.addCompanion( 
+                      euro.get( new File(ec.getFilename()) , 
+                                "MAIN" , 
+                                ec.getBfid() ) 
+                               ) ;
+             }else if( ec.getDirection().equals( "rm" ) ){
+                ec.addCompanion( 
+                      euro.remove( "MAIN" , ec.getBfid() ) 
+                               ) ;
+             }
+         }
+
+         euro.close() ;
+
+         for( e = r.elements() ; e.hasMoreElements() ;  ){
+
+             EuroContainer ec = (EuroContainer)e.nextElement() ;
+              System.out.println( ec.toString() ) ;
+         }
+      }catch( Exception exx ){
+         exx.printStackTrace() ;
+      }
+      System.exit(0);
    }
 }

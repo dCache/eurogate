@@ -134,7 +134,7 @@ public class EuroGate extends CellAdapter implements Runnable {
           }
        
        }else if( obj instanceof NoRouteToCellException ){
-          esay( "Cell couldb't reached : "+obj.toString() ) ;
+          esay( "Cell couldn't be reached : "+obj.toString() ) ;
        }
     }
     private void returnBbOK( RequestImpl req ){
@@ -151,7 +151,12 @@ public class EuroGate extends CellAdapter implements Runnable {
                                 req.getFileSize() + " "+
                                 req.getClientReqId()     ) ;
              }else if( req.getType().equals("remove") ){
-                _output.writeUTF( "OK " ) ;
+                String id = req.getClientReqId() ;
+                if( id.equals("none") ){
+                    _output.writeUTF( "OK " ) ;
+                }else{
+                    _output.writeUTF( "OK "+id ) ;
+                }
              }
           }else{
              _output.writeUTF( "NOK "+
@@ -191,7 +196,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        pin(  "Session closed" ) ;
        return "OK 0"  ;
     }
-    public String ac_REMOVEDATASET_$_2_( Args args ) 
+    public String ac_REMOVEDATASET_$_2( Args args ) 
            throws CommandException                      {
 
        String store     = args.argv(0) ;
@@ -199,13 +204,26 @@ public class EuroGate extends CellAdapter implements Runnable {
        _removeCounter ++ ;
        pin( "REMOVE  bfid="+bfid) ;
        RequestImpl shuttle =
-           new RequestImpl( "remove" ,
-                               store , bfid  ) ;
+           new RequestImpl( "remove" , store , bfid , "none" ) ;
 
        sendIt( shuttle ) ;
        return null ;
     }
-    public String ac_WRITEDATASET_$_9_( Args args ) 
+    public String ac_REMOVEDATASETX_$_3( Args args ) 
+           throws CommandException                      {
+
+       String store      = args.argv(0) ;
+       String bfid       = args.argv(1) ;
+       String sessionID  = args.argv(2) ;
+       _removeCounter ++ ;
+       pin( "REMOVE  bfid="+bfid) ;
+       RequestImpl shuttle =
+           new RequestImpl( "remove" , store , bfid , sessionID ) ;
+
+       sendIt( shuttle ) ;
+       return null ;
+    }
+    public String ac_WRITEDATASET_$_9( Args args ) 
            throws CommandException                      {
     
        String store     = args.argv(0) ;
@@ -233,7 +251,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        return null ;
     
     }
-    public String ac_READDATASET_$_7_( Args args ) 
+    public String ac_READDATASET_$_7( Args args ) 
            throws CommandException                      {
     
        String store     = args.argv(0) ;
