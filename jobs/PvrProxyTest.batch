@@ -6,5 +6,5 @@ create eurogate.pvr.PvrLoginManager pvrLM 22124
 #
 create dmg.cells.services.login.LoginManager lm \
        "22125 dmg.cells.services.login.LoginCell \
-        -prot=telnet \
+        -prot=telnet -localOk \
         eurogate.simulation.graphics.pvr.PvrRequestShell"
