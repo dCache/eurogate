@@ -49,6 +49,9 @@ prepareDbSimMode() {
       mkdir -p ${databaseRoot}/pvr/stk
       mkdir -p ${databaseRoot}/pvl
       mkdir -p ${databaseRoot}/mover
+      mkdir -p ${databaseRoot}/users/acls 
+      mkdir -p ${databaseRoot}/users/relations
+      mkdir -p ${databaseRoot}/users/meta
    fi 
    return 0   
 }
@@ -398,13 +401,22 @@ eurogateLogin() {
   return $?
 }
 #
+eurogateAdmin() {
+#............
+#
+   checkForSsh  || exit $?
+#
+  shift 1
+  $SSH -p $aclPort -c blowfish -o "FallBackToRsh no" $* localhost
+  return $?
+}
+#
 
 eurogateHelp() {
    echo "Usage : eurogate start"
    echo "        eurogate login"
-   echo "        eurogate initPvl"
-   echo "        eurogate deletePvl"
    echo "        eurogate stop"
+   echo "        eurogate admin"
    return 0
 }
 eurogateSwitch() {
@@ -412,6 +424,7 @@ eurogateSwitch() {
      *start)       eurogateStart $* ;;
      *stop)        eurogateStop  $* ;;
      *login)       eurogateLogin  $* ;;
+     *admin)       eurogateAdmin  $* ;;
      *otto)        getCellsLocation $* ;;
      *mkpack)      makePackage $* ;;
      *)            eurogateHelp $* ;;

@@ -1,8 +1,10 @@
 #
 #   use 'set printout default all' to get them all
 #
-set printout default 3
-set printout CellGlue none
+set printout default all
+set printout CellGlue all
+#set printout default 3
+#set printout CellGlue none
 onerror shutdown
 ########################################################################
 #
@@ -16,7 +18,7 @@ check -strong setupFile
 copy file:${setupFile} env:setupFile
 import env setupFile
 #
-check -strong sshPort clientPort pvlDbPort databaseRoot mode
+check -strong sshPort aclPort clientPort pvlDbPort databaseRoot mode
 #
 ########################################################################
 #
@@ -29,6 +31,7 @@ onerror continue
 set env -c storeDatabase        ${databaseRoot}/store
 set env -c pvlDatabase          ${databaseRoot}/pvl
 set env -c moverData            ${databaseRoot}/mover
+set env -c usersDatabase        ${databaseRoot}/users
 onerror shutdown
 #
 set env pvlName              pvl
@@ -50,7 +53,7 @@ set env scheduler            eurogate.pvl.scheduler.BasicScheduler
 #
 set context serverKeyFile     ${keyBase}/server_key
 set context hostKeyFile       ${keyBase}/host_key
-set env     securityCell      acm
+set env     securityCell      AclCell
 set context userPasswordFile  cell:${securityCell}
 #
 create dmg.cells.services.login.SshKeyManager    skm
@@ -59,6 +62,18 @@ create dmg.cells.services.login.LoginManager slm \
         "${sshPort}  \
         dmg.cells.services.StreamLoginCell \
         -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X"
+#
+create eurogate.misc.users.AclCell AclCell   \
+         "${usersDatabase} \
+           -syspassword=${keyBase}/shadow  \
+           -egpassword=${keyBase}/passwd"
+#
+create dmg.cells.services.login.LoginManager aclMgr \
+      "${aclPort}  \
+       dmg.cells.services.login.StreamObjectCell \
+       -prot=ssh -auth=dmg.cells.services.login.SshSAuth_A \
+       eurogate.spy.AclAdmin"
+
 #
 ########################################################################
 #
@@ -216,7 +231,7 @@ create eurogate.store.StarGateVX MAIN-store  \
 #
 #
 create eurogate.db.pvl.PvlDbManager PvlManager \
-           "${pvlDatabase} \
+           "${pvlDatabase} -acl=${securityCell} \
            -autoinstall=initPvlDatabase"
 #
 create dmg.cells.services.login.LoginManager dbLogin \

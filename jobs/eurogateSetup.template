@@ -148,6 +148,7 @@ mode=simulation
 #
 pvlDbPort=23124
 sshPort=23125
+aclPort=23126
 clientPort=28000
 #  telnetPort=23123
 #  spyPort=23222
