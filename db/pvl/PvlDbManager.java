@@ -1,5 +1,7 @@
 package  eurogate.db.pvl ;
 
+import   eurogate.misc.users.* ;
+
 import   dmg.cells.nucleus.* ;
 import   dmg.cells.network.* ;
 import   dmg.util.* ;
@@ -59,8 +61,20 @@ public class      PvlDbManager
               say( "Using new database" ) ;
            }
            dict.put( "database" , _pvlDb ) ;
-       
-           addCommandListener( new PvlCommander( _pvlDb ) ) ;
+           
+           PvlCommander commander = new PvlCommander( _pvlDb ) ;
+           //
+           // if there is an aclCell defined ( -acl=<cell> ) we have
+           // to do acl checking.
+           //
+           String aclCell = _args.getOpt("acl") ;
+           if( aclCell != null ){
+                commander.setPermissionCheckable( 
+                     new RemotePermission( this , new CellPath( aclCell ) ) 
+                ) ;
+           }
+           
+           addCommandListener( commander ) ;
            
        }catch( Exception e ){
           say( "Problem in <init> : "+e ) ;
