@@ -16,10 +16,12 @@
 #     jobs/eurogate.sh initPvl
 #   
 databaseRoot=/home/patrick/eurogateDb
+storeClass=eurogate.store.sldb.SldbStoreV1
 #cellClasses=/home/patrick/sim/cells.jar:/home/patrick/sim/eurogate.jar:/home/patrick/sim
 cellClasses=/home/patrick/sim/cells.jar
+cellBatch=desyEurogate.batch
 spyPort=23222
 pvlDbPort=23124
 sshPort=23125
 clientPort=28000
-cellBatch=desyEurogate.batch
+telnetPort=23123
