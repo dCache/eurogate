@@ -16,7 +16,7 @@ import dmg.cells.applets.login.* ;
 import eurogate.misc.users.* ;
 
 public class      PrincipalManagerPanel 
-       extends    SimpleBorderPanel  
+       extends    MasterPanel  
        implements ActionListener    {
 
 
@@ -26,15 +26,15 @@ public class      PrincipalManagerPanel
                          new Font( "SansSerif" , 0 , 12 ) ;
 
    private DomainConnection _connection      = null ;
-   private Label            _messages        = new Label("") ;
    private Panel            _masterPanel     = null ;
    private CreateUserPanel  _createUserPanel = null ;
    private Panel            _currentPanel    = null ;
    private GroupPanel       _groupPanel      = new GroupPanel() ;
    private UserPanel        _userPanel       = new UserPanel() ;
    public PrincipalManagerPanel( DomainConnection connection ){
-
-      super( new BorderLayout() , 15 , Color.white ) ;
+       super( "Principal Relation Manager" ) ;
+       setBorderSize(10) ;
+       setBorderColor( Color.white ) ;
 
       _connection = connection ;
 
@@ -44,24 +44,13 @@ public class      PrincipalManagerPanel
       _groupPanel.addActionListener(this) ;
       
       
-      Label title = new Label( "Principal Relation Manager" , Label.CENTER ) ;
-      title.setFont( _headerFont ) ;
-
-      add( title , "North" ) ;
 
       _masterPanel = 
          new SimpleBorderPanel( new BorderLayout() , 15 , Color.blue ) ;
 
       _masterPanel.add( _createUserPanel , "North" ) ;
-//      masterPanel.add( _listPanel      , "Center" ) ;
-//      masterPanel.add( _principalPanel , "South" ) ;
 
-      add( _masterPanel , "Center" ) ;
-
-      _messages.setForeground( Color.red ) ;
-      add( _messages , "South" ) ;
-
-
+      add( _masterPanel  ) ;
    }
    //
    // our outfit
@@ -105,9 +94,6 @@ public class      PrincipalManagerPanel
          showMaster(null);
       }
       validate() ;
-//      if( source == _listPanel ){
-//         if( action.equals("") ){
-//         }
    } 
    /////////////////////////////////////////////////////////////
    //
@@ -129,6 +115,7 @@ public class      PrincipalManagerPanel
              _actionListener.actionPerformed(e) ;
       }
    }
+   public String getHelpText(){ return "HelpText" ; }
    //
    //  ii) the command sender
    //
@@ -155,11 +142,11 @@ public class      PrincipalManagerPanel
    //
    // iii) error handling
    //
-   private Object setText(Object obj ){
+   public Object setText(Object obj ){
       if( obj instanceof Throwable ){
         return displayThrowable( (Throwable)obj ) ;
       }else{
-         _messages.setText(obj.toString());
+         setMessage(obj.toString());
          return obj ;
       }
    }
@@ -169,19 +156,19 @@ public class      PrincipalManagerPanel
            (CommandThrowableException)obj ;
            Throwable t = cte.getTargetException() ;
            if( t instanceof AclException ){
-              setText( "No Permission : "+t.getMessage() ) ; 
+              setMessage( "No Permission : "+t.getMessage() ) ; 
            }else if( t instanceof AclPermissionException ){
-              setText( "No Permission : "+t.getMessage() ) ; 
+              setMessage( "No Permission : "+t.getMessage() ) ; 
            }else if( t instanceof NoSuchElementException ){
-              setText( t.getMessage() ) ; 
+              setMessage( t.getMessage() ) ; 
            }else{
-              setText( t.toString() ) ;
+              setMessage( t.toString() ) ;
            }
            return t ;
        }else if( obj instanceof CommandException ){
-           setText( ((Exception)obj).getMessage() ) ;
+           setMessage( ((Exception)obj).getMessage() ) ;
        }else{
-           setText( obj.toString() ) ;
+           setMessage( obj.toString() ) ;
        }
        return obj ;   
    }

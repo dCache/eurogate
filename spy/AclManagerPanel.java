@@ -16,7 +16,7 @@ import dmg.cells.applets.login.* ;
 import eurogate.misc.users.* ;
 
 public class      AclManagerPanel 
-       extends    SimpleBorderPanel  
+       extends    MasterPanel  
        implements ActionListener    {
         
      private Font   _headerFont = 
@@ -25,7 +25,6 @@ public class      AclManagerPanel
                            new Font( "SansSerif" , 0 , 12 ) ;
                            
      private DomainConnection _connection     = null ;
-     private Label            _messages       = new Label("") ;
      private CreateAclPanel   _createAclPanel = null ;
      private ListPanel        _listPanel      = null ;
      private PrincipalPanel   _principalPanel = null ;
@@ -460,7 +459,7 @@ public class      AclManagerPanel
        if( obj instanceof Throwable ){
          return displayThrowable( (Throwable)obj ) ;
        }else{
-          _messages.setText(obj.toString());
+          setMessage(obj.toString());
           return obj ;
        }
     }
@@ -470,32 +469,29 @@ public class      AclManagerPanel
             (CommandThrowableException)obj ;
             Throwable t = cte.getTargetException() ;
             if( t instanceof AclException ){
-               setText( "No Permission : "+t.getMessage() ) ; 
+               setMessage( "No Permission : "+t.getMessage() ) ; 
             }else if( t instanceof AclPermissionException ){
-               setText( "No Permission : "+t.getMessage() ) ; 
+               setMessage( "No Permission : "+t.getMessage() ) ; 
             }else if( t instanceof NoSuchElementException ){
-               setText( t.getMessage() ) ; 
+               setMessage( t.getMessage() ) ; 
             }else{
-               setText( t.toString() ) ;
+               setMessage( t.toString() ) ;
             }
             return t ;
         }else if( obj instanceof CommandException ){
-            setText( ((Exception)obj).getMessage() ) ;
+            setMessage( ((Exception)obj).getMessage() ) ;
         }else{
-            setText( obj.toString() ) ;
+            setMessage( obj.toString() ) ;
         }
         return obj ;   
      }
      public AclManagerPanel( DomainConnection connection ){
-     
-        super( new BorderLayout() , 15 , Color.white ) ;
+        super( "Acl Manager" ) ;
+        setBorderColor( Color.white ) ;
+        setBorderSize( 5 ) ;
                 
         _connection = connection ;
                 
-        Label title = new Label( "Acl Manager" , Label.CENTER ) ;
-        title.setFont( _headerFont ) ;
-        
-        add( title , "North" ) ;
          
         Panel masterPanel = 
            new SimpleBorderPanel( new BorderLayout() , 15 , Color.blue ) ;
@@ -512,11 +508,16 @@ public class      AclManagerPanel
         masterPanel.add( _createAclPanel , "North" ) ;
         masterPanel.add( _listPanel      , "Center" ) ;
         masterPanel.add( _principalPanel , "South" ) ;
-        add( masterPanel , "Center" ) ;
         
-        _messages.setForeground( Color.red ) ;
-        add( _messages , "South" ) ;
+        add( masterPanel ) ;
         
         
      } 
+     private String _helpText = 
+       "    Help for the AclMangerPanel\n"+
+       "    dideldum ... \n" +
+       "" ;
+     public String getHelpText(){
+        return _helpText ;
+     }
 }
