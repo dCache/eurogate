@@ -41,10 +41,10 @@
 #  security. The following commands will do :
 #
 #       cd <eurogateBaseDir>/jobs
-#       ../bin/ssh-keygen -b  768 -f ./server_key -N \"\"
-#       ../bin/ssh-keygen -b 1024 -f ./host_key   -N \"\"
+#       ../bin/ssh-keygen -b  768 -f ./server_key -N ""
+#       ../bin/ssh-keygen -b 1024 -f ./host_key   -N ""
 #
-ssh=${thisDir}/../bin/ssh
+#ssh=${thisDir}/../bin/ssh
 keyBase=${thisDir}
 #
 #   - The log directory
@@ -88,11 +88,10 @@ eurogateClasses=${thisDir}/../..
 #
 #  !!! These directories must exist BEFORE eurogate
 #  !!! is started the first time. They all must be
-#  !!! empty at that time. To initiate the different
-#  !!! databases the following sequence is required.
+#  !!! empty at that time. The database are initiated
+#  !!! the first time the eurostore is started.
 #
 #     jobs/eurogate start
-#     jobs/eurogate initPvl
 #
 databaseRoot=/home/patrick/eurogateDb
 #
@@ -105,7 +104,7 @@ databaseRoot=/home/patrick/eurogateDb
 #  containing the necessary c-language code. Both need a
 #  directory where to simlutate the tape.
 #
-moverSpace=${databaseRoot}/mover
+moverData=${databaseRoot}/mover
 javaOnly=true
 #
 #  sharedLibraries=${thisDir}/mover
@@ -153,5 +152,5 @@ mode=simulation
 pvlDbPort=23124
 sshPort=23125
 clientPort=28000
-#  telnetPort=23123
+telnetPort=23123
 #  spyPort=23222

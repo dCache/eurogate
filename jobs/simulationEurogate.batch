@@ -25,9 +25,11 @@ check -strong sshPort clientPort pvlDbPort databaseRoot mode
 #   the storeDatabase, pvlDatabase ... may have been set individually.
 #   Therefor we don't want to overwrite the variables if already set.
 #
-#set env -c storeDatabase        ${databaseRoot}/store
+onerror continue
+set env -c storeDatabase        ${databaseRoot}/store
 set env -c pvlDatabase          ${databaseRoot}/pvl
-set env -c moverData            ${databaseRoot}/drives
+set env -c moverData            ${databaseRoot}/mover
+onerror shutdown
 #
 set env pvlName              pvl
 set env scheduler            eurogate.pvl.scheduler.BasicScheduler
@@ -213,7 +215,9 @@ create eurogate.store.StarGateVX MAIN-store  \
 #
 #
 #
-create eurogate.db.pvl.PvlDbManager PvlManager  ${pvlDatabase}
+create eurogate.db.pvl.PvlDbManager PvlManager \
+           "${pvlDatabase} \
+           -autoinstall=initPvlDatabase"
 #
 create dmg.cells.services.login.LoginManager dbLogin \
       "${pvlDbPort}  \

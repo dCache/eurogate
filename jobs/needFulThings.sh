@@ -13,14 +13,15 @@ findBinary() {
     z="echo \${$1}"
     x=`( eval  $z )`
     xkey=$1
-    if [ \( -z "${x}" \) -o \( "${java}" = "$1" \) ] ; then
-       echo "$1 path not defined, trying to find it." 1>&2
+    if [ \( -z "${x}" \) -o \( "${x}" = "$1" \) ] ; then
+#       echo "$1 path not defined, trying to find it." 1>&2
        RES=`which $1 2>/dev/null`
        if [ $? -eq 1 ] ; then
-          echo "$1 not found in PATH, trying ... " 1>&2
+#          echo "$1 not found in PATH, trying ... " 1>&2
           tmp=$PATH
           shift
           while [ $# -gt 0 ] ; do PATH=$PATH:$1 ; shift ; done
+          PATH=$PATH:${thisDir}/../bin
           RES=`which $xkey 2>/dev/null`
           if [ $? -eq 1 ] ; then
              echo "Couldn't find $1 at all" 1>&2
@@ -29,7 +30,7 @@ findBinary() {
        fi
     else
        if [ ! -x ${x} ] ; then
-          echo "The specified java path (${java}) couldn't be found" 2>&1
+          echo "The specified java path (${x}) couldn't be found" 2>&1
           return 4
        else
           RES=${x}
@@ -65,10 +66,10 @@ checkJava() {
    err=`$JAVA eurogate.misc.Version 2>&1 1>/dev/null`
    if [ "$err" = "Cells not found" ] ; then
        echo "Cell classes not found in $CLASSPATH" 1>&2
-       exit 4
+       return 4
    elif [ ! -z "$err" ] ; then
        echo "Eurogate classes not found in $CLASSPATH" 1>&2
-       exit 5
+       return 5
    fi
    return 0 ;
 }
