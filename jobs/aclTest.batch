@@ -31,6 +31,11 @@ create dmg.cells.services.login.LoginManager slm \
         dmg.cells.services.StreamLoginCell \
         -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X"
 
+create dmg.cells.services.login.LoginManager tlm \
+        "23155  \
+        dmg.cells.services.StreamLoginCell \
+        -prot=telnet -auth=dmg.cells.services.login.TelnetSAuth_A"
+
 create dmg.cells.services.login.LoginManager aclMgr \
       "${aclPort}  \
        dmg.cells.services.login.StreamObjectCell \
