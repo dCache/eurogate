@@ -7,7 +7,7 @@ public class PnfsFile extends File  {
 
    private String  _absolute = null ;
    private PnfsId  _pnfsId   = null ;
-   
+   private boolean _pnfsOnly = false ;
    public PnfsFile( String path ){
       super( path ) ;
       _absolute = getAbsolutePath() ;
@@ -22,6 +22,34 @@ public class PnfsFile extends File  {
       super( mp , file ) ;
       _absolute = getAbsolutePath() ;
       _pnfsId   = id ;
+      _pnfsOnly = true ;
+   }
+   private PnfsFile( File mp , String file , PnfsId id ){
+      super( mp , file ) ;
+      _absolute = getAbsolutePath() ;
+      _pnfsId   = id ;
+      _pnfsOnly = true ;
+   }
+   public PnfsFile getFileByPnfsId( PnfsId id ){
+       PnfsFile f = new PnfsFile( this , ".(puse)("+id+")" , id ) ;
+       if( ! f.exists() )
+           throw new
+           IllegalArgumentException( "Pnfs doesn't exist : "+id);
+           
+       return f ;
+   }
+   public static PnfsFile getFileByPnfsId( String mountpoint , PnfsId id ){
+       PnfsFile mp = new PnfsFile( mountpoint ) ;
+       if( ( ! mp.isDirectory() ) || ( ! mp.isPnfs() ) )
+           throw new
+           IllegalArgumentException( "Not a pnfs directory : "+mountpoint);
+           
+       PnfsFile f = new PnfsFile( mp , ".(puse)("+id+")" , id ) ;
+       if( ! f.exists() )
+           throw new
+           IllegalArgumentException( "Pnfs doesn't exist : "+id);
+           
+       return f ;
    }
    public boolean isPnfs(){
       if( isDirectory() ){
@@ -75,6 +103,13 @@ public class PnfsFile extends File  {
                 return false ;
             }
          }
+      }
+   }
+   public File getParentDirectory(){
+      if( _pnfsOnly ){
+        return  null ;
+      }else{
+         return new File( getParent() ) ;
       }
    }
    public File getLevelFile( int level ){
@@ -173,13 +208,6 @@ public class PnfsFile extends File  {
       return super.getCanonicalPath() ;
    }
    */
-   public static PnfsFile getFileByPnfsId( String mountpoint , PnfsId id ){
-       PnfsFile mp = new PnfsFile( mountpoint ) ;
-       if( ( ! mp.isDirectory() ) || ( ! mp.isPnfs() ) )return null ;
-       PnfsFile f = new PnfsFile( mountpoint , ".(access)("+id+")" , id ) ;
-       if( ! f.exists() )return null ;
-       return f ;
-   }
    public static void main( String [] args ){
       if( args.length < 2 ){
          System.out.println( "Usage : ... <command> <path> [arguments]" ) ;
