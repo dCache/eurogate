@@ -48,6 +48,7 @@ public class DummyGate extends CellAdapter implements Runnable {
            _output.close() ; 
            _output = null ;
        }catch(Exception ee ){}
+       try{ _socket.close() ; }catch(Exception ioe){}
     }
     public String toString(){
       return "Peer="+_remotePeer ;
