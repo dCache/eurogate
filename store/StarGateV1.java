@@ -62,6 +62,19 @@ public class StarGateV1 extends CellAdapter  {
            say( "Message arrived : "+obj ) ;
            RequestImpl req = (RequestImpl) obj ;
            addRequest( msg , req ) ;
+       }else if( obj instanceof StoreRequest ){
+           StoreRequest sr = (StoreRequest)obj ;
+           if( sr.getCommand().equals( "get-bfid" ) ){
+              try{
+                 sr.setBitfileId( _dataBase.getBitfileId(sr.getBfid()) ) ;
+              }catch( DatabaseException dbe ){
+                 sr.setBitfileId(null);
+              }
+              msg.revertDirection() ;
+              try{
+                 sendMessage(msg);
+              }catch(Exception ee){}
+           }
        }
    }
    private void addRequest( CellMessage msg , RequestImpl req ){
@@ -364,6 +377,38 @@ public class StarGateV1 extends CellAdapter  {
       for( int i = 0 ; i < list.length ; i++ )
          sb.append( "     "+list[i]+"\n" ) ;
       return sb.toString();
+   }
+   public String hh_ls_bfid = "<bfid>" ;
+   public String ac_ls_bfid_$_1( Args args ) throws CommandException {
+      String     bfid      = args.argv(0);
+      BitfileId  bitfileid = null ;
+      DateFormat df        = new SimpleDateFormat("MMM d, hh.mm.ss" ) ;
+      try{
+          bitfileid = _dataBase.getBitfileId(bfid) ;
+      }catch( DatabaseException dbe ){
+         throw new 
+         CommandException( dbe.getCode() , dbe.getMessage() ) ;
+      }
+      StringBuffer sb = new StringBuffer() ;
+      sb.append("Name          : ").
+         append( bitfileid.getName() ).append("\n") ;
+      sb.append("Mode          : ").
+         append( bitfileid.getMode() ).append("\n") ;
+      sb.append("Volume        : ").
+         append( bitfileid.getVolume() ).append("\n") ;
+      sb.append("Position      : ").
+         append( bitfileid.getPosition() ).append("\n") ;
+      sb.append("Access Count  : ").
+         append( bitfileid.getAccessCount() ).append("\n") ;
+      sb.append("Parameter     : ").
+         append( bitfileid.getParameter() ).append("\n") ;
+      sb.append("Last Access   : ").
+         append( df.format( bitfileid.getLastAccessDate())).append("\n") ;
+      sb.append("Creation Data : ").
+         append( df.format( bitfileid.getCreationDate())).append("\n") ;
+      
+      return sb.toString() ;
+   
    }
    public String hh_ls_group = "[-l] <storageGroup>" ;
    public String ac_ls_group_$_1( Args args ) throws CommandException {
