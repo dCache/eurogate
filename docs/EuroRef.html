@@ -87,44 +87,53 @@ create</a> drive &lt;driveName&gt;
     <td>pvl.&lt;pvlName&gt;.admin</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">
-          create</a> cartridgeDescriptor &lt;name&gt;</td>
-    <td>-type=&lt;cartridgeType&gt;
-    </td>
+<tr><td valign=top><a href="PvlRef.html#createpvr">create</a> 
+    cartridgeDescriptor &lt;name&gt;</td>
+    <td>-type=&lt;cartridgeType&gt;</td>
     <td>pvl.&lt;pvlName&gt;.admin</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">
-          create</a> volumeDescriptor &lt;name&gt;
-    <td>-size=&lt;volumeSize&gt;
-    </td>
+<tr><td valign=top><a href="PvlRef.html#createpvr">create</a> 
+    volumeSet &lt;volumeSetName&gt;</td>
+    <td></td>
+    <td>pvl.&lt;pvlName&gt;.support</td>
+</tr>
+
+<tr><td valign=top><a href="PvlRef.html#createpvr">create</a> 
+    volumeDescriptor &lt;name&gt;
+    <td>-size=&lt;volumeSize&gt;</td>
     <td>pvl.&lt;pvlName&gt;.admin</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">
-          create</a> volume &lt;volumeName&gt; 
-    <td>   -cart=&lt;cartridgeName&gt;<br>
-           -pvr=&lt;pvrName&gt;<br>
-          [-position=&lt;position&gt;]
+<tr><td valign=top><a href="PvlRef.html#createpvr">create</a>
+    volume &lt;volumeName&gt; 
+    <td>-cart=&lt;cartridgeName&gt;<br>
+        -pvr=&lt;pvrName&gt;<br>
+       [-position=&lt;position&gt;]
     </td>
-    <td>pvl.&lt;pvlName&gt;.admin</td>
+    <td>pvl.&lt;pvlName&gt;.&lt;pvrName&gt;.support</td>
 </tr>
 
-<tr><td valign=top><a href="PvlRef.html#createpvr">
-          create</a> drive &lt;driveName&gt;</td>
-    <td>
-           -pvr=&lt;pvrName&gt;<br>
-           -dev=&lt;deviceName&gt;<br> 
-           -spec=&lt;specificName&gt;<br> 
-          [-sel=&lt;driveSelection&gt;]<br>
+<tr><td valign=top><a href="PvlRef.html#createpvr">set</a>
+    volume &lt;volumeName&gt; 
+    <td>-status=&lt;volumeStatus&gt;
+    </td>
+    <td>pvl.&lt;pvlName&gt;.&lt;pvrName&gt;.operate</td>
+</tr>
+
+<tr><td valign=top><a href="PvlRef.html#createpvr">create</a>
+    drive &lt;driveName&gt;</td>
+    <td>-pvr=&lt;pvrName&gt;<br>
+        -dev=&lt;deviceName&gt;<br> 
+        -spec=&lt;specificName&gt;<br> 
+       [-sel=&lt;driveSelection&gt;]<br>
     </td>
     <td>pvr.&lt;pvrName&gt;.admin</td>
 </tr>
-<tr><td valign=top><a href="PvlRef.html#createpvr">
-          add</a> volume &lt;volumeName&gt;</td>
-    <td>-vs=&lt;volumeSetName&gt; 
-    </td>
-    <td>pvr.&lt;pvrName&gt;.admin</td>
+<tr><td valign=top><a href="PvlRef.html#createpvr">add</a> 
+    volume &lt;volumeName&gt;</td>
+    <td>-vs=&lt;volumeSetName&gt;</td>
+    <td>vs.&lt;pvlName&gt;.&lt;volumeSetName&gt;.support</td>
 </tr>
 </table>
 </blockquote>
