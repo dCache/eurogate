@@ -59,6 +59,7 @@ public class AclDb {
    }
    private AclItem getAcl( String aclName )
            throws NoSuchElementException{
+       System.out.println( "getAcl : "+aclName) ;
        AclItem item = (AclItem)_hash.get( aclName ) ;
        if( item != null )return item ;
        return _loadAcl( aclName ) ;       
@@ -102,7 +103,7 @@ public class AclDb {
           br = new BufferedReader( new FileReader( file ) ) ;
         }catch( IOException e ){
            throw new 
-           NoSuchElementException( "No found "+file ) ;
+           NoSuchElementException( "Not found "+file ) ;
         }
         String line = null ;
         StringTokenizer st   = null ;
@@ -178,8 +179,109 @@ public class AclDb {
    public AcDictionary getPermissions( String aclName , boolean resolve )
           throws NoSuchElementException{
           
-        return resolve ? _resolveAclItem( aclName ) : getAcl( aclName ) ;
+//        return resolve ? _resolveAclItem( aclName ) : getAcl( aclName ) ;
+        return resolve ? _fullResolveAclItem( aclName ) : getAcl( aclName ) ;
       
+   }
+   private AclItem _fullResolveAclItem( String aclItem )
+           throws NoSuchElementException{
+           
+       if( aclItem.startsWith("." ) || aclItem.endsWith("." ) )
+           throw new 
+           NoSuchElementException("Illegal formated acl : "+aclItem ) ;    
+       int f = aclItem.indexOf('.') ;
+       int l = aclItem.lastIndexOf('.');
+       String [] array = null ;
+       if( f < 0 ){
+         array = new String[2] ;
+         array[0] = aclItem ;
+         array[1] = "*.*.*" ;
+       }else if( f == l ){
+         String a = aclItem.substring(0,f) ;
+         String e = aclItem.substring(l+1) ;
+         array = new String[4] ;
+         array[0] = aclItem ;
+         array[1] = a+"."+e+".*" ;
+         array[2] = a+".*.*" ;
+         array[3] = "*.*.*" ;
+       }else if( ( f + 1 ) == l ){
+           throw new 
+           NoSuchElementException("Illegal formated acl : "+aclItem ) ;    
+       }else{
+         String className    = aclItem.substring(0,f) ;
+         String instanceName = aclItem.substring(f+1,l) ;
+         String actionName   = aclItem.substring(l+1) ;
+         //
+         // split the  object-instance-name into all possiblities.
+         // What we call 'possibilities' is : filling the 
+         // items with stars from left to right.
+         //
+         //  e.g. : a.b.c -> V(a.b.c)={a.b.c,a.b.*,a.*.*,*.*.*}
+         //
+         StringTokenizer st = new StringTokenizer(instanceName,".") ;
+         String [] mm = new String[st.countTokens()] ;
+         for(int i = 0 ; i < mm.length ; i++ )mm[i] = st.nextToken() ;
+         String [] mask = new String[mm.length] ;
+         int k = 0 ;
+         mask[k++] = instanceName ;
+         for( int i = 0 ; i < mm.length ; i++ ){
+            StringBuffer sb = new StringBuffer() ;
+            for( int j = 0 ; j < mm.length ; j++ ){
+               if( j > (mm.length-1-i) )sb.append("*.") ;
+               else sb.append(mm[j]).append(".");
+            }
+            mask[k++] = sb.toString() ;          
+         }
+         //
+         //   I don't know if this is what we actually want :
+         //   we walk through all possiblities but the order might
+         //   be wrong or at least worth a discussion.
+         //
+         //      class.V(instance).action
+         //      class.*.action
+         //      class.V(instance).*
+         //      class.*.*
+         //      *.*.*
+         //
+         array = new String[3+2*mask.length] ;
+         k = 0 ;
+         for( int i = 1 ; i < mask.length ; i++ )
+             array[k++] = className+"."+mask[i]+actionName ;
+         array[k++] = className+".*."+actionName ;
+         for( int i = 1 ; i < mask.length ; i++ )
+             array[k++] = className+"."+mask[i]+"*" ;
+         array[k++] = className+".*.*" ;
+         array[k++] = "*.*.*" ;
+       }
+       //
+       // array contains all the possiblities we have to merge
+       // before we check them against the relation database.
+       //
+       AclItem currentItem = null ;
+       for( int i = 0 ; i < array.length ; i++ ){
+          if( currentItem == null ){
+             try{
+                currentItem = getAcl(array[i]) ;
+             }catch(NoSuchElementException ee){
+               // no problem;
+             }
+          }else{
+             try{
+                AclItem nextItem = getAcl( array[i] ) ;
+                Enumeration e = nextItem.getUsers() ;
+                while( e.hasMoreElements() ){
+                   String  user   = (String)e.nextElement() ;
+                   currentItem.merge( user , nextItem.getUserAccess(user) ) ;
+                } 
+             }catch( NoSuchElementException ee ){
+                // very likely.
+             }  
+          }
+       }
+       if( currentItem == null )
+          throw new
+          NoSuchElementException( "Not found : "+aclItem ) ;
+       return currentItem;
    }
    private AclItem _resolveAclItem( String aclItem )
            throws NoSuchElementException{
@@ -193,7 +295,7 @@ public class AclDb {
              String  user   = (String)e.nextElement() ;
              item.merge( user , inItem.getUserAccess(user) ) ;
           }
-          item = inItem ;
+//          item = inItem ;
        }
        item.setInheritance(null);
        return item ;     
@@ -202,7 +304,7 @@ public class AclDb {
                          String user , 
                          UserRelationable relations ){
        try{    
-          AclItem item = _resolveAclItem( aclItem ) ;
+          AclItem item = _fullResolveAclItem( aclItem ) ;
           return _check( item , user , relations ) ;
        }catch(Exception e){
           return false ;
