@@ -29,6 +29,7 @@ public class      AclManagerPanel
      private ListPanel        _listPanel      = null ;
      private PrincipalPanel   _principalPanel = null ;
      private Hashtable        _aclHash        = null ;
+     private String           _inherits       = null ;
      
      public Dimension getPreferredSize(){ 
          Dimension ss = super.getMinimumSize() ;
@@ -86,7 +87,7 @@ public class      AclManagerPanel
         private TextField _aclText       = new TextField("") ;
         private Button    _createButton  = new Button( "Create" ) ;
         private Button    _discardButton = new Button( "Destroy" ) ;
-        private Button    _updateButton  = new Button( "Update" ) ;
+        private Button    _updateButton  = new Button( "Resolve" ) ;
         private String    _mode          = "" ;
         private CreateAclPanel( ){
         
@@ -147,7 +148,7 @@ public class      AclManagerPanel
           }if( source == _updateButton ){
              _mode = "update" ;
              setText("Waiting for update");
-             sendCommand( "show acl "+acl ,this ) ;
+             sendCommand( "show acl -resolve "+acl ,this ) ;
           }if( source == _discardButton ){
              _mode = "discard" ;
              setText("Waiting for discard operation");
@@ -160,7 +161,10 @@ public class      AclManagerPanel
         }     
         public void domainAnswerArrived( Object obj , int id ){
            if( obj instanceof Hashtable ){
-               _aclHash = (Hashtable)obj ;
+               _aclHash  = (Hashtable)obj ;
+               _inherits = (String)_aclHash.get("<inheritsFrom>") ;
+               _aclHash.remove("<inheritsFrom>") ;
+               
                processActionEvent(new ActionEvent(this,0,"ok"));
                setCreateEnabled(false) ;
                setText("");
@@ -310,12 +314,15 @@ public class      AclManagerPanel
              
          private java.awt.List _allowedList = new java.awt.List() ;
          private java.awt.List _deniedList  = new java.awt.List() ;
+         private Label         _inheritanceLabel = new Label("") ;
          private ListPanel(){
-            super( new GridLayout( 0 , 2 ) , 20 , Color.blue ) ;
-            GridLayout gl = new GridLayout( 0 , 2 ) ;
+            super( new BorderLayout() , 20 , Color.blue ) ;
+            
+            BorderLayout gl = new BorderLayout() ;
             gl.setHgap(20) ;
             gl.setVgap(20);
             setLayout( gl ) ;
+            
             BorderLayout leftLayout = new BorderLayout() ;
             leftLayout.setHgap(10) ;
             leftLayout.setVgap(10) ;
@@ -337,8 +344,18 @@ public class      AclManagerPanel
             rightPanel.add( tmp , "North" ) ;
             rightPanel.add( _deniedList , "Center" ) ;
             
-            add( leftPanel ) ;
-            add( rightPanel ) ;
+            Panel centerPanel = new Panel( new GridLayout( 0 , 2 ) ) ;
+            centerPanel.add( leftPanel ) ;
+            centerPanel.add( rightPanel ) ;
+            
+            Panel bottomPanel = new Panel( new RowColumnLayout(2,1) ) ;
+            Label inLabel =  new Label("Inherits") ;
+            inLabel.setFont( _headerFont ) ;
+            bottomPanel.add( inLabel ) ;
+            bottomPanel.add( _inheritanceLabel) ;
+            
+            add( centerPanel , "Center" ) ;
+            add( bottomPanel , "South" ) ;
             
              _allowedList.addItemListener(
                  new ItemListener(){
@@ -346,6 +363,7 @@ public class      AclManagerPanel
                       int i = _deniedList.getSelectedIndex() ;
                       if( i > -1 )_deniedList.deselect(i) ;
                       i = _allowedList.getSelectedIndex() ;
+                      if( _inherits == null )return ;
                       if( i < 0 )sendAction("") ;
                       else sendAction( _allowedList.getItem(i) ) ;
                     }
@@ -357,6 +375,7 @@ public class      AclManagerPanel
                       int i = _allowedList.getSelectedIndex() ;
                       if( i > -1 )_allowedList.deselect(i) ;
                       i = _deniedList.getSelectedIndex() ;
+                      if( _inherits == null )return ;
                       if( i < 0 )sendAction("") ;
                       else sendAction( _deniedList.getItem(i) ) ;
                     }
@@ -402,6 +421,8 @@ public class      AclManagerPanel
                   _deniedList.add( principal ) ;
                }
             }
+            if( _inherits == null )_inheritanceLabel.setText("Resolved");
+            else _inheritanceLabel.setText(_inherits);
          } 
          private void clearList(){
             if( _allowedList.getItemCount() != 0 )
@@ -431,7 +452,7 @@ public class      AclManagerPanel
         }else if( source == _createAclPanel ){
            if( action.equals( "ok" ) ){
               _listPanel.updateList() ;
-              _principalPanel.setEnabled(true);
+              _principalPanel.setEnabled(_inherits!=null);
               _principalPanel.setButtonEnabled(false) ;
               _principalPanel.setPrincipal("") ;
            }else if( action.equals( "clear" ) ){
