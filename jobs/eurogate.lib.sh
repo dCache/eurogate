@@ -92,6 +92,7 @@ checkForSsh() {
 }
 #
 switchSimMode() {
+   
    if [ \( -z "${javaOnly}" \) -o \( "${javaOnly}" = "true" \) ] ; then
       echo " * Chosing javaOnly Movers" 1>&2
    elif [ "${javaOnly}" != "false" ] ; then
@@ -99,14 +100,14 @@ switchSimMode() {
       echo " ! set true of false ( and not ${javaOnly} )" 2>&1
       return 5
    else 
-      if [ \( -z "${sharedLibraries}" \) -o
+      if [ \( -z "${sharedLibraries}" \) -o \
            \( ! -d "${sharedLibraries}"  \) ] ; then
          echo " ! javaOnly=false  needs a valid sharedLibrary directory" 1>&2
          return 5
       fi
       echo " * Chosing 'real Movers in simulation mode'" 1>&2
       export LD_LIBRARY_PATH
-      LD_LIBRARY_PATH=${sharedLibrary}
+      LD_LIBRARY_PATH=${sharedLibraries}
    fi
    return 0
 }
@@ -131,10 +132,28 @@ eurogateCheck() {
 #
 eurogateStop() {
 #
+  if [ \( "$mode" = "real" \) -a \( "$mover" = "yes" \) ] ; then
+     pidFile=${info}/moverPids
+     if [ ! -f ${pidFile} ] ; then
+        echo " ! no movers found"
+        exit 5
+     fi
+     kill `cat ${pidFile}` 2>/dev/null
+     rm -rf ${pidFile} 2>/dev/null
+     exit 0
+  fi
    checkForSsh  || exit $?
 #
    echo "Trying to halt Eurogate"
    $SSH -p $sshPort -c blowfish -o "FallBackToRsh no" localhost <<!  1>/dev/null 2>&1
+exit
+       set dest System@euroMover0
+       kill System
+exit
+       set dest System@euroMover1
+       kill System
+exit
+       set dest local
        kill System
 !
   if [ $? -ne 0 ] ; then
@@ -286,7 +305,6 @@ eurogateStart() {
    #
    # we need some variables
    #
-#   checkVar masterBatch moverBatch master mover masterHost masterPort || exit 5
    #
    checkVar pvlDbPort sshPort clientPort || exit $?
    #
@@ -304,6 +322,7 @@ eurogateStart() {
       echo " ! Can't find our cell batchfile  ${cellBatch}" 1>&2
       exit 4
    fi
+#   set -x
    #
    # check for java and ssh
    #
@@ -325,8 +344,13 @@ eurogateStart() {
    #
    printf " * Please wait ... "
    #
+   #
+   BATCHFILE=${cellBatch}
+   if [ ! -f "$BATCHFILE" ] ; then
+       echo "Cell Batchfile not found : $BATCHFILE" 1>&2
+       exit 4
+   fi
    if [ "${master}" = "yes" ] ; then
-   
       domainName=euroGate
       log=$LOGDIR/${domainName}.log
       rm -rf $log >/dev/null 2>/dev/null
@@ -335,15 +359,11 @@ eurogateStart() {
          echo "Not allowed to write logfile : ${log}. Using dumpster" 1>&2
          log=/dev/null
       fi
-      #
-      BATCHFILE=${cellBatch}
-      if [ ! -f "$BATCHFILE" ] ; then
-          echo "Cell Batchfile not found : $BATCHFILE" 1>&2
-          exit 4
-      fi
+   
       nohup $JAVA  dmg.cells.services.Domain $domainName \
                -param setupFile=$setupFilePath \
                       thisDir=${thisDir}  \
+               -tunnel2 ${masterPort} \
                -batch $BATCHFILE  \
                -routed \
                $SPY_IF_REQUESTED  $TELNET_IF_REQUESTED >$log 2>&1 &
@@ -361,23 +381,31 @@ eurogateStart() {
          echo " * Eurogate started "
       fi
    fi
+#   set -x
    if [ "${mover}" = "yes" ] ; then
-      BATCHFILE=${jobs}/$moverBatch
-      if [ ! -f "$BATCHFILE" ] ; then
-          echo "Cell Batchfile not found : $BATCHFILE" 1>&2
-          exit 4
+      pidFile=${info}/moverPids
+      if [ -f ${pidFile} ] ; then
+         n1=`cat $pidFile | wc | awk '{ print $1 }'`
+         pidList=`cat $pidFile`
+         n2=`kill -0 $pidList 2>&1 | wc | awk '{ print $1 }'`
+         if [ "$n1" -ne "$n2" ] ; then
+             echo " ! Kill running mover first !"
+             exit 4
+         fi
+         rm ${pidFile} 2>/dev/null
       fi
       for moverVersion in 0 1  
       do
          domainName=euroMover${moverVersion}
          log=$LOGDIR/${domainName}.log
          rm -rf $log >/dev/null 2>/dev/null
+         touch ${log} >/dev/null 2>/dev/null
          if [ $? -ne 0 ] ; then
             echo "Not allowed to write logfile : ${log}. Using dumpster" 1>&2
             log=/dev/null
          fi
          #
-         nohup $JAVA  dmg.cells.services.Domain euroMover${moverVersion} \
+         nohup $JAVA -Xmaxjitcodesize0 dmg.cells.services.Domain euroMover${moverVersion} \
                   -param setupFile=${setupFilePath} \
                          thisDir=${thisDir}  \
                          moverVersion=${moverVersion} \
@@ -385,7 +413,10 @@ eurogateStart() {
                   -connect2 ${masterHost} ${masterPort} \
                   -routed \
                   >$log 2>&1 &   
+         echo $! >>${info}/moverPids
+         printf " ${domainName} "
       done
+      echo " done"
    fi
 }
 ##################################################################

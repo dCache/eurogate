@@ -19,7 +19,7 @@
 #  has to be specified with the 'java' variable. 
 #  If not defined we try to find it ourselfs.
 #
-#java=/usr/java/bin/java
+java=/usr/java1.2/bin/java
 #
 # SSH
 #
@@ -41,7 +41,7 @@
 #  the protocol and has nothing to do with 
 #  security. 
 #
-#ssh=${thisDir}/../bin/ssh
+ssh=${thisDir}/../bin/ssh
 keyBase=${thisDir}
 #
 #    - The database paths
@@ -90,7 +90,7 @@ logdir=/tmp
 #  file.
 #  
 jardir=${thisDir}/../bin
-eurogateClasses=/home/patrick/cvs-classes
+eurogateClasses=${thisDir}/../..
 #
 #    - The movers
 #    -----------------
@@ -101,11 +101,11 @@ eurogateClasses=/home/patrick/cvs-classes
 #  containing the necessary c-language code. Both need a
 #  directory where to simlutate the tape.
 #
-moverData=${databaseRoot}/mover
-javaOnly=true
+#moverData=${databaseRoot}/mover
+#javaOnly=false
 #
-#  sharedLibraries=${thisDir}/mover
-#  javaOnly=false
+sharedLibraries=${thisDir}/../lib
+javaOnly=false
 #
 #
 #    - the java batchfile
@@ -117,7 +117,7 @@ javaOnly=true
 #  file which is suitable for simulation purposes
 #  and is steered by the variables in this Setupfile.
 #
-cellBatch=${thisDir}/aclTest.batch
+cellBatch=${thisDir}/cernEurogateMover.batch
 #
 #  The storeClass determined the type of database
 #  the system should use for storing BfidData.
@@ -125,9 +125,9 @@ cellBatch=${thisDir}/aclTest.batch
 #    what you are doing. )
 #
 storeClass=eurogate.store.sldb.SldbStoreV1
-master=yes
-mover=no
-mode=simulation
+master=no
+mover=yes
+mode=real
 #
 #
 #    - Tcp/Ip access ports
@@ -146,6 +146,9 @@ mode=simulation
 #  the corresponding service is not started. The other
 #  portnumbers are mandatory.
 #
+masterHost=est0
+masterPort=22000
+pvrProxyPort=22125
 pvlDbPort=23124
 sshPort=23125
 aclPort=23126

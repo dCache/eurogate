@@ -1,0 +1,26 @@
+#
+#   use 'set printout default all' to get them all
+#
+set printout default all
+set printout CellGlue none
+onerror shutdown
+########################################################################
+#
+#    load the external stuff
+#
+#  check if 'setupFile' is defined. if yes, get it and
+#  run it. Then check for some variables we urgently need.
+#
+#
+check -strong setupFile
+copy file:${setupFile} env:setupFile
+import env setupFile
+#
+check -strong moverVersion
+#
+set env  device      /eagle/d0${moverVersion}
+set env  moverName   drive${moverVersion}
+#
+create eurogate.mover.MoverEagle   ${moverName}  "pvl ${device}"
+set printout ${moverName} all
+#
