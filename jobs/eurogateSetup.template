@@ -1,8 +1,8 @@
-databaseRoot=/home/patrick/sim/db
+databaseRoot=/home/patrick/eurogateDb
 #cellClasses=/home/patrick/sim/cells.jar:/home/patrick/sim/eurogate.jar:/home/patrick/sim
 cellClasses=/home/patrick/sim/cells.jar
-pnfsMountpoint=/pnfs/local/fs
-debugTelnetPort=23123
 spyPort=23222
 pvlDbPort=23124
 sshPort=23125
+clientPort=28000
+cellBatch=desyEurogate.batch

@@ -6,7 +6,6 @@ setupFile=eurogateSetup
 SSH=ssh
 JAVA=java
 LOGFILE=/tmp/eugate.log
-cellBatch=desyEurogate.batch
 #
 os=`uname -s 2>/dev/null` || \
     ( echo "Can't determine OS Type" 1>&2 ; exit 4 ) || exit $?
@@ -157,16 +156,17 @@ eugateStart() {
       SPY_IF_REQUESTED="-spy $spyPort"
    fi
    #
-   # check for java and ssh
-   #
-   checkJava || exit $?
-   checkSsh  || exit $?
-   #
+   checkVar cellBatch || exit 5
    BATCHFILE=$eurogateHome/$cellBatch
    if [ ! -f "$BATCHFILE" ] ; then
        echo "Cell Batchfile not found : $BATCHFILE" 1>&2
        exit 4
    fi
+   #
+   # check for java and ssh
+   #
+   checkJava || exit $?
+   checkSsh  || exit $?
    #
    #   some more checks
    #
@@ -281,6 +281,27 @@ eugateStop() {
   fi
   return 0
 }
+##################################################################
+#
+#       eugate.initPvl      
+#
+eugateInitPvl() {
+#
+   checkSsh  || exit $?
+   checkVar  pvlDbPort || exit $?
+#
+   echo "Trying to InitPvl Database" 
+   $SSH -p $pvlDbPort -o "FallBackToRsh no" localhost <<!  1>/dev/null 2>&1
+       exec context initDatabase
+       exit
+       exit
+!
+  if [ $? -ne 0 ] ; then
+     echo "Init Failed" 1>&2
+     exit 3
+  fi
+  return 0
+}
 #-----------------------------------------------------------------
 #
 theSwitch() {
@@ -290,6 +311,7 @@ theSwitch() {
       *login)       eugateLogin  ;;
       *check)       eugateCheck  ;;
       *spy)         eugateSpy $*  ;;
+      *initPvl)     eugateInitPvl $*  ;;
       eurogate.sh) 
          weAre=$1 
          shift 
