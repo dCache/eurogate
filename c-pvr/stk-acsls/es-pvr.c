@@ -83,11 +83,16 @@ static char     rcsid[] = "";
 
 #define DEBUG_ES_PVR 1
 
+#define NULLPVR 1   
+
 #define MAX_TOKENS 50
 #define MAX_DRIVE_NAMELEN 256
 #define MAX_VOL_NAMELEN 256
 #define TSEP ' '
 #define TQUOTE '"'
+
+#define MAX_MOUNT_SECS 10
+#define MAX_DISMOUNT_SECS 14
 
 /* async process states */
 #define STATE_RUNNING 0x01
@@ -124,11 +129,23 @@ static char *progname = (char *) 0;
 static char hwInfo[80];
 static int logLevel = 0;
 static int logIn = -1, logOut = -1;
-static int libDummy = FALSE;
+static int libDummy = FALSE; /*set this to run as a dummy pvr - no robot cmds*/
 static int terminateMaster = FALSE;
 static int becomeDaemon = TRUE;
 static char *_logFile = (char *) 0;
 
+
+static void doSleep(int maxSecs) {
+  static long ranSecs = 0;
+
+  srand48(ranSecs);
+  while(666) {
+    if ((ranSecs = lrand48()) <= maxSecs && ranSecs > 0) {
+      sleep((int) ranSecs);
+      return;
+    }
+  }
+}
 
 static char *time2str(time_t *tim) {
   struct tm *t;
@@ -479,7 +496,7 @@ static int ES_Mount(int reqID, int argc, char **argv) {
   switch(makeChild(as)) {
   case 0:  /* child process - continue with mount op */
     if (libDummy) {  /* simulate PVR actions */
-      sleep(8);
+      doSleep(MAX_MOUNT_SECS);
       exit(0);
     } else {
       ret = LIBMount(as->volName, as->driveName, as->genDriveName);
@@ -522,13 +539,15 @@ static int ES_Dismount(int reqID, int argc, char **argv)
 
   switch(makeChild(as)) {
   case 0:  /* child process - continue with mount op */
-    if (libDummy) {
-      sleep(9);
-      exit(0);
-    } else {
+    {
       char msg[256];
-
-      ret = LIBDismount(as->volName, as->driveName, as->genDriveName);
+      
+      if (!libDummy) {
+	ret = LIBDismount(as->volName, as->driveName, as->genDriveName);
+      } else { /* dummy actions */
+	ret = 0;
+	doSleep(MAX_DISMOUNT_SECS);
+      }
       if (ret != 0)
 	exit(ret);   /* DONE here */
       (void) sprintf(msg, "done %d %d %s", reqID, 0, as->volName);
@@ -573,14 +592,15 @@ static int ES_NewDrive(int reqID, int argc, char **argv) {
 
   switch(makeChild(as)) {
   case 0:  /* child process - continue with mount op */
-    if (libDummy) {
-      sleep(9);
-      exit(0);
-    } else {
+    {
       char msg[256];
 
       as->volName[0] = '\0';
-      ret = LIBDriveStatus(as->driveName, as->genDriveName, as->volName);
+      if (!libDummy) {
+	ret = LIBDriveStatus(as->driveName, as->genDriveName, as->volName);
+      } else { /* dummy lib */
+	ret = DRV_AVAILABLE_EMPTY;
+      }
       if (ret == DRV_AVAILABLE_FILLED_KNOWN)
 	(void) sprintf(msg, "done %d %d %s", reqID, ret, as->volName);
       else
@@ -1024,9 +1044,13 @@ int main(int argc, char **argv) {
     fprintf(stderr, "sigaction() SIGPIPE failed (errno %d)\n", errno); 
 
   /* init library specific code - give him at least a chance to do */
-  if (LIBInit(pvrOption, hwInfo) != 0) {
-    fprintf(stderr, "library initialization failed");
-    exit(1);
+  if (!libDummy) {
+    if (LIBInit(pvrOption, hwInfo) != 0) {
+      fprintf(stderr, "library initialization failed");
+      exit(1);
+    }
+  } else { /* dummy lib */
+    (void) sprintf(hwInfo, "DUMMY-PVR");
   }
 
   if (becomeDaemon && daemonize() != 0) { 
