@@ -22,10 +22,12 @@ public class EuroGate extends CellAdapter implements Runnable {
     private int     _replies       = 0 ;
     private Socket  _socket        = null ;
     private String  _remotePeer    = "" ;
+    private CellNucleus  _nucleus  = null ;
     
     public EuroGate( String name , Socket socket ) throws IOException {
         super( name , "" , true ) ;
         
+        _nucleus = getNucleus() ;
         try{
 	   _socket = socket ;
            _input  = new DataInputStream( socket.getInputStream() ) ;
@@ -34,7 +36,7 @@ public class EuroGate extends CellAdapter implements Runnable {
            kill() ;
            throw ee ;
         }
-        _readerThread = new Thread( this ) ;
+        _readerThread = _nucleus.newThread( this ) ;
         _readerThread.start() ;
 	_remotePeer   = _socket.getInetAddress().toString()+":"+
 	                _socket.getPort() ;
@@ -43,6 +45,7 @@ public class EuroGate extends CellAdapter implements Runnable {
     public EuroGate( String name , StreamEngine engine ) throws Exception {
         super( name , "" , false ) ;
         
+        _nucleus = getNucleus() ;
         try{
 	   _socket = null ;
            _input  = new DataInputStream( engine.getInputStream() ) ;
@@ -52,7 +55,7 @@ public class EuroGate extends CellAdapter implements Runnable {
            kill() ;
            throw ee ;
         }
-        _readerThread = new Thread( this ) ;
+        _readerThread = _nucleus.newThread( this ) ;
         _readerThread.start() ;
 	_remotePeer   = engine.getInetAddress().toString()  ;
         start() ;
