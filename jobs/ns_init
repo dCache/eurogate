@@ -1,0 +1,16 @@
+#!/bin/sh
+expr `pwd` : ".*eurogate/jobs$" >/dev/null 2>/dev/null
+if [ $? -ne 0 ] ; then
+   echo "Script must be run in .../eurogate/jobs" 1>&2
+   exit 4
+fi
+#
+#   create the link to the wrapper.sh
+#
+ln -s wrapper.sh eurogate >/dev/null 2>/dev/null
+#
+# remove the unused part ( need other software to compile )
+#
+rm -rf ../store/bdb ../store/objectivity52 ../pvl/regexp >/dev/null 2>/dev/null
+#
+exit 0
