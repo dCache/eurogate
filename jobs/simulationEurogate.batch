@@ -1,0 +1,246 @@
+#
+#   use 'set printout default all' to get them all
+#
+set printout default 3
+set printout CellGlue none
+onerror shutdown
+########################################################################
+#
+#    load the external stuff
+#
+#  check if 'setupFile' is defined. if yes, get it and
+#  run it. Then check for some variables we urgently need.
+#
+#
+check -strong setupFile
+copy file:${setupFile} env:setupFile
+import env setupFile
+#
+check -strong sshPort clientPort pvlDbPort databaseRoot mode
+#
+########################################################################
+#
+#   now this is eurogate
+#
+#   the storeDatabase, pvlDatabase ... may have been set individually.
+#   Therefor we don't want to overwrite the variables if already set.
+#
+#set env -c storeDatabase        ${databaseRoot}/store
+set env -c pvlDatabase          ${databaseRoot}/pvl
+set env -c moverData            ${databaseRoot}/drives
+#
+set env pvlName              pvl
+set env scheduler            eurogate.pvl.scheduler.BasicScheduler
+#set env storeClass    eurogate.store.objectivity52.ObjectivityStore
+#set env storeDatabase /export/home/martin/cvs-eurogate/eurogate/store/objectivity52  
+#
+#   the rest is the ssh control path.
+#   The current setup allows localhost login
+#   without password. The 'server_key' and the
+#   'host_key' are assumed to be in the .../jobs'
+#   directory .
+#
+#    ssh-keygen -b  768 -f ./server_key -N ""
+#    ssh-keygen -b 1024 -f ./host_key   -N ""
+#
+#    server_key :  768 bits
+#    host_key   : 1024 bits
+#
+set context serverKeyFile     ${keyBase}/server_key
+set context hostKeyFile       ${keyBase}/host_key
+set env     securityCell      acm
+set context userPasswordFile  cell:${securityCell}
+#
+create dmg.cells.services.login.SshKeyManager    skm
+#
+create dmg.cells.services.login.LoginManager slm \
+        "${sshPort}  \
+        dmg.cells.services.StreamLoginCell \
+        -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X"
+#
+########################################################################
+#
+#   the setup files
+#
+#  @@@   is needed to initiate the pvr database ( simulation and cern )
+#
+define context initPvlDatabase endDefine
+    create pvr stk
+    create volumeDescriptor  vd-9840    -size=20000000000
+    create cartridgeDescriptor cd-9840  -type=9840
+    create cartridge R01261-R01264      -cd=cd-9840  -pvr=stk
+    create volume V001 -cart=R01261 -pvr=stk  -vd=vd-9840
+    create volume V002 -cart=R01262 -pvr=stk  -vd=vd-9840
+    create volume V003 -cart=R01263 -pvr=stk  -vd=vd-9840
+    create volume V004 -cart=R01264 -pvr=stk  -vd=vd-9840
+    create volumeSet  raw
+    create volumeSet  dst
+    add volume V001 -vs=raw
+    add volume V002 -vs=raw
+    add volume V003 -vs=raw
+    add volume V004 -vs=raw
+    create drive drive0 -pvr=stk  -dev=/eagle/d00 -spec=0:3:9:3
+    create drive drive1 -pvr=stk  -dev=/eagle/d01 -spec=0:3:9:4
+    set drive drive0 -pvr=stk  -status=enabled
+    set drive drive1 -pvr=stk  -status=enabled
+endDefine
+#
+#   the pvr simulation ( corresponds to the setup above )
+#
+define context pvrStkDbInstallation endDefine
+   create cartridge R01261 -pvr=stk
+   create cartridge R01262 -pvr=stk
+   create cartridge R01263 -pvr=stk
+   create cartridge R01264 -pvr=stk
+   create drive  0:3:9:3  -pvr=stk   
+   create drive  0:3:9:4  -pvr=stk   
+endDefine
+#
+#
+define context pvrSimulation endDefine
+#
+###################################################################
+#
+#  #####                          ######
+# #     #     #    #    #         #     #  #    #  #####
+# #           #    ##  ##         #     #  #    #  #    #
+#  #####      #    # ## #         ######   #    #  #    #
+#       #     #    #    #         #        #    #  #####
+# #     #     #    #    #         #         #  #   #   #
+#  #####      #    #    #         #          ##    #    #
+#
+   set context robotSpace       ${moverData}
+#
+#
+   create eurogate.pvr.DummyPvrCell stk     \
+          "${databaseRoot}/pvr/stk          \
+          -autoinstall=pvrStkDbInstallation \
+          -minWait=3 -maxWait=7"
+#
+###################################################################
+#
+#  #####                          #     #
+# #     #     #    #    #         ##   ##   ####   #    #  ######  #####
+# #           #    ##  ##         # # # #  #    #  #    #  #       #    #
+#  #####      #    # ## #         #  #  #  #    #  #    #  #####   #    #
+#       #     #    #    #         #     #  #    #  #    #  #       #####
+# #     #     #    #    #         #     #  #    #   #  #   #       #   #
+#  #####      #    #    #         #     #   ####     ##    ######  #    #
+#
+#
+   create eurogate.mover.MoverV1 drive0  "${pvlName} ${moverData}"
+   create eurogate.mover.MoverV1 drive1  "${pvlName} ${moverData}"
+#
+endDefine
+#
+define context pvrReal endDefine
+#
+#
+######                                  ######
+#     #  ######    ##    #              #     #  #    #  #####
+#     #  #        #  #   #              #     #  #    #  #    #
+######   #####   #    #  #              ######   #    #  #    #
+#   #    #       ######  #              #        #    #  #####
+#    #   #       #    #  #              #         #  #   #   #
+#     #  ######  #    #  ######         #          ##    #    #
+ 
+#
+create eurogate.pvr.PvrLoginManager pvrInetd \
+            "${pvrProxyPort} 
+            eurogate.pvr.PvrLoginCell"
+#
+#
+endDefine
+#
+#
+#
+#
+###################################################################
+#
+#        ######
+#        #     #   ####    ####   #####
+#        #     #  #    #  #    #  #    #
+#        #     #  #    #  #    #  #    #
+#        #     #  #    #  #    #  #####
+#        #     #  #    #  #    #  #   #
+#        ######    ####    ####   #    #
+#
+#
+#   this will start the door on request ...
+#
+create dmg.cells.services.login.LoginManager EuroGate \
+        "${clientPort}    \
+        eurogate.gate.EuroGate  \
+        -prot=raw"
+#
+###################################################################
+#
+#         #####
+#        #     #   #####   ####   #####   ######
+#        #           #    #    #  #    #  #
+#         #####      #    #    #  #    #  #####
+#              #     #    #    #  #####   #
+#        #     #     #    #    #  #   #   #
+#         #####      #     ####   #    #  ######
+#
+#  The store is steered be the
+#    ${storeClass} and the ${storeDatabase} variables.
+#
+check -strong storeClass storeDatabase
+echo "Store using class    : ${storeClass}"
+echo "Store using database : ${storeDatabase}"
+create eurogate.store.StarGateVX MAIN-store  \
+       "${storeClass}     \
+        ${pvlName}        \
+        ${storeDatabase}  \
+        -dbpath=${storeDatabase}"
+#
+#
+#   The pvl  :  pvlDbManager , pvlLogin and pvl itself.
+#
+#  the previous version would have needed :
+#  set context databaseName ${databaseRoot}/pvl
+#   
+###################################################################
+#
+#                ######
+#                #     #  #    #  #
+#                #     #  #    #  #
+#                ######   #    #  #
+#                #        #    #  #
+#                #         #  #   #
+#                #          ##    ######
+#
+#
+#
+create eurogate.db.pvl.PvlDbManager PvlManager  ${pvlDatabase}
+#
+create dmg.cells.services.login.LoginManager dbLogin \
+      "${pvlDbPort}  \
+       eurogate.db.pvl.PvlDbLoginCell \
+       -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X"
+#
+create eurogate.pvl.PvlCoreV2  ${pvlName} "${scheduler}"
+#
+####################################################################
+#
+#  run the real or the simulated pvr
+#
+#  if ${mode} == simulation
+#
+   onerror continue
+   eval ${mode} simulation ==
+   set env isOk ${rc}
+   onerror shutdown 
+   exec context -run -ifok=isOk pvrSimulation
+   set printout CellGlue none
+#
+#  if ${mode} == real
+#
+   onerror continue
+   eval ${mode} real ==
+   set env isOk ${rc}
+   onerror shutdown 
+   exec context -run -ifok=isOk pvrReal
+   set printout CellGlue none
+#
