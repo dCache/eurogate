@@ -1,0 +1,58 @@
+#!/bin/sh
+export CLASSPATH=/home/patrick/cvs-classes
+STORE=MAIN
+GROUP=raw
+MP=/pnfs/fs
+JAVA=java
+AWK=awk
+DEBUG=-debug
+#
+usage() {
+  echo "Usage : egcp put|get  <pnfsId>  <localfile>" 2>&1
+  echo "        egcp next <pnfsId> <count>" 2>&1
+}
+#
+if [ $# -eq 0 ] ; then
+  usage
+  exit 4 ;
+fi
+#
+com=$1
+shift 1
+if [ \( $com == "put" \) -o \( $com == "get" \) ]  ; then
+   if [ $# -lt 2 ] ; then usage ; exit 4 ; fi
+   $JAVA eurogate.gate.Egcopy \
+         -mountpoint=$MP $DEBUG -store=$STORE -group=$GROUP \
+         $com $*
+elif [ $com == "next" ] ; then
+   if [ $# -lt 2 ] ; then usage ; exit 4 ; fi
+   pnfsid=$1
+   count=$2
+   level1=`cat "$MP/.(puse)($pnfsid)(1)" 2>/dev/null`
+   if [ -z "$level1" ] ; then echo "Not a valid pnfsid : $pnfsid" 2>&1 ; exit 5 ; fi
+   c=`echo $level1 2>/dev/null | wc 2>/dev/null | awk '{ print $2 }' 2>/dev/null`
+   if [ "$c" != "3" ] ; then echo "Not a valid pnfsid(2) : $pnfsid" 2>&1 ; exit 5 ; fi
+   STORE=`echo $level1 2>/dev/null | awk '{ print $1}' 2>/dev/null`
+   GROUP=`echo $level1 2>/dev/null | awk '{ print $2}' 2>/dev/null`
+   bfid=`echo $level1 2>/dev/null | awk '{ print $3}' 2>/dev/null`
+   volume=`$JAVA eurogate.gate.EuroSyncClient \
+                 $DEBUG -store=$STORE get-bf $bfid 2>/dev/null | \
+           $AWK '{ print $2 }' 2>/dev/null`
+   if [ -z "$volume" ] ; then echo "Can't determine Volume of $bfid" 2>&1 ; exit 4 ; fi 
+   $JAVA eurogate.gate.EuroSyncClient \
+         $DEBUG -store=$STORE list-volume $volume 2>/dev/null | \
+         $AWK 'BEGIN{ status=0 ; }
+         {  if( status == 0 ){
+               if( $3 == pnfsid )status=1
+               c=0
+            }else if( status == 1 ){
+               print $3
+               c++
+               if( c == count )exit
+            }
+         }' pnfsid=$pnfsid count=$count - 2>/dev/null
+else
+   usage 
+   exit 4
+fi
+exit 0
