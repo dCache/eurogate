@@ -147,6 +147,7 @@ public class      DummyPvrCell
                  cartridge
             ) ;
          }catch( Exception ee ){
+            esay(ee);
             request.setReturnValue(33,ee.toString()) ;
          }
          doWait = false ;            
@@ -177,6 +178,7 @@ public class      DummyPvrCell
                  doWait = false ;
               }
          }catch( Exception ee ){
+            esay(ee);
             request.setReturnValue(33,ee.toString()) ;
             doWait = false ;
          }finally{
@@ -195,6 +197,7 @@ public class      DummyPvrCell
                  doWait = false ;
               }         
          }catch( Exception ee ){
+            esay(ee);
             request.setReturnValue(33,ee.toString()) ;
             doWait = false ;
          }finally{
@@ -218,13 +221,18 @@ public class      DummyPvrCell
       _maxWait = Integer.parseInt( args.argv(0) ) * 1000 ;
       return "Delay "+_minWait+" ... "+_maxWait+ "msec" ;
   }
+  public String hh_create_drive = "-pvr=<pvrName> <driveName>";
   public String ac_create_drive_$_1( Args args ) throws Exception {
       String pvrName  = args.getOpt( "pvr" ) ;
       if( ( pvrName == null ) || ( ! pvrName.equals(getCellName()) ) )
          return "Not for Us" ;
-      _pvrDb.createDrive( args.argv(0) ) ;
+      PvrDriveHandle drive = _pvrDb.createDrive( args.argv(0) ) ;
+       drive.open( CdbLockable.WRITE ) ;
+         drive.setCartridge("empty")  ;
+       drive.close( CdbLockable.COMMIT ) ;
       return "" ;
   }
+  public String hh_create_cartridge = "-pvr=<pvrName> <cartridgeName>";
   public String ac_create_cartridge_$_1( Args args ) throws Exception {
       String pvrName  = args.getOpt( "pvr" ) ;
       if( ( pvrName == null ) || ( ! pvrName.equals(getCellName()) ) )
