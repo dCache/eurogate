@@ -213,8 +213,7 @@ public class      DriveDisplayPanel
     if( source == _update ){
         try{
            synchronized( _threadLock ){
-              _connection.sendObject( ".cd pvl" , _dummyListener , 0 ) ;
-              _connection.sendObject( "ls drive" , this , 0 ) ;
+              _connection.sendObject( "ls drive -cellPath=pvl" , this , 0 ) ;
            }
         }catch( Exception eee ){
            System.err.println( "Send failed : "+eee ) ;
@@ -243,15 +242,9 @@ public class      DriveDisplayPanel
   private Object _threadLock = new Object() ;
   public void run(){
     synchronized( _threadLock ){
-       try{
-          _connection.sendObject( ".cd pvl" , _dummyListener  , 0 ) ;
-       }catch( Exception eee ){
-          System.err.println( "Send failed : "+eee ) ;
-          eee.printStackTrace() ;
-       }
        for( int i = 0 ; ; i++ ){
           try{
-             _connection.sendObject( "ls drive" , this , 0 ) ;
+             _connection.sendObject( "ls drive -cellPath=pvl" , this , 0 ) ;
           }catch( Exception eee ){
              System.err.println( "Send failed : "+eee ) ;
              eee.printStackTrace() ;
