@@ -23,6 +23,8 @@ public class EuroGate extends CellAdapter implements Runnable {
     private Socket  _socket        = null ;
     private String  _remotePeer    = "" ;
     private CellNucleus  _nucleus  = null ;
+    private int     _minorVersion  = 2 ;
+    private int     _majorVersion  = 0 ;
     
     public EuroGate( String name , Socket socket ) throws IOException {
         super( name , "" , true ) ;
@@ -77,6 +79,9 @@ public class EuroGate extends CellAdapter implements Runnable {
     public void getInfo( PrintWriter pw ){
        pw.println( "Connection from : "+_remotePeer ) ;
        pw.println( "  -- Counters -- " ) ;
+       pw.println( "   major Version  : "+_majorVersion ) ;
+       pw.println( "   minor Version  : "+_minorVersion ) ;
+       pw.println( "     Write  : "+_writeCounter ) ;
        pw.println( "     Write  : "+_writeCounter ) ;
        pw.println( "     Read   : "+_readCounter ) ;
        pw.println( "     Remove : "+_removeCounter ) ;
@@ -102,9 +107,15 @@ public class EuroGate extends CellAdapter implements Runnable {
              try{
                 reply = (String)command( new Args( command ) ) ;
              }catch( Exception ce ){
-                String problem = "ABORT 666 "+ce.toString() ;
-                esay( problem ) ;
-                _output.writeUTF( "\""+problem+"\""  ) ;
+                if( _minorVersion > 1 ){
+                   String problem = "ABORT 666 \""+ce.toString()+"\"" ;
+                   esay( problem ) ;
+                   _output.writeUTF( problem ) ;
+                }else{
+                   String problem = "ABORT 666 "+ce.toString() ;
+                   esay( problem ) ;
+                   _output.writeUTF( "\""+problem+"\""  ) ;
+                }
                 break ;
              }
              if( reply == null )continue ;
@@ -135,8 +146,45 @@ public class EuroGate extends CellAdapter implements Runnable {
        
        }else if( obj instanceof StoreRequest ){
           StoreRequest sr = (StoreRequest)obj ;
-          if( sr.getCommand().equals("get-bfid") ){
-              
+          if( sr.getCommand().equals("list-volume") ){
+             String result = null ;
+             if( sr.getReturnCode() != 0 ){
+                 result =  "failed "+sr.getId()+
+                           " "+sr.getReturnCode()+
+                           " \""+sr.getReturnMessage()+
+                           "\"" ;
+             }else{
+                result = "ok "+sr.getId() ; 
+             }
+             try{
+                _output.writeUTF( result ) ;
+             }catch(Exception ee ){
+                say( "Problem sending bbOK : "+ee ) ;
+                kill() ;
+             }
+          }else if( sr.getCommand().equals("get-bfid") ){
+             String result = null ;
+             if( sr.getBitfileId() == null ){
+                 result =  "failed "+sr.getId()+" 4 "+
+                           "\"Bfid not found : "+
+                           sr.getBfid()+"\""  ;
+             }else{
+                StringBuffer sb = new StringBuffer() ;
+                BitfileId bf = sr.getBitfileId() ;
+                sb.append("ok ").append(sr.getId()).
+                   append(" \"").append(sr.getBfid()).
+                   append(" ").append(bf.getVolume()).
+                   append(" ").append(bf.getPosition()).
+                   append(" ").append(bf.getSize()).
+                   append("\"") ;
+                result = sb.toString() ; 
+             }
+             try{
+                _output.writeUTF( result ) ;
+             }catch(Exception ee ){
+                say( "Problem sending bbOK : "+ee ) ;
+                kill() ;
+             }
           }
        }else if( obj instanceof NoRouteToCellException ){
           esay( "Cell couldn't be reached : "+obj.toString() ) ;
@@ -193,7 +241,7 @@ public class EuroGate extends CellAdapter implements Runnable {
        }
 
     }
-    public String ac_get_volume_by_bfid_$_1( Args args )
+    public String ac_get_bfid_$_3( Args args )
            throws CommandException                      {
        String id    = args.argv(0) ;
        String store = args.argv(1) ;
@@ -205,8 +253,48 @@ public class EuroGate extends CellAdapter implements Runnable {
        sendIt( request ) ;
        return null ;
     }
+    public String ac_list_volume_$_5( Args args )
+           throws CommandException                      {
+       String id      = args.argv(0) ;
+       String store   = args.argv(1) ;
+       String volume  = args.argv(2) ;
+       String host    = args.argv(3) ;
+       int    port    = 0 ;
+       try{
+          port = Integer.parseInt( args.argv(4) ) ;
+       }catch(Exception ee ){
+          throw new 
+          CommandException( 22 , "Port Not a number : "+args.argv(4) ) ;
+       }
+       pin(  "list-volume : "+id+" "+store+" "+volume ) ;
+       
+       StoreRequest request = 
+           new StoreRequest("list-volume" , id , store , volume ) ;
+       request.setHost( host , port ) ;
+       sendIt( request ) ;
+       return null ;
+    }
     public String ac_SESSION_WELCOME_$_1( Args args ){
-       pin(  "Session created : Version = "+args.argv(0) ) ;
+       String version = args.argv(0) ;
+       int pos = version.indexOf(".") ;
+       if( ( version.length() < 3 ) || ( pos < 0 )  ||
+           ( pos == 0 ) || ( pos == (version.length()-1) ) ) {
+           
+           return "NOK 44 \"Illegal protocol version : "+version+"\"" ;
+       }else{
+           try{
+              _majorVersion = Integer.parseInt(version.substring(0,pos));
+              _minorVersion = Integer.parseInt(version.substring(pos+1));
+           }catch( Exception ee ){
+              return "NOK 45 \"Illegal protocol version : "+version+"\"" ;
+           }
+       }
+       if( _majorVersion != 0 )
+          return "NOK 45 \"Illegal major protocol version : "+
+                 _majorVersion+"\"" ;
+       
+       pin(  "Session created : Version = "+version ) ;
+       pin(  "Session created : major=0 minor="+_minorVersion ) ;
        return "OK 0" ;
     }
     public String ac_SESSION_CLOSE( Args args ){
