@@ -82,6 +82,7 @@ public class      AclAdmin extends CommandInterpreter {
          ) ;
        if( res == null )throw new Exception("Request timed out" ) ;
        Object resObject = res.getMessageObject() ;
+       _nucleus.say( "result from domain : "+resObject.getClass().getName() ) ;
        if( wasBinary ){
            return resObject ;
        }else{
