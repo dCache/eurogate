@@ -121,7 +121,7 @@ public class      RelationExplorer
        String setup = _jumpingPigs.getSetup() ;
        try{
           _connection.sendObject( 
-                "set principal "+_connection.getAuthenticatedUser()+
+                "set principal -cellPath=AclCell "+_connection.getAuthenticatedUser()+
                 " RE-setup="+setup , 
                 new DomainConnectionListener(){
                     public void domainAnswerArrived( Object obj , int id ){
@@ -319,7 +319,7 @@ public class      RelationExplorer
           System.out.println("Sending : "+command);
           try{ Thread.currentThread().sleep(500) ; }catch(Exception ee){}
           try{
-             _connection.sendObject( command , this , state ) ;
+             _connection.sendObject( command+" -cellPath=AclCell" , this , state ) ;
           }catch( Exception ee ){
              requestFailed( ee.toString() ) ;
           }
