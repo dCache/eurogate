@@ -332,7 +332,8 @@ public class MoverEagle
     String label = "CARTNAME=" + cart + "\n" +
                    "STORE=" + store + "\n" +
                    "STORAGEGROUP=" + storageGroup + "\n" +
-                   "CREATOR=EuroStore-HSMV0.1\n";
+                   "CREATOR=EuroStore-HSMV0.1\n" +
+                   "DATE="+( new  Date() ).toString()+"\n" ;
 
 
     if( ! _disk ){
