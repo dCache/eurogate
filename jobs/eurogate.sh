@@ -3,9 +3,11 @@
 #   some constants
 #
 setupFile=eurogateSetup
-SSH=ssh
-JAVA=java
+SSH=/export/home/patrick/ssh
+JAVA=/usr/java1.2/bin/java
 LOGFILE=/tmp/eugate.log
+LD_LIBRARY_PATH=/usr/object/lib
+export LD_LIBRARY_PATH
 #
 os=`uname -s 2>/dev/null` || \
     ( echo "Can't determine OS Type" 1>&2 ; exit 4 ) || exit $?
@@ -207,6 +209,9 @@ eugateStart() {
    if [ ! -z "$spyPort" ] ; then
       SPY_IF_REQUESTED="-spy $spyPort"
    fi
+   if [ ! -z "$telnetPort" ] ; then
+      TELNET_IF_REQUESTED="-telnet $telnetPort"
+   fi
    #
    checkVar cellBatch || exit 5
    BATCHFILE=$eurogateHome/$cellBatch
@@ -250,7 +255,7 @@ eugateStart() {
             -param setupFile=$fullSetup \
                    keyBase=$eurogateHome \
             -batch $BATCHFILE  \
-            $SPY_IF_REQUESTED  >$LOGFILE 2>&1 &
+            $SPY_IF_REQUESTED $TELNET_IF_REQUESTED >$LOGFILE 2>&1 &
    sleep 5
    printf ". "
    $SSH -p $sshPort -o "FallBackToRsh no" localhost <<!  2>/dev/null | grep Active
@@ -390,22 +395,3 @@ theSwitch() {
 # ---------------------------------------------------------------------
 #
 theSwitch $*
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
