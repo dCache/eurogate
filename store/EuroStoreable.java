@@ -42,6 +42,10 @@ import eurogate.misc.CookieEnumeration ;
   */
 public interface EuroStoreable {
     /**
+      *  
+      */
+    public StorageSessionable [] getStorageSessionable() ;
+    /**
       *  initialPutRequest is called by the Store Framework
       *  on  arrival of a put request. The BitfileRequest is
       *  provided and assumed to be stored with the 'transient' flag.
@@ -54,7 +58,8 @@ public interface EuroStoreable {
       *  This method is assumed to use the <bf>BitfileRequest.setBfid</bf>
       *  method to allow the protocol to proceed.
       */
-    public void initialPutRequest( BitfileRequest bfreq ) ;
+    public void initialPutRequest( StorageSessionable session ,
+                                   BitfileRequest bfreq ) ;
     /**
       *  initialGetRequest is called by the Store Framework
       *  on  arrival of a get request. The BitfileRequest is
@@ -65,7 +70,8 @@ public interface EuroStoreable {
       *  <br>Information which have to be provided :
       *  <bf>setStorageGroup, setFileSize, setFilePosition, setVolume</bf>.
       */
-    public void initialGetRequest( BitfileRequest bfreq ) ;
+    public void initialGetRequest( StorageSessionable session ,
+                                   BitfileRequest bfreq ) ;
     /**
       *  initialRemoveRequest is called by the Store Framework
       *  on  arrival of a remove request. The BitfileRequest is
@@ -77,7 +83,8 @@ public interface EuroStoreable {
       *  Wait for the 'finalRemoveRequest' to finally remove the
       *  bitfilerecord from the database.
       */
-    public void initialRemoveRequest( BitfileRequest bfreq ) ;
+    public void initialRemoveRequest( StorageSessionable session ,
+                                      BitfileRequest bfreq ) ;
     /**
       *   finalPutRequest is called by the Store Framework
       *   if a put request could be finished successfully or
@@ -89,7 +96,8 @@ public interface EuroStoreable {
       *   a failure the bitfilerecord should be removed from the
       *   database otherwise the record should be declared 'persistant'.
       */
-    public void finalPutRequest( BitfileRequest bfreq ) ;
+    public void finalPutRequest( StorageSessionable session ,
+                                 BitfileRequest bfreq ) ;
     /**
       *   finalGetRequest is called by the Store Framework
       *   if a get request could be finished successfully or
@@ -97,7 +105,8 @@ public interface EuroStoreable {
       *   The implementation is free to update appropriate pointers
       *   within the database. No other actions are needed.
       */
-    public void finalGetRequest( BitfileRequest bfreq ) ;
+    public void finalGetRequest( StorageSessionable session ,
+                                 BitfileRequest bfreq ) ;
     /**
       *    finalRemoveRequest is called by the Store Framework
       *    if a remove request could be finished sucessfully or
@@ -109,26 +118,34 @@ public interface EuroStoreable {
       *    If sucessful the bitfilerecord might be deleted or at
       *    least maked 'deleted'.
       */
-    public void finalRemoveRequest( BitfileRequest bfreq ) ;
+    public void finalRemoveRequest( StorageSessionable session ,
+                                    BitfileRequest bfreq ) ;
     /**
       * Returns an object implementing the BfRecordable interface of
       * the bitfile record represented by the bitfileid.
       */
-    public BfRecordable getBitfileRecord( String bfid ) ;
+    public BfRecordable getBitfileRecord( StorageSessionable session ,
+                                          String bfid ) ;
     /**
       * Returns a CookieEnumeration of String elements containing the
       * ordered list of all bfids of the specified volume.
       */
-    public CookieEnumeration getBfidsByVolume( String volume , long cookie ) ;
+    public CookieEnumeration getBfidsByVolume( StorageSessionable session ,
+                                               String volume , long cookie ) ;
     /**
       * Returns the CookieEnumeration of String elements containing the
       * list of all bitfiles of the specified storage group.
       */
-    public CookieEnumeration getBfidsByStorageGroup( String storageGroup , long cookie) ;
+    public CookieEnumeration getBfidsByStorageGroup(
+                                 StorageSessionable session ,
+                                 String storageGroup , long cookie) ;
     /**
       * Returns the CookieEnumeration of String elements containing the
       * list of all StorageGroups of this <bf>Store</bf>. 
       */
-    public CookieEnumeration getStorageGroups(long cookie ) ;
+    public CookieEnumeration getStorageGroups(
+                                 StorageSessionable session , 
+                                 long cookie ) ;
 
+    public void close() ;
 }

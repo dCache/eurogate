@@ -25,9 +25,13 @@ public class EuroStoreV1 implements EuroStoreable {
        _dataBase = new BitfileDatabase( _args.argv(0) ) ;
        
     }
+    public StorageSessionable [] getStorageSessionable(){
+       return null ;
+    }
     private void say( String msg ){ _log.log( msg ) ; }
     private void esay( String msg ){ _log.elog( msg ) ; }
-    public void initialPutRequest( BitfileRequest req ){
+    public void initialPutRequest( StorageSessionable session ,
+                                   BitfileRequest req ){
        //
        // assign a new bitfile to this request
        //
@@ -51,7 +55,8 @@ public class EuroStoreV1 implements EuroStoreable {
        }
     
     }
-    public void finalPutRequest( BitfileRequest req ){
+    public void finalPutRequest( StorageSessionable session ,
+                                 BitfileRequest req ){
        String group = req.getStorageGroup() ;
        String bfid  = req.getBfid() ;
 
@@ -81,7 +86,8 @@ public class EuroStoreV1 implements EuroStoreable {
        }
     
     }
-    public void initialGetRequest( BitfileRequest req ){
+    public void initialGetRequest( StorageSessionable session ,
+                                   BitfileRequest req ){
        String bfid = req.getBfid() ;
        say( "igr : Searching bfid : "+bfid ) ;
        BitfileId bitfile = null  ;
@@ -101,7 +107,8 @@ public class EuroStoreV1 implements EuroStoreable {
        req.setFilePosition( bitfile.getPosition() ) ;
        req.setVolume( bitfile.getVolume() ) ;
     }
-    public void finalGetRequest( BitfileRequest req ){
+    public void finalGetRequest( StorageSessionable session ,
+                                 BitfileRequest req ){
       try{
           BitfileId bitfile = _dataBase.getBitfileId( 
                                     req.getStorageGroup() ,
@@ -113,7 +120,8 @@ public class EuroStoreV1 implements EuroStoreable {
       }
     
     }
-    public void initialRemoveRequest( BitfileRequest req ){
+    public void initialRemoveRequest( StorageSessionable session ,
+                                      BitfileRequest req ){
        BitfileId bitfile = null  ;
        String    group   = null ;
        String    bfid    = req.getBfid() ;
@@ -132,7 +140,8 @@ public class EuroStoreV1 implements EuroStoreable {
        req.setFilePosition( bitfile.getPosition() ) ;
        req.setVolume( bitfile.getVolume() ) ;
     }
-    public void finalRemoveRequest( BitfileRequest req ){
+    public void finalRemoveRequest( StorageSessionable session ,
+                                    BitfileRequest req ){
       if( req.getReturnCode() == 0 ){
          try{
             _dataBase.removeBitfileId( req.getStorageGroup() ,
@@ -149,7 +158,8 @@ public class EuroStoreV1 implements EuroStoreable {
     
     }
 
-    public BfRecordable  getBitfileRecord( String bfid ){
+    public BfRecordable  getBitfileRecord( StorageSessionable session ,
+                                           String bfid ){
        BitfileId bitfile = null  ;
        String    group   = null ;
        try{
@@ -191,7 +201,8 @@ public class EuroStoreV1 implements EuroStoreable {
        }
     }
     public CookieEnumeration 
-           getBfidsByVolume( String volume , long cookie ){
+           getBfidsByVolume( StorageSessionable session ,
+                             String volume , long cookie ){
            
        String [] group  = null ;
        String [] bfid   = null ;
@@ -216,7 +227,8 @@ public class EuroStoreV1 implements EuroStoreable {
        return new  ListCookieEnumeration( result , cookie );
     }
     public CookieEnumeration 
-           getBfidsByStorageGroup( String storageGroup , long cookie){
+           getBfidsByStorageGroup( StorageSessionable session ,
+                                   String storageGroup , long cookie){
        try{
            String [] list = _dataBase.getBitfileIds(storageGroup) ;
            return new  ListCookieEnumeration( list , cookie );
@@ -225,7 +237,7 @@ public class EuroStoreV1 implements EuroStoreable {
        }
     }
     public CookieEnumeration 
-           getStorageGroups(long cookie ){
+           getStorageGroups(StorageSessionable session ,long cookie ){
            
        try{
            String [] list = _dataBase.getGroups() ;
@@ -234,5 +246,6 @@ public class EuroStoreV1 implements EuroStoreable {
            return new  ListCookieEnumeration(new Object[0] , 0 );
        }
     }
+    public void close(){}
 
 }

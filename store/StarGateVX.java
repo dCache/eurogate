@@ -20,6 +20,7 @@ public class StarGateVX extends CellAdapter implements Logable  {
    private CellPath        _pvlPath     = null ;
    private String          _euroClass   = null ;
    private EuroStoreable   _eurostore   = null ;
+   private SessionHandler  _sessionHandler = null ;
    public StarGateVX( String name , String args ) throws Exception {
    
        super( name , args , false ) ;
@@ -27,8 +28,6 @@ public class StarGateVX extends CellAdapter implements Logable  {
        _nucleus = getNucleus() ;
        try{
           if( _args.argc() < 2 ){
-             start() ;
-             kill() ;
              throw new 
              IllegalArgumentException( 
              "Usage : ... <EuroStorableClass> <pvlPath> [EuroStorable specific infos]" ) ;
@@ -41,11 +40,15 @@ public class StarGateVX extends CellAdapter implements Logable  {
           
           loadStoreClass() ;
           
+          _sessionHandler = new SessionHandler( 
+                                 _eurostore.getStorageSessionable() ) ;
        }catch( IllegalArgumentException e ){
           start() ;
           kill() ;
           throw e ;
        }catch( Exception ee ){
+          start() ;
+          kill() ;
           throw ee ;
        }catch( Throwable de ){
           start() ;
@@ -56,6 +59,57 @@ public class StarGateVX extends CellAdapter implements Logable  {
 
        start() ;
    
+   }
+   private class Session {
+       private int               _position = -1 ;
+       private StorageSessionable _sessionable = null ;
+       private Session( int position , StorageSessionable ss ){
+           _position    = position ;
+           _sessionable = ss ;
+       }
+       private StorageSessionable get(){ return _sessionable ; }
+       private int getPosition(){ return _position ; }
+   }
+   private class SessionHandler {
+       private Session []_sessions = null ;
+       private Session []_stack    = null ;
+       private int _stackPosition  = 0 ;
+       private Object    _lock     = new Object() ;
+       
+//       private GateKeeper _gate = new GateKeeper() ;
+
+       private SessionHandler( StorageSessionable [] sessions ){
+           if( ( sessions == null ) ||
+               ( sessions.length == 0 ) ){
+              _sessions = null ;
+              return ;   
+           }
+           _sessions = new Session[sessions.length] ;
+           _stack    = new Session[sessions.length] ;
+           for( int i = 0 ; i < _sessions.length ; i++ )
+              _stack[i] = _sessions[i] = new Session( i, sessions[i] ) ;
+           _stackPosition = _sessions.length - 1 ;
+       }
+       private Session getSession(int priority)throws InterruptedException {
+          if( _sessions == null )return new Session(-1,null) ;
+//          _gate.open(priority);
+          try{
+             synchronized(_lock){
+                while(_stackPosition<0)_lock.wait() ;
+             
+                return _stack[_stackPosition--] ;
+             }
+          }finally{
+//             _gate.close() ;
+          }
+       }
+       private void releaseSession( Session session ){
+           if( session.getPosition() < 0 )return ;
+           synchronized( _lock ){
+              _stack[++_stackPosition] = session ;
+              _lock.notifyAll() ;
+           }
+       }
    }
    private static final Class [] __constArgs = {
           dmg.util.Args.class ,
@@ -107,7 +161,8 @@ public class StarGateVX extends CellAdapter implements Logable  {
            say( "StoreRequest arrived : "+obj ) ;
            if( sr.getCommand().equals( "get-bfid" ) ){
               try{
-                 sr.setBitfileId( _eurostore.getBitfileRecord(sr.getBfid()) ) ;
+                 sr.setBitfileId( 
+                       _eurostore.getBitfileRecord(null,sr.getBfid()) ) ;
               }catch( Exception dbe ){
                  sr.setBitfileId(null);
               }
@@ -125,12 +180,29 @@ public class StarGateVX extends CellAdapter implements Logable  {
            say( "Unknown object arrived : "+obj.getClass() ) ;
        }
    }
-   private void addRequest( CellMessage msg , BitfileRequest req ){
+   private void addRequest( CellMessage msg , BitfileRequest req ) {
 
        req.setServerReqId( _nextServerReqId++ ) ;
         
-       initialRequest( req ) ;
-       
+       //
+       //  within initial request we have to wait for
+       //  a session. This wait may be interrupted be
+       //  a 'kill cell'.
+       //
+       try{
+          initialRequest( req ) ;
+       }catch(InterruptedException ie ){
+          esay( "Wait for database session was interrupted");
+          try{
+             req.setActionCommand( "BB-OK" ) ;  
+             msg.revertDirection() ;
+             sendMessage( msg ) ;
+          }catch( Exception e ){
+             esay( "PANIC : problem sending error report to door "+e ) ;
+             esay(e);
+          }
+          return ;       
+       }
        String ioType = req.getType() ;
        if( req.getReturnCode() != 0 ){
           //
@@ -162,8 +234,14 @@ public class StarGateVX extends CellAdapter implements Logable  {
              //
              esay( "Door cell seems to have disappeared "+nrtc ) ;
              req.setReturnValue( 55 , nrtc.toString() ) ;
-             
-             finalRequest( req ) ;
+             try{          
+                 finalRequest( req ) ;
+             }catch(InterruptedException iea){
+                 //
+                 // this time there is nothing we can do/
+                 //
+                 esay( "Wait for database session was interrupted" ) ;
+             }
              return ;
           }
        
@@ -181,9 +259,12 @@ public class StarGateVX extends CellAdapter implements Logable  {
           String problem = "Can't reach pvl : "+ee.getMessage() ;
           esay( problem ) ;
           req.setReturnValue( 33 , problem ) ;
-
-          finalRequest( req ) ;
-
+          try{
+             finalRequest( req ) ;
+          }catch(InterruptedException e ){
+             esay( "Wait for session interrpupted"+
+                   " (Couldn't remove the failed request)" ) ;
+          }
           msg.revertDirection();
           req.setActionCommand( "Mover-OK" ) ;  
           try{
@@ -196,26 +277,43 @@ public class StarGateVX extends CellAdapter implements Logable  {
           
        
    }
-   private void finalRequest( BitfileRequest req ){
+   private void finalRequest( BitfileRequest req )
+           throws InterruptedException {
        String ioType = req.getType() ; 
+       Session s = _sessionHandler.getSession(0) ;
        try{    
-          if(      ioType.equals("put")  )_eurostore.finalPutRequest( req ) ;
-          else if( ioType.equals("get")  )_eurostore.finalGetRequest( req ) ;
-          else if( ioType.equals("remove") )_eurostore.finalRemoveRequest( req ) ;
-          else req.setReturnValue( 11 , "Operation not found : "+ioType ) ; ;
+          if( ioType.equals("put")  ){
+              _eurostore.finalPutRequest(s.get(),req ) ;
+          }else if( ioType.equals("get")  ){
+              _eurostore.finalGetRequest(s.get(),req ) ;
+          }else if( ioType.equals("remove") ){
+              _eurostore.finalRemoveRequest(s.get(),req ) ;
+          }else{
+              req.setReturnValue( 11 , "Operation not found : "+ioType ) ;
+          } 
+              
        }catch( Throwable t ){
           req.setReturnValue( 666 , t.toString() ) ;
+       }finally{
+           _sessionHandler.releaseSession(s) ;
        }
    }
-   private void initialRequest( BitfileRequest req ){
+   private void initialRequest( BitfileRequest req )
+           throws InterruptedException {
        String ioType = req.getType() ; 
+       Session s = _sessionHandler.getSession(0) ;
        try{    
-          if(      ioType.equals("put")  )_eurostore.initialPutRequest( req ) ;
-          else if( ioType.equals("get")  )_eurostore.initialGetRequest( req ) ;
-          else if( ioType.equals("remove") )_eurostore.initialRemoveRequest( req ) ;
+          if(      ioType.equals("put")  )
+                     _eurostore.initialPutRequest(s.get(),req ) ;
+          else if( ioType.equals("get")  )
+                     _eurostore.initialGetRequest(s.get(),req ) ;
+          else if( ioType.equals("remove") )
+                     _eurostore.initialRemoveRequest(s.get(),req ) ;
           else req.setReturnValue( 11 , "Operation not found : "+ioType ) ; ;
        }catch( Throwable t ){
           req.setReturnValue( 666 , t.toString() ) ;
+       }finally{
+          _sessionHandler.releaseSession(s) ;
        }
    }
    
@@ -227,9 +325,19 @@ public class StarGateVX extends CellAdapter implements Logable  {
        }
    }
    private void returnedRequest( CellMessage msg , BitfileRequest req ){
-       
-      finalRequest( req ) ;
- 
+      
+      try{
+         finalRequest( req ) ;
+      }catch( InterruptedException ei ){
+         req.setReturnValue(56,"Final storing was interrupted" );
+         try{
+            msg.nextDestination() ;
+            sendMessage( msg ) ;
+         }catch( Exception e ){
+            esay( "Can't forward final response to Door"+e) ;
+         }
+         return ;
+      }
       try{
          msg.nextDestination() ;
          sendMessage( msg ) ;
@@ -242,7 +350,10 @@ public class StarGateVX extends CellAdapter implements Logable  {
          // but there is no other way to let the
          // request fail.
          //
-         finalRequest( req ) ;
+         try{finalRequest( req ) ;}
+         catch(InterruptedException iee){
+            esay( "Final request (database) was interrupted" ) ;
+         }
       }
    
    }
@@ -254,10 +365,14 @@ public class StarGateVX extends CellAdapter implements Logable  {
       boolean longList = args.optc() > 0 ;
       sb.append( "  Bitfile List\n" ) ;
       
-      
-      Enumeration e = _eurostore.getBfidsByStorageGroup( group , 0 ) ;
-
-      dumpBfs( sb , e , longList ) ;
+      Session s = _sessionHandler.getSession(1) ;
+      try{
+         Enumeration e =   
+            _eurostore.getBfidsByStorageGroup(s.get(), group , 0 ) ;
+         dumpBfs( s.get() , sb , e , longList ) ;
+      }finally{
+         _sessionHandler.releaseSession(s) ;
+      }
       
       return sb.toString();
    }
@@ -269,18 +384,26 @@ public class StarGateVX extends CellAdapter implements Logable  {
       boolean longList = args.optc() > 0 ;
       sb.append( "  Bitfile List\n" ) ;
       
-      Enumeration e = _eurostore.getBfidsByVolume( volume , 0 ) ;
-
-      dumpBfs( sb , e , longList ) ;
+      Session s = _sessionHandler.getSession(1) ;
+      try{
+         Enumeration e = _eurostore.getBfidsByVolume(s.get(),volume , 0 ) ;
+         dumpBfs( s.get() , sb , e , longList ) ;
+      }finally{
+         _sessionHandler.releaseSession(s) ;
+      }
       
       return sb.toString();
    }
-   private void dumpBfs( StringBuffer sb , Enumeration e , boolean longList ){
+   private void dumpBfs( 
+                         StorageSessionable sessionable ,
+                         StringBuffer sb , 
+                         Enumeration e , boolean longList ){
       DateFormat   df    = new SimpleDateFormat("MMM d, hh.mm.ss" ) ;
       while( e.hasMoreElements() ){
          String bfid = (String)e.nextElement() ;
          if( longList ){
-            BfRecordable bitfileid = _eurostore.getBitfileRecord( bfid ) ;
+            BfRecordable bitfileid = 
+               _eurostore.getBitfileRecord(sessionable,bfid ) ;
             sb.append(bitfileid.getBfid()).append("  ").
                append( bitfileid.getStatus().charAt(0) ) ;
             sb.append( "  "+bitfileid.getFileSize() ).append( "  " ) ;
@@ -306,21 +429,30 @@ public class StarGateVX extends CellAdapter implements Logable  {
    }
    public String hh_ls_groups = "" ;
    public String ac_ls_groups( Args args ) throws Exception {
-   
-      Enumeration  e  = _eurostore.getStorageGroups(0) ;      
+      Session s = _sessionHandler.getSession(1);
       StringBuffer sb = new StringBuffer();
-      
-      while( e.hasMoreElements() )
-         sb.append( e.nextElement().toString() ).append("\n" ) ;
-         
+      try{
+         Enumeration  e  = _eurostore.getStorageGroups(s.get(),0) ;      
+
+         while( e.hasMoreElements() )
+            sb.append( e.nextElement().toString() ).append("\n" ) ;
+      }finally{
+         _sessionHandler.releaseSession(s) ;
+      }  
       return sb.toString();
    }
    public String hh_ls_bfid = "<bfid>" ;
-   public String ac_ls_bfid_$_1( Args args ) throws CommandException {
+   public String ac_ls_bfid_$_1( Args args ) throws Exception {
       String     bfid      = args.argv(0);
       DateFormat df        = new SimpleDateFormat("MMM d, hh.mm.ss" ) ;
       
-      BfRecordable bfred = _eurostore.getBitfileRecord( bfid ) ;
+      BfRecordable bfred = null ;
+      Session s = _sessionHandler.getSession(1) ;
+      try{
+         bfred = _eurostore.getBitfileRecord(s.get(), bfid ) ;
+      }finally{
+         _sessionHandler.releaseSession(s) ;
+      }
       if( bfred == null )return "Bfid not found : "+bfid  ;
       StringBuffer sb = new StringBuffer() ;
       sb.append("Bfid          : ").
@@ -367,8 +499,18 @@ public class StarGateVX extends CellAdapter implements Logable  {
       }
       public void run(){
          String    volume = _request.getVolume() ;
-         Enumeration e = _eurostore.getBfidsByVolume(volume,0) ;
+         Session s = null ;
          
+         try{
+             s = _sessionHandler.getSession(1) ;
+         }catch( InterruptedException ie ){
+             esay( "waiting for session (listvolume) interrupted" );
+             // this will let the client hang.
+             return ;      
+         }
+         
+         Enumeration e = null ;
+      
          
          String [] group  = null ;
          String [] bfid   = null ;
@@ -377,9 +519,10 @@ public class StarGateVX extends CellAdapter implements Logable  {
          Socket    socket = null ;
          DataOutputStream out = null ;
          try{
+            e = _eurostore.getBfidsByVolume(s.get(),volume,0) ;
             while( e.hasMoreElements() ){
               String bfidx = (String)e.nextElement() ;
-              bfids.addElement( _eurostore.getBitfileRecord(bfidx) ) ;
+              bfids.addElement( _eurostore.getBitfileRecord(s.get(),bfidx) ) ;
             }
             
             say( ""+bfids.size()+" Bitfiles found on volume "+volume );
@@ -446,6 +589,7 @@ public class StarGateVX extends CellAdapter implements Logable  {
                try{ out.close() ; }catch(Exception ex ){}
                try{ socket.close() ; }catch(Exception ex ){}
             }
+            _sessionHandler.releaseSession(s);
          }
          _msg.revertDirection() ;
          try{
