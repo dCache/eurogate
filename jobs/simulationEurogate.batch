@@ -239,7 +239,7 @@ create dmg.cells.services.login.LoginManager dbLogin \
        eurogate.db.pvl.PvlDbLoginCell \
        -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X"
 #
-create eurogate.pvl.PvlCoreV2  ${pvlName} "${scheduler}" -acl=${securityCell}"
+create eurogate.pvl.PvlCoreV2  ${pvlName} "${scheduler} -acl=${securityCell}"
 #
 ####################################################################
 #
