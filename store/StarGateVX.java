@@ -60,12 +60,27 @@ public class StarGateVX extends CellAdapter implements Logable  {
        start() ;
    
    }
+   public void cleanUp(){
+      if( _eurostore != null ){
+         say( "Closing database" ) ;
+         try{
+            _eurostore.close() ;
+         }catch(Exception ee ){
+            esay( "Problem closing database : "+ee ) ;
+            esay(ee) ;
+         } 
+      }else{
+         esay( "Closing database (why is the database == null ? )" ) ;
+      }
+        
+   }
    private class Session {
        private int               _position = -1 ;
        private StorageSessionable _sessionable = null ;
        private Session( int position , StorageSessionable ss ){
            _position    = position ;
            _sessionable = ss ;
+           System.err.println("SESSION : creating : "+position ) ;
        }
        private StorageSessionable get(){ return _sessionable ; }
        private int getPosition(){ return _position ; }
@@ -96,7 +111,8 @@ public class StarGateVX extends CellAdapter implements Logable  {
           try{
              synchronized(_lock){
                 while(_stackPosition<0)_lock.wait() ;
-             
+                System.err.println("SESSION : getSession : "+_stackPosition+
+                                   " "+ _sessions[_stackPosition].getPosition()) ; 
                 return _stack[_stackPosition--] ;
              }
           }finally{
@@ -107,6 +123,8 @@ public class StarGateVX extends CellAdapter implements Logable  {
            if( session.getPosition() < 0 )return ;
            synchronized( _lock ){
               _stack[++_stackPosition] = session ;
+                System.err.println("SESSION : releaseSession : "+_stackPosition+
+                                   " "+ _sessions[_stackPosition].getPosition()) ; 
               _lock.notifyAll() ;
            }
        }

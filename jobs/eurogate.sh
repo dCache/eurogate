@@ -251,12 +251,12 @@ eugateStart() {
    fi
    #
    #
-   nohup $JAVA  dmg.cells.services.Domain euroGate \
+   nohup $JAVA -Xss2000000 dmg.cells.services.Domain euroGate \
             -param setupFile=$fullSetup \
                    keyBase=$eurogateHome \
             -batch $BATCHFILE  \
             $SPY_IF_REQUESTED $TELNET_IF_REQUESTED >$LOGFILE 2>&1 &
-   sleep 5
+   sleep 7
    printf ". "
    $SSH -p $sshPort -o "FallBackToRsh no" localhost <<!  2>/dev/null | grep Active
       ps -f

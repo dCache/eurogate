@@ -241,7 +241,7 @@ public class       UserSecurityCell
           _userDb.removeContainer( user ) ;
           _aclDb.removeAclItem( "group."+user+".access" ) ;
        }catch( Exception ee ){
-          esay( args.toSting()+" : "+ee ) ;
+          esay( args.toString()+" : "+ee ) ;
            //
            // not an error
            //
