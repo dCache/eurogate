@@ -9,19 +9,21 @@ import dmg.util.* ;
 import java.io.* ;
 import java.util.* ;
 import java.text.* ;
+import java.net.* ;
 
 public class StarGateV1 extends CellAdapter  {
 
-   private CellNucleus _nucleus ;
-   private Args        _args ;
-   private long        _nextServerReqId = 100 ;
+   private CellNucleus     _nucleus ;
+   private Args            _args ;
+   private long            _nextServerReqId = 100 ;
    private CellPath        _pvlPath     = null ;
    private BitfileDatabase _dataBase    = null ;
    
    public StarGateV1( String name , String args ){
    
        super( name , args , false ) ;
-       _args = getArgs() ;
+       _args    = getArgs() ;
+       _nucleus = getNucleus() ;
        try{
           if( _args.argc() < 2 ){
              start() ;
@@ -74,8 +76,121 @@ public class StarGateV1 extends CellAdapter  {
               try{
                  sendMessage(msg);
               }catch(Exception ee){}
+           }else if( sr.getCommand().equals( "list-volume" ) ){
+              new ListVolumeController( msg , sr ) ;
            }
        }
+   }
+   private class ListVolumeController implements Runnable {
+      private CellMessage  _msg ;
+      private StoreRequest _request ;
+      private Thread       _thread ;
+      ListVolumeController( CellMessage msg , StoreRequest request ){
+         _request = request ;
+         _msg     = msg ;
+         
+         _nucleus.newThread(this,"LVC").start() ;
+      }
+      private class Bf {
+          String  bfid ;
+          int     position ;
+          String  key ;
+          Bf( String bfid , int position , String key ){
+             this.bfid = bfid ;
+             this.position  = position ;
+             this.key  = key ;
+          }
+      }
+      public void run(){
+         String [] group  = null ;
+         String [] bfid   = null ;
+         Vector    bfids  = new Vector() ;
+         BitfileId id     = null ;
+         String    volume = _request.getVolume() ;
+         Socket    socket = null ;
+         DataOutputStream out = null ;
+         say( "Scanning groups" ) ;
+         try{
+            group = _dataBase.getGroups() ;
+            for( int i = 0 ; i < group.length ; i++ ){
+               bfid  = _dataBase.getBitfileIds( group[i] ) ;
+               for( int j = 0 ; j < bfid.length ; j++ ){
+                  id =  _dataBase.getBitfileId( group[i] , bfid[j] ) ;
+                  if( id.getVolume().equals( volume ) )
+                      bfids.addElement( id ) ;
+               }
+            }
+            say( ""+bfids.size()+" Bitfiles found on volume "+volume );
+            if( bfids.size() == 0 )
+              throw new
+              IllegalArgumentException( "No bf's on volume "+volume ) ;
+            Bf [] bflist  = new Bf[bfids.size()] ;
+            String params = null ;
+            String tok    = null ;
+            StringTokenizer st = null ;
+            for( int i = 0 ; i < bflist.length ; i++ ){
+               id     = (BitfileId)bfids.elementAt(i) ;
+               params = id.getParameter() ;
+               if( ( params == null ) || ( params.equals("") ) ){
+                   params = "none" ;
+               }else{
+                   st = new StringTokenizer( params , ";" ) ;
+                   while( st.hasMoreTokens() ){ 
+                      tok = st.nextToken() ;                    
+                      if( ( tok.length() > 4 ) &&
+                          tok.startsWith("key=")    ){
+                          tok = tok.substring(4) ;
+                          break ;
+                      }
+                      tok = null ;
+                   }
+                   if( tok == null )tok = "none" ;
+               }
+               bflist[i] = new Bf( id.getName() ,
+                                   Integer.parseInt( id.getPosition()),
+                                   tok ) ;
+            
+            }
+            for( int o = bflist.length-1 ; o > 0 ; o-- ){
+               for( int i = 0 ; i < o ; i++ ){
+                  if( bflist[i].position > bflist[i+1].position ){
+                     Bf t = bflist[i] ;
+                     bflist[i] = bflist[i+1] ;
+                     bflist[i+1] = t ;
+                  }
+               }
+            }
+            say( "Connecting to "+
+                 _request.getHost()+":"+_request.getPort() ) ;
+            socket = new Socket( _request.getHost() , 
+                                 _request.getPort()    ) ;
+            out = new DataOutputStream( socket.getOutputStream() ) ;
+            out.writeUTF( "hello-store "+_request.getId() ) ;
+            for( int i = 0 ; i < bflist.length ; i++ ){
+               say( "bf - "+bflist[i].bfid ) ;
+               out.writeUTF( bflist[i].bfid+" "+
+                             bflist[i].position+" "+
+                             bflist[i].key        ) ;
+               out.flush();
+            }
+         }catch( DatabaseException dbe ){
+            _request.setReturnValue( dbe.getCode() , dbe.getMessage() ) ;
+         }catch( IllegalArgumentException e ){
+            _request.setReturnValue( 44 , e.getMessage() ) ;
+         }catch( Exception e ){
+            _request.setReturnValue( 44 , e.toString() ) ;
+         }finally{
+            if( socket != null){
+               say( "Closing connection" ) ;
+               try{ out.close() ; }catch(Exception e ){}
+               try{ socket.close() ; }catch(Exception e ){}
+            }
+         }
+         _msg.revertDirection() ;
+         try{
+            _nucleus.sendMessage(_msg);
+         }catch(Exception ee){}         
+      }
    }
    private void addRequest( CellMessage msg , RequestImpl req ){
        boolean ok = false ;
