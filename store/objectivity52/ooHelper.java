@@ -28,6 +28,7 @@ public class ooHelper implements StorageSessionable {
   public ooBFCompare _BFComp = null;
   public ooVCompare _VComp = null;
   public ooSGCompare _SGComp = null;
+  public String _dbVersion = null;
 
   public void clear() {
     _session = null;
@@ -39,15 +40,24 @@ public class ooHelper implements StorageSessionable {
     
 
   // create helper instance - auto-fill state
-  public ooHelper(/*Logable l*/) throws ObjyRuntimeException, ObjyException, Exception {
+  public ooHelper(Logable l, int dbMajor, int dbMinor) 
+         throws ObjyRuntimeException, ObjyException, Exception {
     _session = new Session(200, 1000);
     _fd = _session.getFD();
     _session.begin();
     try {
+      _miscDB = _fd.lookupDB("MiscDB");
+      // fetch the DBVersion object and check compatibility
+      DBVersion dbv = (DBVersion) _miscDB.lookupContainer("DBVCont").lookupObj("DBVersion");
+      _dbVersion = "EuroStore Objectivity/DB version " + dbv + " created " +
+                    dbv.created().toString();
+      if (!dbv.check(dbMajor, dbMinor))
+        throw new Exception("Objectivity Store DB wrong version (" + dbv + ") expect (" + dbMajor + "." + dbMinor + ")");
+    
       _ts = (ooTreeSet) (_bfidDB = _fd.lookupDB("BfidDB")).lookupObj("BitfileTreeSet");
       _vhs = (ooHashSet) (_volDB = _fd.lookupDB("VolDB")).lookupObj("VolumeHashSet");
       _sghs = (ooHashSet) (_sgDB = _fd.lookupDB("SGroupDB")).lookupObj("SGroupHashSet");
-      _miscDB = _fd.lookupDB("MiscDB");
+
       if (_ts == null)
         throw new Exception("Tree-Set is null");
       if (_vhs == null)
@@ -56,7 +66,6 @@ public class ooHelper implements StorageSessionable {
         throw new Exception("Storage-Group Hash-Set is null");
       if (_miscDB == null)
         throw new Exception("MiscDB is null");
-        
     } catch (ObjyRuntimeException e) {
       //LogDB.Log(l, e.errors());
       _session.abort();

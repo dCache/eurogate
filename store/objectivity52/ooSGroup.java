@@ -32,10 +32,12 @@ public class ooSGroup extends ooObj {
   }
   
   public void attachBitfile(ooBfid bf) {
+    fetch();
     _bitfiles.add(bf);
   }
   
   public com.objy.db.app.Iterator getBitfiles() {
+    fetch();
     return(_bitfiles.scan());
   }
   

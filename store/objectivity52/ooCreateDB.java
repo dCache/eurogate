@@ -33,6 +33,8 @@ public class ooCreateDB {
   private static final int defMaxNodesPerContainer = 3000;
   private static final int defMaxVArraysPerContainer = 1000;
 
+  private static final int _dbMajor = 0;
+  private static final int _dbMinor = 1;
   
   public ooCreateDB() { }
   
@@ -91,6 +93,12 @@ public class ooCreateDB {
       _miscDB.addContainer(_compSGCont, "SGCont", 1, 1, 1);
       //_compSGCont.cluster(_compSGCont);
       _compSGCont.nameObj(_ooSGComp, "ooSGCompare");
+      
+      ooContObj vCont = new ooContObj();
+      _miscDB.addContainer(vCont, "DBVCont", 1, 1, 1);
+      DBVersion dbVersion = new DBVersion(_dbMajor, _dbMinor);
+      vCont.nameObj(dbVersion, "DBVersion");
+      
     } catch (ObjyRuntimeException e) {
       e.reportErrors();
       _session.abort();
@@ -149,7 +157,7 @@ public class ooCreateDB {
     }*/
     _session.commit();
     say("bitfile Tree-Set created");
-    say("all done");
+    say("done - creating EuroStore Objectivity/DB version " + _dbMajor + "." + _dbMinor);
   }
 
   private static void say(String s) { System.out.println(s); }

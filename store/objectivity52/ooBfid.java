@@ -21,6 +21,10 @@ public class ooBfid extends ooObj {
   public String _location = null;
   public String _storingDevice = null;
   public String _state = null;
+  public String _parameter = null;
+  public long _readsDone = 0;
+  public long _readsFailed = 0;
+  public int _readsFailedInRow = 0;
   // _state could be
   //     "Undefined"
   //     "Transient"
@@ -54,18 +58,22 @@ public class ooBfid extends ooObj {
   }
   
   public void attachVolume(ooVolume v) {
+    fetch();
     _volume.form(v);
   }
   
   public ooVolume getVolume() {
+    fetch();
     return((ooVolume) _volume.get());
   }
 
   public void attachSGroup(ooSGroup sg) {
+    fetch();
     _storagegroup.form(sg);
   }
   
   public ooSGroup getSGroup() {
+    fetch();
     return((ooSGroup) _storagegroup.get());
   }
 
