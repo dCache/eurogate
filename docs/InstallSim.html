@@ -2,11 +2,97 @@
 <head><title>Eurogate Installation in Simulation Mode</title></head>
 <body bgcolor=white>
 <h1>Eurogate Installation in Simulation Mode</h1>
+
 <h3>Installing the package</h3>
 <ul>
-<li><strong>Installation from CD</strong> The installation CD
+<li><strong>Installation from CD</strong><p> The installation CD
 contains an installation script 'install.sh' which
 does most of the work. The software goes to /opt/EurogateV7 by default,
 or any other directory if specified otherwise. 
+<pre>
+cd /cdrom/hsm
+./install.sh
+</pre>
+<li><strong>Installation from eg.tar file</strong><p>
+Create the sourceRoot directory. The default for this version
+is /opt/EurogateV7 and deflate the eg.tar file into this directory.
+<pre>
+mkdir -p /opt/EurogateV7
+cp ???/eg.tar /opt/EurogateV7
+cd /opt/EurogateV7
+tar xf eg.tar
+</pre>
+</ul>
+<h3>Database Preparation</h3>
+<blockquote>
+In simulation mode, the data files are stored on the local filesystem.
+Therefore there must be suffient disk space to hold the datafiles.
+When starting the SimulationSystem the first time, all necessary
+initialization is done automatically. The administrator has to 
+supply the system with an empty subdirectory. 
+(The <strong>&lt;databaseRoot&gt;</strong>)
+<pre>
+mkdir -p &lt;databaseRoot&gt;
+</pre>
+<li><strong>Customizing the setup file</strong><p>
+<ul>
+<li>Change to the &lt;eurogate&gt;/jobs directory.
+<li>copy eurogateSetup.template to eurogateSetup.
+<li>Customize the content of  eurogateSetup. The setupfile
+    contains key value pairs which determine the
+    behaviour of the system. Some of the values are
+    already set to a reasonable value, others MUST be
+    tuned to fit the site specific needs.
+  <ul>
+  <li><strong>databaseRoot</strong> must be set to the directory
+      path prepared above. When the system is started the first time,
+      this subdirectory must be empty. It must provide sufficent
+      disk space to hold the datafile, simulating the tapes.
+  <li><strong>java</strong> If 'java' is not set, the system assumes to find
+      the java binary in the PATH variable.
+  </ul>
+</ul>
+</blockquote>
+<h3>Starting/Stopping the system</h3>
+<blockquote>
+The system is started and stopped from within the
+'jobs' directory.
+<pre>
+cd ../jobs
+./eurogate start
+
+resp.
+
+./eurogate stop
+</pre>
+</blockquote>
+<h3>Administering the system</h3>
+<blockquote>
+The system provides a graphical and a line interface
+for most administative and monitoring tasks.
+For the command line interface it uses the ssh Version I 
+protocol for login. Both access methods are started from 
+within the eurogate jobs directory 
+<p>
+<ul>
+<li><strong>Command Line</strong>
+<pre>
+./eurogate admin -l admin
+</pre>
+The initial password is 'dickerelch'
+<p>
+<li><strong>Graphics</strong>
+<pre>
+./eurogate gui
+</pre>
+The login user name has to be changed to 'admin' and the
+initial password is 'dickerelch'.
+<p>
+See <a href=EuroGuide.html>EuroGuide</a> for administration commands.
+</ul>
+</blockquote>
+<p>
+<hr>
+<address>Patrick.Fuhrmann@desy.de</address>
 </body>
 </html>
