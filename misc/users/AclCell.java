@@ -236,4 +236,7 @@ public class       AclCell
   //
   //   the interpreter
   //
+  public String ac_interrupted( Args args )throws CommandException {
+     return "\n" ;
+  }
 }
