@@ -1,0 +1,10 @@
+#
+set printout CellGlue none
+set printout default  all
+#
+create eurogate.pvr.PvrLoginManager pvrLM 22124
+#
+create dmg.cells.services.login.LoginManager lm \
+       "22125 dmg.cells.services.login.LoginCell \
+        -prot=telnet \
+        eurogate.simulation.graphics.pvr.PvrRequestShell"
