@@ -3,43 +3,10 @@
 <body bgcolor=white>
 <h1>Eurogate Installation in Simulation Mode</h1>
 <h3>Installing the package</h3>
-The <strong>EuroGate</strong> Simulation package distinquishes 
-between the <strong>PackageRoot</strong> and the 
-<strong>dataRoot</strong> denoted as
-<i>&lt;packageRoot&gt;</i> and <i>&lt;dataRoot&gt;</i>
-resp..
-The package root is the directory where the package
-classes, binaries and scripts are inflatted and
-the data root will contain all necessary databases
-and the simulated tapes. Consequently the data root
-need appropriate space to store the data.
-
-<pre>
-cd &lt;packageRoot&gt;
-tar xvf /cdrom/eurogate.sim.tar
-cd eurogate/jobs
-cp eurogateSetup.template eurogateSetup
-</pre>
 <ul>
-<li>Find a partition on the local host which sufficient space
-    to store the simulated data tapes, and create a subdirectory.
-    ( will be called &lt;dataRoot&gt; )
-<li>Find the entry <i>databaseRoot=</i> in eurogateSetup
-    and assign the variable to the full path of this subdirectory.
-<li>Create the following subdirectories :
-    <pre>
-    &lt;dataRoot&gt;/store/raw
-    &lt;dataRoot&gt;/store/dst
-    &lt;dataRoot&gt;/pvr/stk
-    &lt;dataRoot&gt;/pvl
-    &lt;dataRoot&gt;/mover
-    </pre>
-<li>Create the login ssh keys in &lt;packageRoot&gt;/eurogate/jobs
-    <pre>
-    ../bin/ssh-keygen -b  768 -f ./server_key -N \"\"
-    ../bin/ssh-keygen -b 1024 -f ./host_key   -N \"\"
-    </pre>    
-<li>Run <i>./eurogate start</i>
-</ul>
+<li><strong>Installation from CD</strong> The installation CD
+contains an installation script 'install.sh' which
+installs the software to /opt/EurogateV7 by default,
+or any other directory if specified. 
 </body>
 </html>
