@@ -21,7 +21,7 @@ check -strong sshPort aclPort
 #
 set context serverKeyFile     ${keyBase}/server_key
 set context hostKeyFile       ${keyBase}/host_key
-set env     securityCell      acm
+set env     securityCell      AclCell
 set context userPasswordFile  cell:${securityCell}
 #
 create dmg.cells.services.login.SshKeyManager    skm
@@ -34,8 +34,10 @@ create dmg.cells.services.login.LoginManager slm \
 create dmg.cells.services.login.LoginManager aclMgr \
       "${aclPort}  \
        dmg.cells.services.login.StreamObjectCell \
-       -prot=ssh -auth=dmg.cells.services.login.SshSAuth_X \
+       -prot=ssh -auth=dmg.cells.services.login.SshSAuth_A \
        eurogate.spy.AclAdmin"
 
 create eurogate.misc.users.AclCell AclCell   \
-         "/home/patrick/cvs-eurogate/eurogate/misc/users/db"
+         "/home/patrick/cvs-eurogate/eurogate/misc/users/db  \
+           -syspassword=${keyBase}/shadow  \
+           -egpassword=${keyBase}/passwd"
