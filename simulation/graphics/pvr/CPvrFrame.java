@@ -11,6 +11,7 @@ import java.net.* ;
 import dmg.util.* ;
 import dmg.cells.services.* ;
 import dmg.cells.nucleus.* ;
+import dmg.cells.applets.spy.HistoryTextField ;
 
 public class      CPvrFrame 
        extends    Frame 
@@ -26,7 +27,7 @@ public class      CPvrFrame
    private DataInputStream _in ;
    private DataOutputStream _out ;
    private TextArea _display = new TextArea() ;
-   private TextField _input = new TextField() ;
+   private TextField _input = new HistoryTextField() ;
    private String    _host ;
    private int       _port ;
    private String    _pvr   = null ;
@@ -53,6 +54,7 @@ public class      CPvrFrame
       top.setFont( _bigFont ) ;
       
       _connectButton = new Button( "   Connect    " ) ;
+      _connectButton.setBackground(Color.red) ;
       _connectButton.setFont( _bigFont ) ;
       _connectButton.addActionListener( this ) ;
       
@@ -82,22 +84,25 @@ public class      CPvrFrame
      _listenThread = new Thread( this ) ;
      _listenThread.start() ;
      _connectButton.setLabel( "DisConnect" ) ;
+     _connectButton.setBackground( Color.green ) ;
      return true ;
   
   }
   private synchronized void stopConnection(){
      _connectButton.setLabel( "Connect" ) ;
-     _display.append( "Stopping streams\n" ) ;
+     _connectButton.setBackground( Color.red ) ;
+//     _display.append( "Stopping streams\n" ) ;
      try{ _out.close() ; }catch(Exception e){
-        _display.append( "out : "+e+"\n" ) ;
+//        _display.append( "out : "+e+"\n" ) ;
      }
      try{ _in.close() ; }catch(Exception e){
-        _display.append( "in : "+e+"\n" ) ;
+//        _display.append( "in : "+e+"\n" ) ;
      }
      try{ _socket.close() ; }catch(Exception e){
-        _display.append( "socket : "+e+"\n" ) ;     
+//        _display.append( "socket : "+e+"\n" ) ;     
      }
-     _display.append( "All streams closed\n" ) ;  
+//     _display.append( "All streams closed\n" ) ;  
+     _display.append( "----------------------------------\n");
      _listenThread.interrupt() ;   
      _out = null ;
   }
@@ -107,7 +112,7 @@ public class      CPvrFrame
   public void run(){
      try{
         String str = null ;
-        _display.append( "Connected\nListener started\n" ) ;
+//        _display.append( "Connected\nListener started\n" ) ;
         while( ( str = _in.readUTF() ) != null ){
            
             _display.append( str +"\n" ) ;
@@ -117,8 +122,9 @@ public class      CPvrFrame
      }catch( Exception ee ){
         try{ stopConnection() ; }catch(Exception xx ){}
      }
-     _display.append( "Listen Thread terminated\n" ) ;
-     _connectButton.setLabel("Connect") ;
+//     _display.append( "Listen Thread terminated\n" ) ;
+//     _connectButton.setLabel("Connect") ;
+     stopConnection() ;
   
   }
   public void actionPerformed( ActionEvent event ){

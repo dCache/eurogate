@@ -10,6 +10,7 @@ public class PvrRequestShell {
     private Args        _args ;
     private CellNucleus _nucleus ;
     private String      _user ;
+    
     public PvrRequestShell( String user , CellNucleus nucleus , Args args ){
        _user    = user ;
        _nucleus = nucleus ;
@@ -18,6 +19,7 @@ public class PvrRequestShell {
     }
     public void say( String s ){ _nucleus.say( "PvrRequestShell:"+s ) ; }
     public void esay( String s ){ _nucleus.esay( "PvrRequestShell:"+s ) ; }
+    
     public String hh_mount = 
     "[-pvr=<pvr>] <cartridge> <genericDrive> <specificDrive>" ;
     public String ac_mount_$_3( Args args )throws Exception {
@@ -59,5 +61,8 @@ public class PvrRequestShell {
                append( "\n" ) ;
         }
         return sb.toString() ;
+    }
+    public String ac_show_me( Args args ){
+       return "Done" ;
     }
 }
