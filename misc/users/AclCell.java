@@ -30,7 +30,7 @@ public class       AclCell
   private UserPasswords    _sysPassword  = null ;
   private UserPasswords    _egPassword   = null ;
   private Crypt            _crypt        = new Crypt() ;
-  public AclCell( String name , String argString ) throws Exception {
+  public AclCell( String name , String argString ) throws Throwable {
   
       super( name , argString , false ) ;
 
@@ -69,7 +69,7 @@ public class       AclCell
              _egPassword  = new UserPasswords( new File( tmp ) ) ;
              say( "using as EgPasswordfile : "+tmp ) ;
           }
-      }catch( Exception e ){
+      }catch( Throwable e ){
          esay( "Exception while <init> : "+e ) ;
          esay(e) ;
          start() ;
