@@ -48,7 +48,7 @@ public class      PvrLoginCell
      private boolean     _recovery     = false ;
      private String      _linkId       = null ;
      private boolean     _sendNewdrive = false ;
-     private String      _frameType    = "" ;
+     private String      _frameType    = "?" ;
      public RequestFrame( String linkId , String frameType ){
         _linkId   = linkId ;
         _recovery = true ;
@@ -83,6 +83,14 @@ public class      PvrLoginCell
      public boolean     isRecovery(){ return _recovery ; }
      public void        setRecovery( boolean rec ){ _recovery = rec ; }
      public String      getLinkId(){ return _linkId ; }
+     
+     public String toString(){
+        
+        return  "t="+_frameType+
+                ";nd="+_sendNewdrive+
+                ";lid="+(_linkId==null?"none":_linkId)+
+                ";req="+(_request==null?"none":_request.toString()) ;
+     }
   }
 
   /**
@@ -301,10 +309,10 @@ public class      PvrLoginCell
      synchronized( _hashLock ){
         Vector removeVector = new Vector() ;
         Enumeration e = _recoveryHash.keys() ;
-        while( e.hasMoreElements() ){
+        for( int i = 0  ; e.hasMoreElements() ; i++ ){
            String       key   = (String)e.nextElement() ;
            RequestFrame frame = (RequestFrame)_recoveryHash.get(key) ;
-           
+           say( "recovery hash ["+i+","+key+"] "+frame ) ;
            //
            // if the frame links to an original frame
            // which does no longer exist, we schedule it
@@ -313,10 +321,10 @@ public class      PvrLoginCell
            String linkId = frame.getLinkId() ;
            if( ( linkId != null ) &&
                ( _recoveryHash.get(linkId) == null ) )
-                  removeVector.addElement(linkId) ;
+                  removeVector.addElement(key) ;
                   
            if( ! frame.sendNewdrive() ){
-              say( "recovery : newdrive disabled for "+key ) ;
+//              say( "recovery : newdrive disabled for "+key ) ;
               continue ;
            }
            //
@@ -481,7 +489,7 @@ public class      PvrLoginCell
                   }else if( ft.equals( "mount" ) ){
                       mountAnswerArrived( frame , args ) ;
                   }else if( ft.equals( "dismount" ) ){
-                  
+                      dismountAnswerArrived( frame ,args ) ;
                   }else if( ft.equals( "newdrive" ) ){
                       newdriveAnswerArrived( frame , args ) ;
                   }
@@ -518,6 +526,19 @@ public class      PvrLoginCell
      sendBack( frame.getMessage() ) ;
   }
   private void mountAnswerArrived( RequestFrame frame , Args args ){
+      //
+      // get the original request 
+      //
+      String linkId = frame.getLinkId() ;
+      RequestFrame linkFrame = (RequestFrame)_recoveryHash.remove(linkId) ;
+      if( linkFrame == null ){
+         esay( "Recover for id "+linkId+" obsolete" ) ;
+         return ; 
+      }
+      processDone( linkFrame , args ) ;
+      
+  }    
+  private void dismountAnswerArrived( RequestFrame frame , Args args ){
       //
       // get the original request 
       //
@@ -643,24 +664,52 @@ public class      PvrLoginCell
           // the original request was a dismount, so we have
           // to wait until the drive is empty
           //
-          if( cartInDrive.equals( "empty" ) ){
+          if( rc.equals( "1" ) ){
+          
              say( "recovery id-"+id+
                   " original dismount "+linkId+" ok "+cartInDrive ) ; 
-             synchronized( _hashLock ){
-                _requestHash.remove( linkId ) ;
-                _recoveryHash.remove( linkId ) ;
-             }
+             _requestHash.remove( linkId ) ;
+             _recoveryHash.remove( linkId ) ;
              CellMessage msg = linkFrame.getMessage() ;
              req.setReturnValue(0,"O.K.") ;
              sendBack( msg ) ;
-          }else{
+             return ;
+          }else if( rc.equals( "2" ) ){
+             //
+             // we have to continue with our 'newdrive'
+             //             
+             say( "recovery : enabling newdrive for : "+linkId);
+             linkFrame.sendNewdrive(true);
+             return ;
+          
+          }else if( rc.equals( "3" ) ){
+             // 
+             // we have to resubmit a 'dismount'.
+             // we store the original 'request' together
+             // with the new 'pvrRequestId' and link
+             // them together, and we switch off the
+             // newdrive requests.
+             //
              say( "recovery id-"+id+
                   " original dismount "+linkId+
-                  " bad not yet empty <->"+cartInDrive ) ; 
-             //
-             // not yet the required answer. lets wait...
-             //
-             return ;
+                  " bad : not yet empty <->"+cartInDrive ) ; 
+             _pvrRequestId++ ;
+             String pvrRequest = "dismount "+_pvrRequestId+
+                          " "+req.getCartridge()+
+                          " "+req.getGenericDrive()+
+                          " "+req.getSpecificDrive() ;
+                          
+             RequestFrame nmf = new RequestFrame( linkId , "dismount" ) ;
+             nmf.sendNewdrive(false) ;
+             _recoveryHash.put(  ""+_pvrRequestId , nmf ) ;
+             try{
+                say( "toPvr : "+pvrRequest ) ;
+                _out.writeUTF( pvrRequest ) ;
+             }catch(Exception ee ){
+                esay( "Problem sending "+_pvrRequestId+" : "+ee ) ;
+                _recoveryHash.remove( ""+_pvrRequestId ) ;
+             }
+          
           }
       }else{
           esay( "Suspicious request in recovery : "+action ) ;
