@@ -92,8 +92,10 @@ public class PvlCommanderV1 {
      h.put( "cartridge" , cartridge ) ;
      h.put( "owner"     , owner ) ;
      h.put( "selection" , selection ) ;
-     h.put( "selection" , selection ) ;
      h.put( "action"    , action ) ;
+     h.put( "idle"      , ""+idle ) ;
+     h.put( "specific"  , specific ) ;
+     h.put( "device"    , device ) ;
      
      return h ;
            
