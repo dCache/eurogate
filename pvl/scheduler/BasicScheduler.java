@@ -64,5 +64,62 @@ public class BasicScheduler extends PvlScheduler {
                     
       return findNextFair( getPvrSet() , requestQueue ) ;
    }
+   public PvlResourceModifier 
+      otherAction( PvlResourceRequestQueue requestQueue ,
+                   PvlResourceModifier  modifier  )
+      throws CdbException , InterruptedException            {
+      say( "otherAction : "+modifier.getActionEvent() ) ;
+      
+      if( modifier instanceof PvlResourceKicker ){
+         say( "kicked");
+         return findNextFair( getPvrSet() , requestQueue ) ;
+      }else if( modifier instanceof PvlResourceTimer ){
+         String [] pvrNameList = _pvlDb.getPvrNames() ;
+         long   time  = 0 , idle = 0 ;
+         long   now   = System.currentTimeMillis() ;
+         for( int j = 0 ; j < pvrNameList.length ; j++ ){
+            String       pvrName     = pvrNameList[j] ;
+            PvrHandle    pvr         = _pvlDb.getPvrByName( pvrName ) ;
+            String []    driveNames  = pvr.getDriveNames() ;
+            DriveHandle  drive       = null ;
+            String status = null , cartridge = null ,
+                   owner  = null , action    = null ;
+            for( int i = 0 ; i < driveNames.length ; i++ ){
+               drive = pvr.getDriveByName( driveNames[i] ) ;
+               drive.open( CdbLockable.READ ) ;
+                  status    = drive.getStatus() ;
+                  cartridge = drive.getCartridge() ;
+                  action    = drive.getAction() ;
+                  time      = drive.getTime() ;
+                  idle      = drive.getIdleTime() * 1000 ;
+                  owner     = drive.getOwner() ;
+               drive.close( CdbLockable.COMMIT ) ;
+               say( "check : "+driveNames[i]+
+                    ";s="+status+
+                    ";c="+cartridge+
+                    ";a="+action+
+                    ";o="+owner+
+                    ";t="+time+
+                    ";idle="+idle+
+                    ";now-time="+(now-time) ) ;
+               if( ( status.equals("enabled")     ) &&
+                    ( action.equals("none")       ) &&
+                    ( owner.equals("-" )          ) &&
+                    ( ! cartridge.equals("empty") ) &&
+                    ( ( now - time ) > idle      ) ){
+
+                    return 
+                        new PvlDismountModifier(
+                                  pvrName ,
+                                  driveNames[i] ,
+                                  cartridge ) ;
+                }
+            }
+         }
+      }
+          
+      
+      return null ;
+   }
 
 }
