@@ -15,7 +15,10 @@ import dmg.cells.applets.login.* ;
 
 public class      DriveDisplayPanel 
        extends    Panel      
-       implements DomainConnectionListener , ActionListener, Runnable   {
+       implements DomainConnectionListener , 
+                  DomainEventListener ,
+                  ActionListener, 
+                  Runnable   {
        
      private DomainConnection _connection = null ;
      private Panel     _buttons  ;
@@ -119,6 +122,7 @@ public class      DriveDisplayPanel
         center.add( _driveList ) ;
         add( center , "Center" ) ;
 //        add( _textArea , "Center" ) ;
+        _connection.addDomainEventListener( this ) ;       
      }      
     public void domainAnswerArrived( Object obj , int id ){
     
@@ -271,6 +275,15 @@ public class      DriveDisplayPanel
     }
 
   }
+   public void connectionOpened( DomainConnection connection ){
+      System.out.println("Connection established" ) ;
+   }
+   public void connectionClosed( DomainConnection connection ){
+      System.out.println("Connection closed" ) ;
+   }
+   public void connectionOutOfBand( DomainConnection connection ,
+                                    Object subject                ){
+   }
 
 }
  
