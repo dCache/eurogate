@@ -68,7 +68,7 @@ keyBase=${thisDir}
 #
 #     jobs/eurogate start
 #
-databaseRoot=/export/home/patrick/eurogateDb
+databaseRoot=/export/home/eurogate/db
 #
 #   - The log directory
 #   -----------------
@@ -77,7 +77,7 @@ databaseRoot=/export/home/patrick/eurogateDb
 #  If not defined or if it doesn't exist,
 #  everything will go to /dev/null.
 #
-logdir=/tmp
+logdir=/export/home/eurogate/logs
 #
 #    - The java classes
 #    -----------------
@@ -90,7 +90,7 @@ logdir=/tmp
 #  file.
 #  
 jardir=${thisDir}/../bin
-eurogateClasses=/home/martin/cvs-eurogate:${thisDir}/../..
+eurogateClasses=/home/martin/takenByEurogate:${thisDir}/../..
 #
 #    - The movers
 #    -----------------
