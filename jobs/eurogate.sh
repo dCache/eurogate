@@ -148,7 +148,7 @@ eugateStart() {
    # 
    # we need some variables
    #
-#   checkVar poolBase ftpPort vspPort || exit $?
+   #   checkVar poolBase ftpPort vspPort || exit $?
    #
    #
    #  run the spy server if we can find the spyPort
@@ -185,7 +185,7 @@ eugateStart() {
    fi
    #
    echo "Trying to start Eurogate"
-   echo -n "Please wait ... "
+   printf "Please wait ... "
    #
    ( ! eugateCheck ) || ( echo "System already running" ; exit 4 ; ) || exit $?
    #
@@ -196,7 +196,7 @@ eugateStart() {
             -batch $BATCHFILE  \
             $SPY_IF_REQUESTED  >$LOGFILE 2>&1 &
    sleep 5
-   echo -n ". "
+   printf ". "
    $SSH -p $sshPort -o "FallBackToRsh no" localhost <<!  2>/dev/null | grep Active
       ps -f
       exit
