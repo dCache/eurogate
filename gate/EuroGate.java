@@ -134,6 +134,10 @@ public class EuroGate extends CellAdapter implements Runnable {
           }
        
        }else if( obj instanceof StoreRequest ){
+          StoreRequest sr = (StoreRequest)obj ;
+          if( sr.getCommand().equals("get-bfid") ){
+              
+          }
        }else if( obj instanceof NoRouteToCellException ){
           esay( "Cell couldn't be reached : "+obj.toString() ) ;
        }
