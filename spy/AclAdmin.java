@@ -15,23 +15,42 @@ public class      AclAdmin extends CommandInterpreter {
     private String      _user ;
     private CellPath    _cellPath  = new CellPath( "AclCell" ) ;
     private CellShell   _cellShell = null ;
+    private boolean     _wasAdmin  = false ;
     public AclAdmin( String user , CellNucleus nucleus , Args args ){
-       _nucleus = nucleus ;
-       _user    = user ;
+       _nucleus  = nucleus ;
+       _user     = user ;
+       _wasAdmin = _user.equals("admin");
        for( int i = 0 ; i < args.argc() ; i++ )
           _nucleus.say( "arg["+i+"]="+args.argv(i) ) ;
           
     }
-    public String getPrompt(){ return "Acl("+_user+") >> " ; }
+    public String getPrompt(){ return _cellPath.getCellName()+"("+_user+") >> " ; }
     private void say( String str ){ _nucleus.say( str ) ; }
     private void esay( String str ){ _nucleus.esay( str ) ; }
     public String getHello(){
       return "\n    Welcome to AclAdmin for Eurogate (user="+_user+")\n\n" ;
     }
+    public String hh_id = "[<newId>]" ;
     public String ac_id_$_0_1( Args args )throws Exception {
-       if( args.argc() == 1 )
-         _user = args.argv(0) ;
-       return _user + "\n" ;
+          
+       if( args.argc() == 1 ){
+            if( ( ! _user.equals("admin") ) && ( ! _wasAdmin ) )
+                 throw new 
+                 IllegalArgumentException( "Not allowed" ) ;
+           _user = args.argv(0) ;
+           return "" ;
+       }else{
+           return _user+"\n" ;
+       }
+    }
+    public String hh_cd = "<destinationCell>" ;
+    public String ac_cd_$_1( Args args )throws Exception {
+       _cellPath = new CellPath(args.argv(0));
+       return "" ;
+    }
+    public String hh_pwd = "" ;
+    public String ac_pwd_$_0( Args args )throws Exception {
+       return _cellPath.toString() + "\n" ;
     }
     public Object executeCommand( String str ) throws Exception {
        String tr = str.trim() ;
