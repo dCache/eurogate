@@ -240,7 +240,7 @@ public class      RelationExplorer
           
           _setup = (String)x.get("RE-setup") ;
        }
-       private void sendCommand( String command ){
+       protected void sendCommand( String command ){
           sendCommand( command , _state ) ;
        }
     }
@@ -291,7 +291,7 @@ public class      RelationExplorer
              return ;
           }
        } 
-       private void sendCommand( String command ){
+       protected void sendCommand( String command ){
           sendCommand( command , _state ) ;
        }
     }
@@ -305,17 +305,17 @@ public class      RelationExplorer
        private void addActionListener( ActionListener actionListener ){
           _actionListener = actionListener ; 
        }
-       private void requestFailed( String errorMessage ){
+       protected void requestFailed( String errorMessage ){
           if( _actionListener != null )
              _actionListener.actionPerformed( new ActionEvent( this , 0 , errorMessage ) ) ;
        }   
-       private void requestDone(){
+       protected void requestDone(){
 //          _jumpingPigs.setProgressBar( 0.99 ) ;
           if( _actionListener != null )
              _actionListener.actionPerformed( 
                 new ActionEvent( this , 0 , null ) ) ;
        }   
-       private void sendCommand( String command , int state ){
+       protected void sendCommand( String command , int state ){
           System.out.println("Sending : "+command);
           try{ Thread.currentThread().sleep(500) ; }catch(Exception ee){}
           try{
