@@ -133,6 +133,7 @@ public class EuroGate extends CellAdapter implements Runnable {
              returnMoverOK( req ) ;
           }
        
+       }else if( obj instanceof StoreRequest ){
        }else if( obj instanceof NoRouteToCellException ){
           esay( "Cell couldn't be reached : "+obj.toString() ) ;
        }
@@ -187,6 +188,18 @@ public class EuroGate extends CellAdapter implements Runnable {
           kill() ;
        }
 
+    }
+    public String ac_get_volume_by_bfid_$_1( Args args )
+           throws CommandException                      {
+       String id    = args.argv(0) ;
+       String store = args.argv(1) ;
+       String bfid  = args.argv(2) ;
+       pin(  "get-bfid : "+id+" "+store+" "+bfid ) ;
+       
+       StoreRequest request = 
+           new StoreRequest("get-bfid" , id , store , bfid      ) ;
+       sendIt( request ) ;
+       return null ;
     }
     public String ac_SESSION_WELCOME_$_1( Args args ){
        pin(  "Session created : Version = "+args.argv(0) ) ;
@@ -275,6 +288,23 @@ public class EuroGate extends CellAdapter implements Runnable {
     
     }
     private void sendIt( RequestImpl shuttle )throws CommandException {
+        try{
+           synchronized( _ioLock ){
+              _state = "sendRequest" ;
+              CellPath path = new CellPath( shuttle.getStore()+"-store" ) ;
+              say( "Sending request to "+path ) ;
+              sendMessage( new CellMessage( path , shuttle ) ) ;
+           }
+        }catch( NoRouteToCellException nrtc ){
+            throw new 
+            CommandException( 4 , "Store not found " ) ;
+        }catch( Exception e ){
+            throw new 
+            CommandException( 5 , "Problem sending 'put' request : "+e ) ;
+        
+        }         
+    }
+    private void sendIt( StoreRequest shuttle )throws CommandException {
         try{
            synchronized( _ioLock ){
               _state = "sendRequest" ;

@@ -7,5 +7,6 @@ public interface EuroCompanion {
     public String  getBfid() ;
     public long    getSize() ;
     public int     getReturnCode() ;
+    public String  getReturnMessage() ;
     
 }

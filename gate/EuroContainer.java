@@ -4,7 +4,14 @@ package eurogate.gate ;
       private String _dir ; 
       private String _from ;
       private String _to ;
+      private String _param = null;
       private EuroCompanion _ec = null ;
+      EuroContainer( String dir , String from , String to , String param ){
+        _dir   = dir ;
+        _from  = from ;
+        _to    = to ;
+        _param = param ;
+      }
       EuroContainer( String dir , String from , String to ){
         _dir   = dir ;
         _from  = from ;
@@ -18,6 +25,7 @@ package eurogate.gate ;
       String getFilename(){ return _dir.equals("put") ? _from : _to ; }
       String getBfid(){ return _from ; }
       String getGroup(){ return _to ; }
+      String getParam(){ return _param ; }	
       
       public String toString(){
         if( _dir.equals("put") ){
