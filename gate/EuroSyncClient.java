@@ -130,7 +130,7 @@ public class EuroSyncClient implements Runnable {
 
                      now = (int)(  rest > (long)data.length ? data.length : rest ) ;
                      count = _in.read( data , 0 , now ) ;
-                     if(_debug)System.err.println( "Got : "+count ) ; 
+//                     if(_debug)System.err.println( "Got : "+count ) ; 
                      if( count <= 0 )break ;
                      fileOut.write( data , 0 , count ) ;
                      rest -= count ;

@@ -1,7 +1,7 @@
 #
 #  specify the printout levels 
 #
-set printout default     none 
+set printout default     all 
 set printout CellGlue    none 
 set printout RoutingMgr  none
 #
