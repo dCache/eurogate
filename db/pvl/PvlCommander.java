@@ -43,7 +43,7 @@ public class   PvlCommander  {
   public String hh_create_pvr = "<pvrName>" ;
   public String ac_create_pvr_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
-     checkPermission( args , "pvr.*.create" ) ;
+     checkPermission( args , "pvl.pvl.admin" ) ;
      _pvlDb.createPvr( args.argv(0) ) ;
      return "Pvr created : "+args.argv(0) ;
   }
@@ -80,7 +80,7 @@ public class   PvlCommander  {
      String selection = (String)hash.get( "sel" ) ;
      if( selection == null )selection="" ;
 
-     checkPermission( args , "pvr."+pvrName+".modify" ) ;
+     checkPermission( args , "pvr."+pvrName+".admin" ) ;
      
      PvrHandle pvr = _pvlDb.getPvrByName( pvrName ) ;
      
@@ -225,7 +225,7 @@ public class   PvlCommander  {
      PvrHandle   pvr       = _pvlDb.getPvrByName( pvrName ) ;
      DriveHandle drive     = pvr.getDriveByName( driveName ) ;
 
-     checkPermission( args , "pvr."+pvrName+".modify" ) ;
+     checkPermission( args , "drive."+pvrName+"."+driveName+".support" ) ;
      
      String value = null ;
      drive.open(CdbLockable.WRITE) ;
@@ -289,7 +289,7 @@ public class   PvlCommander  {
                 "<cartridgeDescriptorName> -type=<cartridgeType>" ;
   public String ac_create_cartridgeDescriptor_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
-     checkPermission( args , "pvl.*.modify" ) ;
+     checkPermission( args , "pvl.pvl.admin" ) ;
      Hashtable hash = fillHash( _defaultHash , args ) ;
      String type = (String)hash.get( "type" ) ;
      if( type == null )
@@ -327,7 +327,7 @@ public class   PvlCommander  {
   public String hh_create_volumeDescriptor = "<volumeDescriptorName> -size=<size>" ;
   public String ac_create_volumeDescriptor_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
-     checkPermission( args , "pvl.*.modify" ) ;
+     checkPermission( args , "pvl.pvl.admin" ) ;
      Hashtable hash = fillHash( _defaultHash , args ) ;
      String sizeStr = (String)hash.get( "size" ) ;
      if( sizeStr == null )
@@ -386,7 +386,7 @@ public class   PvlCommander  {
         IllegalArgumentException( "-cart=<cartridge> not specified" ) ;
      String position = (String)hash.get( "position" ) ;
        
-     checkPermission( args , "pvr."+pvrName+".modify" ) ;
+     checkPermission( args , "pvl.pvl."+pvrName+".support" ) ;
         
      VolumeHandle volume = 
          _pvlDb.createVolume( pvrName , 
@@ -501,7 +501,7 @@ public class   PvlCommander  {
         throw new 
         IllegalArgumentException( "-cd=<cartridgeDescriptor> not specified" ) ;
         
-     checkPermission( args , "pvr."+pvrName+".modify" ) ;
+     checkPermission( args , "pvr."+pvrName+".operate" ) ;
      String cart = args.argv(0) ;
      
      ItemRange range = new ItemRange( cart ) ;
@@ -624,7 +624,7 @@ public class   PvlCommander  {
   public String ac_create_volumeSet_$_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
      Hashtable hash = fillHash( _defaultHash , args ) ;
-     checkPermission( args , "pvl.*.modify" ) ;
+     checkPermission( args , "pvl.pvl.support" ) ;
      _pvlDb.createVolumeSet( args.argv(0) ) ;
      return "VolumeSet created : "+args.argv(0) ;
   }
@@ -636,7 +636,7 @@ public class   PvlCommander  {
      if( vsName == null )
         throw new IllegalArgumentException( "-vs=<volumeSet> not specified" ) ;
 
-     checkPermission( args , "pvl.*.modify" ) ;
+     checkPermission( args , "vs.pvl."+vsName+".support" ) ;
 
      VolumeSetHandle volumeSet = _pvlDb.getVolumeSetByName( vsName ) ;
      VolumeHandle    volume    = _pvlDb.getVolumeByName( args.argv(0) ) ;
@@ -647,14 +647,20 @@ public class   PvlCommander  {
   }
   public String hh_set_volume = "<volumeName> -status=<status>" ;
   public String ac_set_volume_$_1( Args args )throws Exception {
-     if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
+     if( _pvlDb == null )
+         throw new 
+         IllegalArgumentException( "Database not open" ) ;
      
      VolumeHandle    volume    = _pvlDb.getVolumeByName( args.argv(0) ) ;
+     volume.open(CdbLockable.READ ) ;   
+        String pvrName = volume.getPvr() ; 
+     volume.close(CdbLockable.COMMIT) ;     
+     
+     checkPermission( args , "pvl.pvl."+pvrName+".operate" ) ;
      
      String status = args.getOpt("status") ;
      if( status == null )return "Set volume to ?what?" ;
  
-     checkPermission( args , "pvl.*.modify" ) ;
     
      volume.open(CdbLockable.WRITE ) ;   
         volume.setStatus( status ) ; 

@@ -232,17 +232,17 @@ public class PvlCommanderV1 {
         String []    driveNames  = pvr.getDriveNames() ;
         DriveHandle  drive       = null ;
         String       specific    = null ;
-        String       acl         = "pvr."+pvrName+".expert" ;
-        try{
-           checkPermission( args , acl ) ;
-        }catch( Exception eee){
-           error.append( pvrName ).
-                 append(" : you don't own ").
-                 append(acl).
-                 append("\n");
-           continue ;
-        }
         for( int i = 0 ; i < driveNames.length ; i++ ){
+           String acl = "drive."+pvrName+"."+driveNames[i]+".operate" ;
+           try{
+              checkPermission( args , acl ) ;
+           }catch( Exception eee){
+              error.append( pvrName ).
+                    append(" : you don't own ").
+                    append(acl).
+                    append("\n");
+              continue ;
+           }
            try{
               drive = pvr.getDriveByName( driveNames[i] ) ;
               drive.open( CdbLockable.WRITE ) ;
@@ -285,7 +285,7 @@ public class PvlCommanderV1 {
        String pvrName   = args.argv(0) ;
        String driveName = args.argv(1) ;
        
-       checkPermission( args , "pvr."+pvrName+".expert" ) ;
+       checkPermission( args , "drive."+pvrName+"."+driveName+".expert" ) ;
        PvrHandle pvr = null ;
        try{
           pvr = _pvlDb.getPvrByName( pvrName ) ;
@@ -323,7 +323,7 @@ public class PvlCommanderV1 {
    public String ac_deallocate_$_2(Args args ) throws Exception {
        String pvrName   = args.argv(0) ;
        String driveName = args.argv(1) ;
-       checkPermission( args , "pvr."+pvrName+".expert" ) ;
+       checkPermission( args , "drive."+pvrName+"."+driveName+".expert" ) ;
        
        PvrHandle pvr = null ;
        try{
@@ -415,7 +415,7 @@ public class PvlCommanderV1 {
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
       String      cartName  = args.argv(2) ;
-      checkPermission( args , "pvr."+pvrName+".expert" ) ;
+      checkPermission( args , "drive."+pvrName+"."+driveName+".expert" ) ;
 
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
@@ -442,7 +442,6 @@ public class PvlCommanderV1 {
    public String ac_dismount_$_2_99( Args args )throws Exception {
 
       String      pvrName = args.argv(0) ;
-      checkPermission( args , "pvr."+pvrName+".manageDrives" ) ;
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       args.shift() ;
       StringBuffer error  = new StringBuffer() ;
@@ -450,6 +449,8 @@ public class PvlCommanderV1 {
       for( int i = 0 ; i < d ; i++ ){
           String      driveName = args.argv(0) ;
           try{
+            checkPermission( args , 
+                             "drive."+pvrName+"."+driveName+".operate" ) ;
             DriveHandle drive   = pvr.getDriveByName( driveName ) ;
 
             drive.open( CdbLockable.WRITE ) ;
@@ -477,7 +478,7 @@ public class PvlCommanderV1 {
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
       String      cartName  = args.argv(2) ;
-      checkPermission( args , "pvr."+pvrName+".expert" ) ;
+      checkPermission( args , "drive."+pvrName+"."+driveName+".expert" ) ;
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
       
@@ -509,7 +510,7 @@ public class PvlCommanderV1 {
 
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
-      checkPermission( args , "pvr."+pvrName+".expert" ) ;
+      checkPermission( args , "drive."+pvrName+"."+driveName+".expert" ) ;
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
       
@@ -532,7 +533,7 @@ public class PvlCommanderV1 {
 
       String      pvrName   = args.argv(0) ;
       String      driveName = args.argv(1) ;
-      checkPermission( args , "pvr."+pvrName+".expert" ) ;
+      checkPermission( args , "drive."+pvrName+"."+driveName+".expert" ) ;
       PvrHandle   pvr     = _pvlDb.getPvrByName( pvrName ) ;
       DriveHandle drive   = pvr.getDriveByName( driveName ) ;
       
@@ -558,7 +559,7 @@ public class PvlCommanderV1 {
    public String hh_enable = "<pvr> [<drive1> [ <drive2>...]]" ;
    public String ac_enable_$_1_99( Args args )throws Exception {
       String      pvrName   = args.argv(0) ;
-      checkPermission( args , "pvr."+pvrName+".manageDrives" ) ;
+      checkPermission( args , "drive."+pvrName+".operate" ) ;
    
       args.shift() ;
 
@@ -568,7 +569,7 @@ public class PvlCommanderV1 {
    public String hh_disable = "<pvr> [<drive1> [ <drive2>...]]" ;
    public String ac_disable_$_1_99( Args args )throws Exception {
       String      pvrName   = args.argv(0) ;
-      checkPermission( args , "pvr."+pvrName+".manageDrives" ) ;
+      checkPermission( args , "drive."+pvrName+".operate" ) ;
    
       args.shift() ;
 
