@@ -42,7 +42,7 @@ public class      PingPanel
            if( ok  && ! _isOk ){
               setBackground( Color.green ) ;
            }else if( ! ok ){
-              if( ! _isOk )setBackground( Color.red ) ;
+              if( _isOk )setBackground( Color.red ) ;
                _toolkit.beep() ;
            }
            _isOk = ok ;
