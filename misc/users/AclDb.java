@@ -5,16 +5,13 @@ import eurogate.misc.* ;
 
 public class AclDb {
 
-   private class AclItem {
+   private class AclItem implements AcDictionary {
        private String    _name     = null ;
        private Hashtable _users    = new Hashtable() ;
        private String    _inherits = null ;
        private AclItem( String name ){ _name = name ; }
        private void setInheritance( String aclItem ){
            _inherits = aclItem ;
-       }
-       private String getInheritance(){
-           return _inherits ;
        }
        private void addAccess( String user , boolean access ){
            _users.put( user , new Boolean(access) ) ;
@@ -31,6 +28,20 @@ public class AclDb {
            if( _users.get( user ) == null )
               _users.put( user , access ) ;
        }
+       //
+       // the AcDictionary interface
+       //
+       public Enumeration getPrincipals(){
+           return _users.keys() ;
+       }
+       public boolean getPermission( String principal ){
+           Boolean ok = (Boolean)_users.get(principal) ;
+           if( ok == null )
+              throw new NoSuchElementException(principal) ;
+           return ok.booleanValue() ;
+       }
+       public boolean isResolved(){ return _inherits == null ; }
+       public String getInheritance(){ return _inherits ; }
    }
    private File      _aclDir = null ;
    private AgingHash _hash   = new AgingHash(20) ;
@@ -124,31 +135,31 @@ public class AclDb {
         } 
         return item ;
    }
-   public void createAclItem( String aclItem )
+   public synchronized void createAclItem( String aclItem )
           throws DatabaseException {
        putAcl( aclItem , new AclItem(aclItem) ) ;
    }
-   public void removeAclItem( String aclItem )
+   public synchronized void removeAclItem( String aclItem )
           throws DatabaseException {
       _hash.remove( aclItem ) ;
       new File( _aclDir , aclItem ).delete() ;
       return  ;
    }
-   public void setInheritance( String aclItem , String inheritsFrom)
+   public synchronized void setInheritance( String aclItem , String inheritsFrom)
           throws DatabaseException {
        AclItem item = getAcl( aclItem ) ;
        item.setInheritance( inheritsFrom ) ;
        putAcl( aclItem , item ) ;
        return ;
    }
-   public void addAllowed( String aclItem , String user )
+   public synchronized void addAllowed( String aclItem , String user )
           throws DatabaseException {          
        AclItem item = getAcl( aclItem ) ;
        item.addAccess( user , true ) ;
        putAcl( aclItem , item ) ;
        return ;
    }
-   public void addDenied( String aclItem , String user )
+   public synchronized void addDenied( String aclItem , String user )
           throws DatabaseException {
           
        AclItem item = getAcl( aclItem ) ;
@@ -156,13 +167,19 @@ public class AclDb {
        putAcl( aclItem , item ) ;
        return ;
    }
-   public void removeUser( String aclItem , String user )
+   public synchronized void removeUser( String aclItem , String user )
           throws DatabaseException {
           
        AclItem item = getAcl( aclItem ) ;
        item.removeUser( user ) ;
        putAcl( aclItem , item ) ;
        return ;
+   }
+   public AcDictionary getPermissions( String aclName , boolean resolve )
+          throws NoSuchElementException{
+          
+        return resolve ? _resolveAclItem( aclName ) : getAcl( aclName ) ;
+      
    }
    private AclItem _resolveAclItem( String aclItem )
            throws NoSuchElementException{
@@ -178,15 +195,18 @@ public class AclDb {
           }
           item = inItem ;
        }
+       item.setInheritance(null);
        return item ;     
    }
-   public boolean check( String aclItem , 
+   public synchronized boolean check( String aclItem , 
                          String user , 
-                         UserRelationable relations )
-           throws NoSuchElementException{
-           
-       AclItem item = _resolveAclItem( aclItem ) ;
-       return _check( item , user , relations ) ;   
+                         UserRelationable relations ){
+       try{    
+          AclItem item = _resolveAclItem( aclItem ) ;
+          return _check( item , user , relations ) ;
+       }catch(Exception e){
+          return false ;
+       }   
    }
    private boolean _check( AclItem item , 
                            String user , 
