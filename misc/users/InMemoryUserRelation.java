@@ -27,6 +27,9 @@ public class InMemoryUserRelation implements UserRelationable {
       private Enumeration children(){ 
           return _childs == null ? new DEnumeration() : _childs.keys() ;
       }
+      private boolean hasChildren(){
+         return ( _childs != null ) && ( _childs.size() > 0 ) ;
+      }
       private boolean isParent(String parent){
           return ( _parents != null ) && ( _parents.get(parent)!=null ) ;
       }
@@ -52,9 +55,35 @@ public class InMemoryUserRelation implements UserRelationable {
    }
    public synchronized Enumeration getContainers() {
       //
-      // falsch falsch falsch
+      // anonymous class with 'instance initialization'
+      // We copy the data first to reduct the probability 
+      // of currupted information.
+      // Warning : This interface doesn't distiguish between
+      //           groups and users. As a result the only 
+      //           way to identify a user is to make sure
+      //           that is has no children which could be
+      //           an empty group as well. ( So what ??? )
       //
-      return _elements.keys() ;
+      return new Enumeration(){
+        private Enumeration _ee = null ;
+        { 
+           Enumeration xx = _elements.keys() ;
+           Vector      v  = new Vector() ;
+           while( xx.hasMoreElements() ){
+              String name = (String) xx.nextElement() ;
+              ElementItem ee  = (ElementItem)_elements.get(name) ;
+              if( ee == null )continue ;
+              if( ee.hasChildren() )v.addElement(name) ;
+           }
+           _ee = v.elements() ;
+        }
+        public boolean hasMoreElements(){ 
+          return _ee.hasMoreElements() ;
+        }
+        public Object nextElement(){ 
+          return _ee.nextElement() ;
+        }
+      } ;
    }
    public synchronized Enumeration getParentsOf( String element )
           throws NoSuchElementException {
