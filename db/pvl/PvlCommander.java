@@ -670,16 +670,9 @@ public class   PvlCommander  {
   private Hashtable fillHash( Hashtable def , Args args ){
      Hashtable hash = def == null ? new Hashtable() : (Hashtable)def.clone() ;
      for( int i = 0 ; i < args.optc() ; i++ ){
-        String opt = args.optv(i) ;
-        int pos = opt.indexOf( '=' ) ;
-        if( pos < 0 ){
-          hash.put( opt.substring(1) , "") ;
-          continue ;
-        }
-        String key = opt.substring(1,pos) ;
-        String value = opt.substring( pos+1 ) ;
-        if( ( key.length() < 1 ) || ( value.length() < 1 ) )continue ;
-        hash.put( key , value ) ;
+        String key = args.optv(i) ;
+        String val = args.getOpt(key) ;
+        hash.put( key , val == null ? "" : val ) ;
      }
      return hash ;
   }
