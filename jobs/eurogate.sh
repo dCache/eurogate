@@ -188,7 +188,7 @@ eugateStart() {
    printf "Please wait ... "
    #
    eugateCheck
-   if [ $? -ne 0 ] ; then
+   if [ $? -eq 0 ] ; then
       echo "System already running" 
       exit 4 
    fi
