@@ -91,6 +91,8 @@ static char     rcsid[] = "";
 #define TSEP ' '
 #define TQUOTE '"'
 
+#define MAX_UTF_LEN 2040
+
 #define MAX_MOUNT_SECS 10
 #define MAX_DISMOUNT_SECS 14
 
@@ -116,6 +118,11 @@ typedef struct AsyncOP {
   struct AsyncOP *prev;  /* to manage with ADD... */
   struct AsyncOP *next;
 } AsyncOP;
+
+typedef struct UTFMessage {
+  unsigned short len;
+  char           buf[2046];
+} UTFM;
 
 static AsyncOP *AHead = NULL;
 static AsyncOP *ATail = NULL;
@@ -176,7 +183,8 @@ void LOG(int level, char *fmt, ...)
 #endif
 {
   va_list args;
-  char buf[512], *ptr;
+  char /*buf[512],*/ *ptr;
+  UTFM um;
   int len;
 
   if (level <= logLevel)
@@ -193,17 +201,17 @@ void LOG(int level, char *fmt, ...)
   fprintf(stderr, "\n");
 #endif
 
-  (void) sprintf(buf, "log %d \"(%s) ", level, hwInfo); 
-  ptr = &buf[strlen(buf)]; 
+  (void) sprintf(um.buf, "log %d \"(%s) ", level, hwInfo); 
+  ptr = &um.buf[strlen(um.buf)]; 
   (void) vsprintf(ptr, fmt, args); 
-  len = strlen(buf); 
-  if (buf[len - 1] == '\n') 
-    buf[(len--) - 1] = '\0'; 
-  buf[len++] = '"'; buf[len] = '\0'; 
+  len = strlen(um.buf); 
+  if (um.buf[len - 1] == '\n') 
+    um.buf[(len--) - 1] = '\0'; 
+  um.buf[len++] = '"'; um.buf[len] = '\0'; 
 
   /* sent log messages to PVL proxy */
   if (logIn >= 0 && pvlSock >= 0) {
-    unsigned short nlen;
+    /*unsigned short nlen;*/
 
 #if 0  /* see above */
     (void) sprintf(buf, "log %d \"(%s) ", level, hwInfo);
@@ -215,19 +223,25 @@ void LOG(int level, char *fmt, ...)
     buf[len++] = '"'; buf[len] = '\0';
 #endif
 
-    nlen = htons(len);
-    if (len > 0) {
-      int fd = (masterProc == TRUE) ? pvlSock : logIn;
+    if (len > 0 && len <= MAX_UTF_LEN) {
+      int fd;
+
+      um.len = htons(len);
+      fd = (masterProc == TRUE) ? pvlSock : logIn;
+#if 0
       (void) write(fd, &nlen, 2);
       (void) write(fd, buf, len);
+#else
+      (void) write(fd, &um, len + sizeof(unsigned short));
+#endif
     }
   }
 
   if (becomeDaemon == FALSE) { /* sent also to stdout if not a daemon */ 
     if (level == ESPVR_INFO) { 
-      printf("%s: %s\n", time2str(NULL), buf); fflush(stdout); 
+      printf("%s: %s\n", time2str(NULL), um.buf); fflush(stdout); 
     } else { 
-      fprintf(stderr, "%s: %s\n", time2str(NULL), buf); 
+      fprintf(stderr, "%s: %s\n", time2str(NULL), um.buf); 
     } 
   }
 
@@ -235,7 +249,7 @@ void LOG(int level, char *fmt, ...)
   if (_logFile != NULL) { 
     FILE *f = fopen(_logFile, "a+"); 
     if (f != NULL) { 
-      fprintf(f, "%s: %s\n", time2str(NULL), buf); 
+      fprintf(f, "%s: %s\n", time2str(NULL), um.buf); 
       fclose(f); 
     } 
   }
@@ -247,15 +261,21 @@ void LOG(int level, char *fmt, ...)
 int ForwardMessage(char *msg) {
   int len = strlen(msg);
   unsigned short nlen;
+  UTFM um;
 
   if (masterProc == TRUE || logIn < 0)  /* no way */
     return(-1);
-  if (len <= 0)
+  if (len <= 0 || len > MAX_UTF_LEN)
     return(0);
-  nlen = htons(len);
-  
+  um.len = htons(len);
+  memcpy(um.buf, msg, len);
+#if 0
   if (write(logIn, &nlen, 2) != 2 ||
       write(logIn, msg, len) != len)
+#else
+  if (write(logIn, &um, len + sizeof(unsigned short)) != 
+      (len + sizeof(unsigned short)))
+#endif
     return(-1);
   return(0);
 }
@@ -357,12 +377,18 @@ static int readUTF(int fd, char *buff, int len) {
 }
 
 static int writeUTF(int fd, char *str) {
+  UTFM um;
   unsigned short len = strlen(str);
-  unsigned short nlen = htons(len);
 
-  if (len > 0) {
+  if (len > 0 && len < MAX_UTF_LEN) {
+    um.len = htons(len);
+    memcpy(um.buf, str, len);
+#if 0
     if (write(fd, &nlen, 2) != 2 ||
         write(fd, str, len) != len) {
+#else
+    if (write(fd, &um, len + 2) != (len + 2)) {
+#endif
       LOG(ESPVR_FATAL, "writeUTF: write error %d (%s)",
 	  errno, strerror(errno));
       return(-1);
@@ -789,6 +815,7 @@ static void dispatch() {
   int ntok, ret;
   char *tok[MAX_TOKENS];
   char buf[2048];
+  UTFM um;
   fd_set fdset;
   int maxfd;
 
@@ -822,12 +849,17 @@ static void dispatch() {
 
     /* fd is readable !!! */
 
+    /* Check on LOG message to forward (to PVL) */
     if (FD_ISSET(logOut, &fdset)) {  /* log message to forward */
-      if ((ret = readUTF(logOut, buf, 2048)) > 0) {
-	int len = strlen(buf);
-	unsigned short nlen = htons(len);
+      if ((ret = readUTF(logOut, um.buf, MAX_UTF_LEN)) > 0) {
+	int len = strlen(um.buf);
+	um.len = htons(len);
+#if 0
 	(void) write(pvlSock, &nlen, 2);
 	(void) write(pvlSock, buf, len);
+#else
+	(void) write(pvlSock, &um, len + 2);
+#endif
       }
       continue;
     }

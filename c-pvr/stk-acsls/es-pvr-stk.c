@@ -5,7 +5,7 @@
  */
 
 #ifndef lint
-static char rcsid[] = "$Id: es-pvr-stk.c,v 1.1 1999-08-31 09:50:25 cvs Exp $";
+static char rcsid[] = "$Id: es-pvr-stk.c,v 1.2 1999-10-25 08:15:45 cvs Exp $";
 #endif
 
 #include <stdio.h>
@@ -389,6 +389,17 @@ retry:
 
   case STATUS_DRIVE_AVAILABLE:  /* it's already free FIXME check were it is */
     strcpy(volName, "EMPTY");
+    break;
+
+  case STATUS_LIBRARY_FAILURE:
+    if (retryCounter) {
+      retryCounter--;
+      LOG(ESPVR_WARNING, "acsDismount failed (LIBRARY_FAILURE) - retry");
+      goto retry;
+    } else {
+      LOG(ESPVR_FATAL, "acsDismount: retry exceeded; giving up");
+      goto failure;
+    }
     break;
 
   default:
