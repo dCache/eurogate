@@ -3,6 +3,10 @@
 <head><title>EuroGate start/stop</title></head>
 
 <body bgcolor=white>
+<pre>
+<a href=EuroGuide.html>The Eurogate Guide</a>     <a href=EuroRef.html>The Eurogate Reference</a>
+</pre>
+<hr>
 <h1>The Basics</h1>
 <h3>How to configure Eurostore HSM (CERN version only)</h3>
 <blockquote>
@@ -54,11 +58,18 @@ config file defines the two movers on eustore2.
    <pre>
    <i>On Eustore1</i>
    ./jobs/csc start
-   </pre>. These processes only need
+   </pre>
+   These processes only need
    to be started once after a machine reboot. There is no
    need to stop them even if Eurogate
    has been restarted. <i>Start the csc first and don't touch
    it afterwards.</i>
+   If the scripts complains about existing 'kill_files' 
+   run
+   <pre>
+   ./jobs/csc stop
+   ./jobs/csc start
+   </pre>
    <p><br><strong>The Eurogate Master Deamon (door,store,pvl)</strong><br>
    The Eurogate Master Deamon, running on eustore1 is launched
    by 
@@ -79,7 +90,7 @@ config file defines the two movers on eustore2.
    ./jobs/pvr start
    </pre>
    This process will be terminate on shutdown of the master deamon
-   (see Stopping Eurogate).
+   (see <a href=#terminating>Terminating Eurogate</a>).
    <p><br><strong>The Data Movers</strong><br>
    Both data movers are running on eustore2 because the 9840 drives
    are connected to that machine. The directory structure
@@ -91,8 +102,23 @@ config file defines the two movers on eustore2.
    </pre>
    Similar to the pvr, the movers automatically shutdown if the
    master deamon on eustore1 is terminated.
+   <p><strong>Checking the Robot state</strong><br>
+   On startup the Eurogate servers must be synchronized with the
+   real state of the robotic system ( which cartridge in which drive). 
+   Unfortunately this must be done manually. After having started
+   all server it takes about a minute before the system reaches a
+   steady state. After that minute :...
+   <pre>
+   ./jobs/eurogate admin -l admin
+   #### type admin password here #####
+   .cd pvl
+   update
+   ls drive
+   logout
+   </pre>
 </blockquote>
 <hr>
+<a name="terminating"></a>
 <h3>Terminating <font color=blue>Eurogate</font> </h3>
 <blockquote>
 The whole system can be shut down at a single point, the
@@ -110,13 +136,15 @@ refuses to terminate. You should check with 'ps' if this
 is the case. Use 'kill ...' to make sure the server will finally stop.
 <p>
 If necessary, all subsystems can be separately terminated : 
-
+<p>
 <table border=1 bgcolor=eeff99>
 <tr><th>Subsystem</th><th>Host</th><th>Shutdown Command</th></tr>
 <tr><td>Pvr</td><td>eustore1</td><td>./jobs/pvr stop</td></tr>
 <tr><td>Movers</td><td>eustore2</td><td>./jobs/eustore stop</td></tr>
 <tr><td>Master Server</td><td>eustore1</td><td>./jobs/eustore stop</td></tr>
-<tr><td>Robot</td><td>eustore1</td><td>./jobs/csc stop (not necessary)</td></tr>
+<tr><td>Robot</td>
+    <td>eustore1</td>
+    <td>./jobs/csc stop (only on host shutdown)</td></tr>
 </table>
 </blockquote>
 </body>

@@ -1,12 +1,16 @@
-<html
+<html>
 <head><title>The Eurogate Authentication</title></head>
 <body bgcolor=white>
+<pre>
+<a href=EuroGuide.html>The Eurogate Guide</a>     <a href=EuroRef.html>The Eurogate Reference</a>
+</pre>
+<hr>
 <h1>The Eurogate Authentication</h1>
 <h3>First login</h3>
 <blockquote>
 User, Acl and Pvl administration are only possible 
 through a secure ssh (versionI) connection. The portnumber currently
-defined for the connection is <i>23126</I>.
+used for the connection is <i>23126</I>.
 As long as no additional user has been defined, only
 the user 'admin' will have access to the system.
 The eurogate ssh server allows the <i>idea</i> and the
@@ -36,8 +40,8 @@ echoed. The next CR resets the stream to echo mode again.
 <h3>Creating additional users.</h3>
 <blockquote>
 Eurogate provides fine grained administration and configuration
-control with the help of <i>Access control lists (ACL's)</i>.
-To make use of this feature, additional users with modified
+control with the help of <a href=AclIntro.html>Access control lists (ACL's)</a>.
+To make use of this feature, additional users or groups with modified
 access permission can be created.
 <p>
 <strong>Remark :</strong> The 'admin' user lives outside of all
@@ -51,12 +55,11 @@ A new user is created with the command :
 <pre>
 create user &lt;userName&gt;
 </pre>
-To create a user, the acl <i>user.*.create</i> is needed. 
-( See the chapter <i>Acls in Eurogate</i> for the meaning of Acl's ).
 For simplicity, we assume, we are working under the 'admin' account to create the
-first users.
+first users. Otherwise we first have to learn more about the
+Eurogate <a href=AclIntro.html>ACL's</a>.
 <p>
-Eurogate distinquishes between two different types of users.
+Eurogate distinguishes between two different types of users.
 <p><strong>Users already known to the local OS</strong><p>
 <blockquote>
 In this case, creating the user with 'create user ..' is sufficent to
@@ -69,14 +72,49 @@ need to be done with OS specific commands.
 <blockquote>
 In this case an inital password has to be set.
 <pre>
-set passwd -user=&lt;userName&gt; &lt;newPassword&gt; &lt;newPassword&gt;
+AclCell(admin) >> set passwd -user=&lt;userName&gt; &lt;newPassword&gt; &lt;newPassword&gt;
 </pre>
 Now the new user can login and may/should change his password with
 <pre>
-set passwd -old=&lt;oldPassword&gt; &lt;newPassword&gt; &lt;newPassword&gt;
+AclCell(userName) >> set passwd -old=&lt;oldPassword&gt; &lt;newPassword&gt; &lt;newPassword&gt;
 </pre>
 Remember to type CONTROL-i before typing the passwords.
 </blockquote>
+<p>
+After a new user has been create, he may login by
+<pre>
+on eustore1 :
+./jobs/eurogate admin -l &lt;userName&gt;  
 
+or from any other host ( ssh must be version I )
+
+ssh -p 23126 -c blowfish -l &lt;userName&gt; eustore1.cern.ch
+#### type user password ####
+</pre>
+All users other than 'admin' only have permission to perform
+query commands as long as the user name has not been added to
+the ACL associated with the requested command.
+</blockquote>
+<h3>Eurogate Login Modes</h3>
+<blockquote>
+The Eurogate Login Manager divides the command set into logical units
+to simply administration. 
+After being logged in, the prompt indicated the current active user name
+and mode of the session. 
+<pre>
+AclCell(admin) >>   for the admin user in acl mode, or
+pvl(admin) >>       for the admin user in pvl mode.
+</pre>
+The AclCell mode supports the administration of users, groups, ACL's
+and user passwords. The pvl mode administers the pvl, pvrs drives
+a.s.o..<p>
+At any time the modes can be switched with :
+<pre>
+AclCell(admin) >> .cd pvl      # for the pvl mode
+pvl(admin) >>     .cd AclCell  # for the acl mode
+AclCell(admin >> 
+</pre> 
+In both modes, the help command dumps a one line summary of the commands.
+'help' followed by the command displays a detailed description.
 </blockquote>
 </body>

@@ -1,0 +1,160 @@
+<html>
+<head><title>The Pvl Guide</title></head>
+<body bgcolor=white>
+<pre>
+<a href=EuroGuide.html>The Eurogate Guide</a>     <a href=EuroRef.html>The Eurogate Reference</a>
+</pre>
+<hr>
+<h1>The Pvl Guide</h1>
+The commands in this section are only available in <i>pvl</i> mode.
+<pre>
+.cd pvl
+</pre>
+<hr>
+<h4><font color=blue>'update'</font> Bringing Eurogate in sync with reality</h4>
+<blockquote>
+The update command queries all drives of all pvrs to
+get in sync with reality.
+</blockquote>
+<!--
+                 DISABLE    
+-->
+<hr>
+<h4><font color=blue>'disable'</font> Disabling drives</h4>
+<blockquote>
+<pre>
+disable &lt;pvr&gt; [&lt;driveName&gt;]
+needs ACL   pvr.&lt;pvr&gt;.manageDrives
+</pre>
+Disables a drive. The drive is disabled for further use. If the 
+drive is currently performing I/O the io part is finished, but
+the drive is not dismounted.
+</blockquote>
+<!--
+                 ENABLE    
+-->
+<hr>
+<h4><font color=blue>'enable'</font> Enables drives</h4>
+<blockquote>
+<pre>
+enable &lt;pvr&gt; [&lt;driveName&gt;]
+needs ACL   pvr.&lt;pvr&gt;.manageDrives
+</pre>
+Enables and resets a drive. The drive is resetted first and made available
+to the scheduler. All error states in the 'action' field are cleared.
+<br>
+<strong>NOTE : </strong>The disable/update/enable sequence is able to
+clear various error condition on drives.
+</blockquote>
+<!--
+                 DISMOUNT   
+-->
+<hr>
+<h4><font color=blue>'dismount'</font> Dismount drives</h4>
+<blockquote>
+<pre>
+dismount &lt;pvr&gt; [&lt;driveName&gt;]
+needs ACL   pvr.&lt;pvr&gt;.manageDrives
+</pre>
+This command sends an unload/dismount request to the specified drive.
+If the drive is in I/O mode, the request fails.
+</blockquote>
+<!--
+                 set drive -idle   
+-->
+<hr>
+<h4><font color=blue>'set drive -idle=&lt;idleTime&gt;</font> 
+ Sets drive idle time</h4>
+<blockquote>
+<pre>
+set drive -pvr=&lt;pvr&gt; [&lt;driveName&gt;] -idle=&lt;idleTime/sec&gt;
+needs ACL   pvr.&lt;pvr&gt;.modify
+</pre>
+This command defines the the number of seconds before the drive is
+unloaded and dismounted if no other request arrives within the interval.
+</blockquote>
+<!--
+                 set drive -sel="RPN" 
+-->
+<hr>
+<h4><font color=blue>'set drive -sel="&lt;Selection Expression RPN&gt;"</font> 
+ Sets drive selection regular expression</h4>
+<blockquote>
+<pre>
+set drive -pvr=&lt;pvr&gt; [&lt;driveName&gt;] -sel="&lt;regexpr&gt;"
+needs ACL   pvr.&lt;pvr&gt;.modify
+</pre>
+This command defines the regular expression which needs to become true
+to schedule a request to this drive. The reqular expression is checked
+agains the parameters provides with the I/O request. The expression has
+to be specified in <i>Reverse Polish Notation</i>. The following 
+objects are excepted :
+<ul>
+<li><strong>Quoted string : </strong>The string (without the quotes) is pushed on the stack.
+<li><strong>Dollared string : </strong>A string starting with a Dollar sign. This variable name
+    ( string without the dollar sign) is looked up in the variable dictionary
+    coming from the request. If the variable is found, the corresponding value
+    is pushed to the stack, otherwise an empty string is pushed on the stack.
+<li><strong>Simple string : </strong>If the string is found in the 
+     dictionary of the request the corresponding value is pushed on
+     the stack otherwise the variable itself is pushed.
+<li><strong>Operator : </strong>An operator which defines the operation
+     performed on the stack.
+     <ul>
+     <li><strong>== or ===</strong> Compares to strings. == is case sensitive,
+     === is not. As a result, the boolean true of false is pushed on the stack.
+     <li><strong>!= or !==</strong> Compares to strings. != is case sensitive,
+     !== is not. As a result, the boolean true of false is pushed on the stack.
+     <li><strong>&&</strong> Two boolean values are 'anded'
+     <li><strong>||</strong> Two boolean values are 'ored'
+     <li><strong>+</strong> Adds two strings. The concated string is pushed
+         on the stack.
+     <li><strong>!</strong> The top boolean value on the stack is negated.
+     </ul>
+</blockquote>
+<hr>
+<h4><font color=blue>'ls drive ...'</font> 
+    Lists all drives with various attributes</h4>
+<blockquote>
+<pre>
+ls drive [ -s -t ] 
+ls drive -pvr=&lt;pvr&gt; drive1 [ ... ]
+</pre>
+The first version of 'ls drive' displays all drives of all pvrs.
+The list contains drive name, pvr name, drive mode (enabled,disabled),
+cartridge in drive and the current action (mounting, loading ...)
+<ul>
+<li><strong>-s</strong> Displays only drive name, pvr name and
+    selection. 'regular expression'
+<li><strong>-t</strong> Displays the idle time of the drive.
+</ul>
+<pre>
+pvl(admin) >> ls -t drive
+drive0      enabled     empty       stk     -       none        12.21.27
+drive1      enabled     empty       stk     -       none        07.13.46        
+</pre>
+The second version of the 'ls drive' command displays ALL 
+attributes of the specified drive. In this case the specification 
+of the pvrName is mandatory. More than one drive of the associated
+pvr can be listed.
+<pre>
+pvl(admin) >> ls drive -pvr=stk drive0
+Invariants
+     Drive Name : drive0
+     Robot View : 0:3:9:3
+    Device Name : /eagle/d00
+      Idle Time : 0
+      Selection : 1 1 ==
+       maxBlock : 0
+       minBlock : 0
+      bestBlock : 0
+Variants
+         Status : enabled
+         Action : none
+      Cartridge : empty
+          Owner : -
+    Last Access : 12.21.27                                                      
+</pre>
+</blockquote>
+</body>
+</html>

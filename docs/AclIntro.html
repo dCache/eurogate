@@ -1,6 +1,10 @@
 <html>
 <head><title>Access Control Lists</title></head>
 <body bgcolor=white>
+<pre>
+<a href=EuroGuide.html>The Eurogate Guide</a>     <a href=EuroRef.html>The Eurogate Reference</a>
+</pre>
+<hr>
 <h1>Access Control Lists</h1>
 <h3>Introduction</h3>
 Access Control Lists (<i>ACL's</i>) are a common way to control
@@ -94,14 +98,30 @@ The following commands realize exactly this scheme. Although
 these commands could be delegated to other users, we assume that
 we are currently holding the 'admin' account.
 <pre>
+#
+#  we need to create the acl first.
+#
+create acl pvr.stk.manageDrives
+create acl pvr.stk.modify
+#
+#  create the groups
+#
 create group experts
 create group operating
+#
+#  add the groups to the related ACL's
+#
 add access -allowed pvr.stk.manageDrives operating
 add access -allowed pvr.stk.modify  experts
+#
+#  add users to the different groups.
+#
+add snoopy to experts
+add magnum to operating
 </pre>
 So, all users added to the group operating will have the pvr.stk.manageDrives
 priviliges and all users added to the experts group will have pvr.stk.modify
-permission. But this is not exactly what we what. The experts group should
+permission. But this is not exactly what we need. The experts group should
 as well be allowed to enable/disable/dismount commands.
 One solution would be to add experts to the pvr.stk.manageDrives ACL or to
 add the experts group to the operating group.
