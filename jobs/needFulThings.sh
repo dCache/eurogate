@@ -86,7 +86,7 @@ checkJava() {
      echo "Fatal : can't find java runtime" 2>&1
      return 7
    fi
-   xx=`$JAVA 2>&1 | grep maxjitcode`
+   xx=`$JAVA -X 2>&1 | grep maxjitcode`
    if [ ! -z "$xx" ] ; then JAVA_OPTIONS=-Xmaxjitcodesize0 ; fi
    xx=`$JAVA 2>&1 | grep nojit`
    if [ ! -z "$xx" ] ; then JAVA_OPTIONS=-nojit ; fi
