@@ -149,33 +149,6 @@ public class EuroStoreV1 implements EuroStoreable {
     
     }
 
-    public class BfRecordV1 implements BfRecordable {
-       private String _bfid  = null ;
-       private String _group = "" ;
-       private long   _size  = 0 ;
-       private String _volume = null ;
-       private String _filePosition = null ;
-       private String _parameter    = null ;
-       private Date   _lastDate     = null ;
-       private Date   _creationDate = null ;
-       private int    _counter      =  0 ;
-       private String _status       = null ;
-       
-       private BfRecordV1( String bfid ){ _bfid = bfid ; }
-       public String getBfid(){ return _bfid ; }
-       public String getStorageGroup(){ return _group ; }
-       public long   getFileSize(){ return _size ; }
-       public String getVolume(){ return _volume ; }
-       public String getFilePosition(){ return _filePosition ; }
-       public String getParameter(){ return _parameter ; }
-
-       public Date   getLastAccessDate(){ return _lastDate ; }
-       public Date   getCreationDate(){ return _creationDate ; }
-       public int    getAccessCounter(){ return _counter ; }
-
-       public String getStatus(){ return _status ; }
-    
-    }
     public BfRecordable  getBitfileRecord( String bfid ){
        BitfileId bitfile = null  ;
        String    group   = null ;
