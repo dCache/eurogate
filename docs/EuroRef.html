@@ -6,5 +6,127 @@
 </pre>
 <hr>
 <center><h1>The Eurogate Reference Manual</h1></center>
+<h3>The EuroGate User/GroupManagement Commands</h3>
+<blockquote>
+<pre>
+<a href="AclRef.html#createuser">
+create</a> user &lt;userName&gt;
+<a href="AclRef.html#createuser">
+create</a> group &lt;groupName&gt;
+<a href="AclRef.html#createuser">
+destroy</a> principal &lt;principalName&gt;
+<a href="AclRef.html#createuser">
+add</a> principal &lt;principalName&gt; to &lt;groupName&gt;
+<a href="AclRef.html#createuser">
+remove</a> principal &lt;principalName&gt; from &lt;groupName&gt;
+<a href="AclRef.html#createuser">
+set</a> principal "&lt;key&gt;=&lt;value&gt;" ["&lt;key&gt;=&lt;value&gt;"...]
+<a href="AclRef.html#createuser">
+show</a> groups
+<a href="AclRef.html#createuser">
+show</a> group &lt;groupName&gt;
+<a href="AclRef.html#createuser">
+show</a> principal &lt;principalName&gt;
+<a href="AclRef.html#createuser">
+set</a> passwd [-old=&lt;oldPassword&gt;] &lt;newPassword&gt; &lt;newPassword&gt;
+</pre>
+</blockquote>
+<h3>The EuroGate Acl Management Commands</h3>
+<blockquote>
+<pre>
+<a href="AclRef.html#createacl">
+create</a> acl &lt;aclName&gt;
+<a href="AclRef.html#destroyacl">
+destroy</a> acl &lt;aclName&gt;
+<a href="AclRef.html#showacl">
+show</a> acl &lt;aclName&gt;
+<a href="AclRef.html#addacl">
+add</a> access [-allowed|-denied] &lt;acl&gt; &lt;principal&gt;
+<a href="AclRef.html#letacl">
+let</a>  &lt;destinationAcl&gt; inheritfrom &lt;sourceAcl&gt;
+</pre>
+</blockquote>
+<p>
+<h3>The EuroGate Pvl/Pvr/Drive Management Commands</h3>
+<blockquote>
+<pre>
+<a href="PvlRef.html#createpvr">
+create</a> pvr &lt;pvrName&gt;
+<a href="PvlRef.html#createpvr">
+create</a> cartridgeDescriptor &lt;name&gt;
+           -type=&lt;cartridgeType&gt;
+<a href="PvlRef.html#createpvr">
+create</a> volumeDescriptor &lt;name&gt; 
+           -size=&lt;volumeSize&gt;
+<a href="PvlRef.html#createpvr">
+create</a> volume &lt;volumeName&gt;   
+           -cart=&lt;cartridgeName&gt;
+           -pvr=&lt;pvrName&gt;
+          [-position=&lt;position&gt;]
+<a href="PvlRef.html#createpvr">
+set</a> volume &lt;volumeName&gt;   
+           -status=&lt;volumeStatus&gt;
+<a href="PvlRef.html#createpvr">
+create</a> volumeSet &lt;volumeSetName&gt;   
+<a href="PvlRef.html#createpvr">
+add</a> volume &lt;volumeName&gt; -vs=&lt;volumeSetName&gt;   
+<a href="PvlRef.html#createpvr">
+create</a> drive &lt;driveName&gt; 
+           -pvr=&lt;pvrName&gt;
+           -dev=&lt;deviceName&gt; 
+           -spec=&lt;specificName&gt; 
+          [-sel=&lt;driveSelection&gt;]
+</pre>
+<table border=1>
+<tr><th>Command</th><th>Options</th><th>Required Acl</th></tr>
+
+<tr><td valign=top><a href="PvlRef.html#createpvr">
+          create</a> pvr &lt;pvrName&gt;</td>
+    <td>
+    </td>
+    <td>pvl.&lt;pvlName&gt;.admin</td>
+</tr>
+
+<tr><td valign=top><a href="PvlRef.html#createpvr">
+          create</a> cartridgeDescriptor &lt;name&gt;</td>
+    <td>-type=&lt;cartridgeType&gt;
+    </td>
+    <td>pvl.&lt;pvlName&gt;.admin</td>
+</tr>
+
+<tr><td valign=top><a href="PvlRef.html#createpvr">
+          create</a> volumeDescriptor &lt;name&gt;
+    <td>-size=&lt;volumeSize&gt;
+    </td>
+    <td>pvl.&lt;pvlName&gt;.admin</td>
+</tr>
+
+<tr><td valign=top><a href="PvlRef.html#createpvr">
+          create</a> volume &lt;volumeName&gt; 
+    <td>   -cart=&lt;cartridgeName&gt;<br>
+           -pvr=&lt;pvrName&gt;<br>
+          [-position=&lt;position&gt;]
+    </td>
+    <td>pvl.&lt;pvlName&gt;.admin</td>
+</tr>
+
+<tr><td valign=top><a href="PvlRef.html#createpvr">
+          create</a> drive &lt;driveName&gt;</td>
+    <td>
+           -pvr=&lt;pvrName&gt;<br>
+           -dev=&lt;deviceName&gt;<br> 
+           -spec=&lt;specificName&gt;<br> 
+          [-sel=&lt;driveSelection&gt;]<br>
+    </td>
+    <td>pvr.&lt;pvrName&gt;.admin</td>
+</tr>
+<tr><td valign=top><a href="PvlRef.html#createpvr">
+          add</a> volume &lt;volumeName&gt;</td>
+    <td>-vs=&lt;volumeSetName&gt; 
+    </td>
+    <td>pvr.&lt;pvrName&gt;.admin</td>
+</tr>
+</table>
+</blockquote>
 </body>
 </html>
