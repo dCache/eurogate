@@ -21,6 +21,7 @@ public class PvlScheduler implements PvlResourceScheduler {
        public boolean allocated ;
        public String  name ;
        public String  pvrName ;
+       public long    time = 0 ;
        DriveInfo( String name , String cartridge ,
                   boolean allocated , boolean usable,
                   String  pvrName  ) {
@@ -31,6 +32,7 @@ public class PvlScheduler implements PvlResourceScheduler {
          this.usable    = usable ;
          this.pvrName   = pvrName ;                 
        }
+       public void setTime( long time ){ this.time = time ; }
        public String toString(){
           return "Drive="+name+
                  ";cart="+cartridge+
@@ -160,7 +162,8 @@ public class PvlScheduler implements PvlResourceScheduler {
    }
    public PvlResourceModifier 
       otherAction( PvlResourceRequestQueue requestQueue ,
-                        PvlResourceModifier  modifier  ){
+                   PvlResourceModifier  modifier  )
+      throws CdbException , InterruptedException            {
       return null ;
    }
    public PvlResourceModifier 
@@ -233,7 +236,7 @@ public class PvlScheduler implements PvlResourceScheduler {
      String    cartName   = null ;
      boolean   usable     = false ;
      boolean   allocated  = false ;
-     
+     long      time       = 0 ;
      for( int i= 0 ; i < pvrNames.length ; i++ ){
         pvrInfo = new PvrInfo( pvrNames[i] ) ;
         try{
@@ -251,6 +254,7 @@ public class PvlScheduler implements PvlResourceScheduler {
                        drive.getAction().equals( "none" ) &&
                        drive.getStatus().equals( "enabled" )  ;
                     allocated = ! drive.getOwner().equals("-") ; 
+                    time      = drive.getTime() ;
                  drive.close( CdbLockable.COMMIT ) ;  
                  driveInfo = new DriveInfo( 
                                    driveNames[j] , 
@@ -258,6 +262,7 @@ public class PvlScheduler implements PvlResourceScheduler {
                                    allocated , 
                                    usable ,
                                    pvrNames[i] )  ;
+                 driveInfo.setTime(time) ;
                  pvrInfo.addDriveInfo( driveInfo ) ;
               }catch( Exception eeee ){
                  say( "Problem in 'getPvrSet' (drives) : "+eeee ) ;
