@@ -21,6 +21,7 @@ public class      PvlDbManager
  
    private PvlDb  _pvlDb     = null ;
    private Args   _args      = null ;
+   private boolean _isNewDatabase = false ;
          
    public PvlDbManager( String name , String args )
           throws Exception {
@@ -46,16 +47,21 @@ public class      PvlDbManager
               // try to open the database (no create )  
               //
               _pvlDb = new PvlDb( dbFile , false ) ;
-              
+              _isNewDatabase = false ;
+              say( "Using existing database" ) ;
            }catch( Exception eee ){
               //
               // if it fails , try to create the database
               //
               esay( "Try to create database" ) ;
               _pvlDb = new PvlDb( dbFile , true ) ;
+              _isNewDatabase = true ;
+              say( "Using new database" ) ;
            }
            dict.put( "database" , _pvlDb ) ;
        
+           addCommandListener( new PvlCommander( _pvlDb ) ) ;
+           
        }catch( Exception e ){
           say( "Problem in <init> : "+e ) ;
           start();
@@ -64,6 +70,19 @@ public class      PvlDbManager
        }
     
        start() ;
+       
+       if( ! _isNewDatabase )return ;
+       String auto = null ;
+       try{
+           auto = _args.getOpt("autoinstall") ;
+           if( ( auto != null ) && ( auto.length() > 0 ) ){
+               say( "Running autoinstall : "+auto ) ;
+               executeDomainContext( auto ) ;
+           }
+       }catch( Exception ee ){
+           esay( "Problem executing : "+auto+" : "+ee ) ;
+       }
+       
    }
     
 }

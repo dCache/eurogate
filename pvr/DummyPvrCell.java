@@ -28,6 +28,7 @@ public class      DummyPvrCell
    private PvrDb       _pvrDb   = null ;
    private long        _minWait = 1000 ;
    private long        _maxWait = 5000 ;
+   private boolean     _isNewDatabase = false ;
    
    public DummyPvrCell( String name , String args ) throws Exception {
    
@@ -58,8 +59,10 @@ public class      DummyPvrCell
                 
           try{
              _pvrDb = new PvrDb( new File( _dbName ) , false ) ;
+             _isNewDatabase = false ;
           }catch( Exception ee ){
              _pvrDb = new PvrDb( new File( _dbName ) , true ) ;
+             _isNewDatabase = true ;
           }
           say( "Database ok." ) ;
           say( "Delay "+_minWait+" ... "+_maxWait ) ;
@@ -69,6 +72,17 @@ public class      DummyPvrCell
           throw e ;
        }
        start() ;
+       if( ! _isNewDatabase )return ;
+       String auto = null ;
+       try{
+           auto = _args.getOpt("autoinstall") ;
+           if( ( auto != null ) && ( auto.length() > 0 ) ){
+               say( "Running autoinstall : "+auto ) ;
+               executeDomainContext( auto ) ;
+           }
+       }catch( Exception ee ){
+           esay( "Problem executing : "+auto+" : "+ee ) ;
+       }
    }
   public void messageArrived( CellMessage msg ){
       long waitTime = 
@@ -203,6 +217,20 @@ public class      DummyPvrCell
   public String ac_set_maxWait_$_1( Args args ) throws Exception {
       _maxWait = Integer.parseInt( args.argv(0) ) * 1000 ;
       return "Delay "+_minWait+" ... "+_maxWait+ "msec" ;
+  }
+  public String ac_create_drive_$_1( Args args ) throws Exception {
+      String pvrName  = args.getOpt( "pvr" ) ;
+      if( ( pvrName == null ) || ( ! pvrName.equals(getCellName()) ) )
+         return "Not for Us" ;
+      _pvrDb.createDrive( args.argv(0) ) ;
+      return "" ;
+  }
+  public String ac_create_cartridge_$_1( Args args ) throws Exception {
+      String pvrName  = args.getOpt( "pvr" ) ;
+      if( ( pvrName == null ) || ( ! pvrName.equals(getCellName()) ) )
+         return "Not for Us" ;
+      _pvrDb.createCartridge( args.argv(0) ) ;
+      return "" ;
   }
   public void say( String str ){
      super.say( str ) ;

@@ -44,7 +44,9 @@ public class PvrDb extends CdbGLock  {
    }
    public PvrDriveHandle createDrive( String name )
        throws CdbException , InterruptedException {
-       return (PvrDriveHandle)_driveContainer.createElement( name ) ;
+       PvrDriveHandle drive =  (PvrDriveHandle)_driveContainer.createElement( name ) ;
+       drive.setCartridge("empty") ;
+       return drive;
    }
    public PvrDriveHandle getDriveByName( String name )
        throws CdbException , InterruptedException {
