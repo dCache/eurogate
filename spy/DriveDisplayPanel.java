@@ -14,7 +14,7 @@ import dmg.cells.nucleus.* ;
 import dmg.cells.applets.login.* ;
 
 public class      DriveDisplayPanel 
-       extends    SimpleBorderPanel  {
+       extends    MasterPanel  {
        
      private Font   _headerFont = 
                            new Font( "SansSerif" , 0 , 18 ) ;
@@ -22,6 +22,34 @@ public class      DriveDisplayPanel
                            new Font( "SansSerif" , 0 , 12 ) ;
      private Panel            _driveListPanel   = null ;
      private SingleDrivePanel _singleDrivePanel = null ;
+     private static String __helpText = 
+       "            Drive Manager Help\n"+
+       "         ----------------------------\n"+
+       "  The Dive Manager Panel allows to perform a set of lookup\n"+
+       "  and modify operations on the connected drives.\n\n"+
+       "   - The Drive List Menu\n\n"+
+       "         The Drive List menu displays a list of all connected drives\n"+
+       "         together with their current status, like 'Mode', 'Current Cartridge',\n"+
+       "         'Current Owner' and the most recent action on the drive.\n"+
+       "\n"+
+       "         Note :\n"+
+       "             For convenience, 'disabled' drives are marked (in red)\n"+
+       "\n"+
+       "     Actions :\n\n"+
+       "          'Update' Button\n"+
+       "                    The drive list is updated with the current\n"+
+       "                    drive information.\n"+
+       "\n"+
+       "          'Start Automatic Update' Button\n"+ 
+       "                    The drive information table is updated automatically.\n"+
+       "\n"+
+       "          'Stop Automatic Update' Button\n"+ 
+       "                    The automatically drive update is stopped\n"+
+       "\n     Clicking on one of the displayed drive names activates the\n"+
+       "       'Drive Manipulation Panel'\n\n"+
+       "   - The Drive Manipulation Panel\n\n"+
+       "\n\n"+
+       "(c) ElchWare Corp." ;
      public Dimension getPreferredSize(){ 
          Dimension ss = super.getMinimumSize() ;
          return  ss ; 
@@ -31,21 +59,21 @@ public class      DriveDisplayPanel
          return  ss ; 
      }
      public DriveDisplayPanel( DomainConnection connection ){
-     
-        super( new BorderLayout() , 15 , Color.white ) ;
+        super( "Drive Control Manager" ) ;
+        setBorderColor( Color.white ) ;
+        setBorderSize( 5 ) ;
                 
         _driveListPanel = new DriveListPanel( connection ) ;
          
         _singleDrivePanel = new SingleDrivePanel( connection ) ;
         
-        add( _driveListPanel , "Center" ) ;
+        add( _driveListPanel ) ;
         
-        Label title = new Label( "Drive Manager" , Label.CENTER ) ;
-        title.setFont( _headerFont ) ;
-        
-        add( title , "North" ) ;
          
      } 
+     public String getHelpText(){
+        return __helpText ;
+     }
      private class DriveClick extends MouseAdapter {
 
          public void mouseClicked(MouseEvent e){
@@ -58,7 +86,7 @@ public class      DriveDisplayPanel
                String drive = text.substring(p+1) ;
                remove( _driveListPanel  ) ;
                _singleDrivePanel.setDrive( pvr , drive ) ;
-               add( _singleDrivePanel , "Center" ) ;
+               add( _singleDrivePanel  ) ;
                validate() ;
             }
 
@@ -66,7 +94,7 @@ public class      DriveDisplayPanel
      }
      private void swapBack(){
         remove( _singleDrivePanel  ) ;
-        add( _driveListPanel , "Center" ) ;
+        add( _driveListPanel ) ;
         validate() ;
      }
      private DriveClick _driveClick = new DriveClick() ;
@@ -396,7 +424,7 @@ public class      DriveDisplayPanel
             }catch(Exception ee ){}
          
          }
-         private void setText( String text ){ _messages.setText( text ) ; }
+         private void setText( String text ){ setMessage( text ) ; }
          
          private void initDrives( Object [] pvrSet ){
             int driveCount = 0 ;
@@ -522,21 +550,5 @@ public class      DriveDisplayPanel
      //
      ////////////////////////////////////////////////////////////////////////////
      //    
-   /*
-   public void connectionOpened( DomainConnection connection ){
-      System.out.println("Connection established" ) ;
-      try{
-         _connection.sendObject( "ls drive -cellPath=pvl" , this , 0 ) ;
-      }catch(Exception ee ){
-      
-      }
-   }
-   public void connectionClosed( DomainConnection connection ){
-      System.out.println("Connection closed" ) ;
-   }
-   public void connectionOutOfBand( DomainConnection connection ,
-                                    Object subject                ){
-   }
-   */
 }
  
