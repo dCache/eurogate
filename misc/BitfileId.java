@@ -3,7 +3,7 @@ package eurogate.misc ;
 import java.io.Serializable ;
 import java.util.Date ;
 
-public class BitfileId implements Serializable {
+public class BitfileId implements java.io.Serializable {
     private String _name ;
     private long   _size ;
     private Date   _created , _lastRead ;
@@ -43,5 +43,6 @@ public class BitfileId implements Serializable {
        _parameter = parameter ;
     }
     public String getParameter(){ return _parameter ; }
+    
 
 }
