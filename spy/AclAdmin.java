@@ -70,10 +70,19 @@ public class      AclAdmin extends CommandInterpreter {
           tr = tr.substring(1) ;
           return command( tr ) ;
        }
+       Args xx = new Args( str ) ;
+       CellPath cellPath = null ;
+       String   path     = null ;
+       if( ( path = xx.getOpt("cellPath") ) != null ){
+          cellPath = new CellPath( path ) ;         
+       }else{
+          cellPath = _cellPath ;
+       }
+       
        CellMessage res = 
          _nucleus.sendAndWait( 
                 new CellMessage( 
-                     _cellPath , 
+                     cellPath , 
                      new AuthorizedString( 
                            _user ,  
                            str + ( wasBinary ? " -binary" : "" ) ) 
