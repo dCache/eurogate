@@ -71,12 +71,69 @@ There is a small set of rules which have to be taken into account.
     groups following (on the right), are no longer of interrest.
     If the ACL is not mentioned in the chain at all, principal-T
     is disallowed for the action.
-<li>There exists a single inheritance between ACLs. 
-    A ACL-A with inherits from  ACL-B inherits all its entries.
-    An additional, an entries in ACL-A overwrites a possible entry in ACL-B.
+<li>Intrinsic hierachical inheritance is suppported as well as
+    single explicit inheritance. See extra chapter below.  
 </ul>
 There is a <a href=Acls.html>list</a> of the ACLs associated with 
 Eurogate commands.
+<h3>Acl Inheritance</h3>
+What does acl inheritance mean ? If acl-a inherits from acl-b,
+acl-a adds all principal entries from acl-b to its own list,
+BUT only if the principal in not yet in acl-a. So acl-b will never
+overwrite an entry in acl-a. This does not 
+depend on the value of the principal entry (allowed or denied).
+
+<blockquote>
+   <h4>Single explicit inheritance</h4>
+       Each Acl can inherit from exactly ONE other acl. 
+       This has to be set manually. Acls can build
+       an inheritance chain.
+       <pre>
+        acl-a (inherits from) acl-b (inherits from) acl-c.
+       </pre>   
+       Nonexisting acl in a chain, invalide the whole chain.
+       The result will always be a <b>deny</b>.   
+   <h4>Intrinsic hierachical inheritance</h4>
+   An acl implicitly inherits from a chain of wildcard acls.
+   These inheritance scheme is not configurable.
+   The standard acl consits of the <i>aclClassName</i> the <i>aclInstanceName</I>
+   and the <i>action</i> which has to be protected.
+   <pre>
+     &lt;aclClassName&gt;.&lt;aclInstanceName&gt;.&lt;action&gt;
+   </pre>
+   The aclInstanceName can itself be devided into 
+   an hierachical nameing scheme. The subitems are as well 
+   separated by dots. <br>
+   So the acl for the set operation of a drive may be :
+   <pre>
+       drive.stk-pvr.drive-0.modify
+   </pre>
+   The aclClass is the <i>drive</i> the aclInstance is
+   <i>stk-pvr.drive-0</i> and the action is <i>modify</i>.
+   The instanceName is devided into the drive container which
+   is the pvr=stk-pvr and the drive name itself, which is 
+   drive-0.<br>
+   In this case the automatic inheritance scheme merges the
+   following acls from top to bottom.
+   <table border=1>
+   <tr><th>aclClass</th><th colspan=2>aclInstanceName</th><th>action</th></tr>
+   <tr align=center><td>drive</td><td>stk-pvr</td><td>drive-0</td><td>modify</td></tr>
+   <tr align=center><td>drive</td><td>stk-pvr</td><td>drive-0</td><td>*</td></tr>
+   <tr align=center><td>drive</td><td>stk-pvr</td><td>*</td><td>modify</td></tr>
+   <tr align=center><td>drive</td><td>stk-pvr</td><td>*</td><td>*</td></tr>
+   <tr align=center><td>drive</td><td>*</td><td>*</td><td>modify</td></tr>
+   <tr align=center><td>drive</td><td>*</td><td>*</td><td>*</td></tr>
+   <tr align=center><td>drive</td><td colspan=2>*</td><td>*</td></tr>
+   <tr align=center><td>*</td><td colspan=2>*</td><td>*</td></tr>
+   </table>
+   So, the instanceName is simply replaced from right to left by 
+   wildcards (without permutation) and the result is used together with
+   the action and after that together with a wildcard repaceing the action.
+   After these steps the composit instanceName is replaced by
+   a single wildcard.
+   The last acl merged is the superuser acl <i>*.*.*</i>.<br>
+   Nonexisting acls will simply be skipped.
+</blockquote>
 <h3>Some examples</h3>
 <strong>Two groups, two ACLs</strong>
 <blockquote>
@@ -101,46 +158,74 @@ we are currently holding the 'admin' account.
 #
 #  we need to create the acl first.
 #
-create acl pvr.stk.manageDrives
-create acl pvr.stk.modify
+create acl drive.stk.*.operate
+create acl drive.stk.*.support
+#
+#  the commands could as well be 
+#
+create acl drive.*.*.operate
+create acl drive.*.*.support
+#
+#  if the teams have to handle all pvrs.
+#
 #
 #  create the groups
 #
-create group experts
+create group support
 create group operating
 #
 #  add the groups to the related ACL's
 #
-add access -allowed pvr.stk.manageDrives operating
-add access -allowed pvr.stk.modify  experts
+add access -allowed drive.stk.*.operate operating
+add access -allowed drive.stk.*.support  support
 #
 #  add users to the different groups.
 #
 add snoopy to experts
 add magnum to operating
 </pre>
-So, all users added to the group operating will have the pvr.stk.manageDrives
-priviliges and all users added to the experts group will have pvr.stk.modify
-permission. But this is not exactly what we need. The experts group should
-as well be allowed to enable/disable/dismount commands.
-One solution would be to add experts to the pvr.stk.manageDrives ACL or to
-add the experts group to the operating group.
+So, all users added to the group operating will have the drive.stk.*.operate
+priviliges and all users added to the support group will have 
+drive.stk.*.support
+permission. But this is not exactly what we need. The support people should
+as well be allowed to enable/disable/dismount drives.
+We have at least 3 possibility to solve the problem.
+<p><strong>Easy way</strong>
+<blockquote>
 <pre>
-add experts to operating
+#
+#  add the support group to the operating acl as well.
+#
+add access -allowed drive.stk.*.operate support
 </pre>
-In the latter case the result looks as expected :
+</blockquote>
+<p><strong>Explicit inheritance</strong>
+<blockquote>
 <pre>
-AclCell(admin) >> show acl pvr.stk.modify
-experts -> true
-AclCell(admin) >> show acl pvr.stk.manageDrives
-operating -> true
-AclCell(admin) >> check pvr.stk.manageDrives operating
+#
+#  let all principals from support be also in operating.
+#
+let drive.stk.*.operate inheritfrom drive.stk.*.support
+</pre>
+</blockquote>
+<p><strong>Group managemenet</strong>
+<blockquote>
+<pre>
+#
+#  add the support group to the operating group.
+#
+add support to operating
+</pre>
+</blockquote>
+Check the result :
+<pre>
+AclCell(admin) >> check pvr.stk.drive0.operate operating
 <font color=green>Allowed</font>
-AclCell(admin) >> check pvr.stk.manageDrives experts
+AclCell(admin) >> check pvr.stk.drive0.support support
 <font color=green>Allowed</font>
-AclCell(admin) >> check pvr.stk.modify experts
+AclCell(admin) >> check pvr.stk.drive0.operate support
 <font color=green>Allowed</font>
-AclCell(admin) >> check pvr.stk.modify operating
+AclCell(admin) >> check pvr.stk.drive0.support operating
 <font color=red>Denied</font>
 </pre>
 </blockquote>

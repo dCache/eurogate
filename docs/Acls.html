@@ -15,19 +15,22 @@
      <table border=1 bgcolor=#eeffaa>
      <tr><th>Command</th><th>Acl</th></tr>
      <tr><td>create user &lt;user&gt;</td>
-         <td>user.*.create</td>
+         <td>user.&lt;user&gt;.create</td>
      </tr>
      <tr><td>create group &lt;group&gt;</td>
-         <td>user.*.create</td>
+         <td>user.&lt;user&gt;.create</td>
      </tr>
      <tr><td>destroy principal &lt;principal&gt;</td>
-         <td>user.*.create</td>
+         <td>user.&lt;principal&gt;.destroy</td>
      </tr>
      <tr><td>add &lt;principal&gt; to &lt;group&gt;</td>
-         <td>user.&lt;group&gt;.access</td>
+         <td>user.&lt;group&gt;.add</td>
+     </tr>
+     <tr><td>remove &lt;principal&gt; from &lt;group&gt;</td>
+         <td>user.&lt;group&gt;.remove</td>
      </tr>
      <tr><td>set &lt;principal&gt; [&lt;key&gt;=&lt;value&gt; ...]</td>
-         <td>user.&lt;principal&gt;.access</td>
+         <td>user.&lt;principal&gt;.modify</td>
      </tr>
      <tr><td>show groups</td>
          <td align=center>-</td>
@@ -39,7 +42,7 @@
          <td align=center>-</td>
      </tr>
      <tr><td>set passwd</td>
-         <td align=center>user.&lt;principal&gt;.setpassword</td>
+         <td align=center>user.&lt;principal&gt;.changePassword</td>
      </tr>
      </table>
   </blockquote>
@@ -48,40 +51,100 @@
      <table border=1 bgcolor=#aaee99>
      <tr><th>Command</th><th>Acl</th></tr>
      <tr><td>create acl &lt;aclName&gt;</td>
-         <td>super.access</td>
+         <td>acl.&lt;aclName&gt;.create</td>
      </tr>
      <tr><td>destroy acl &lt;aclName&gt;</td>
-         <td>super.access</td>
+         <td>acl.&lt;aclName&gt;.destroy</td>
      </tr>
      <tr><td>show acl &lt;aclName&gt;</td>
          <td align=center>-</td>
      </tr>
      <tr><td>add access [-allowed|-denied] &lt;acl&gt; &lt;principal&gt; </td>
-         <td>acl.&lt;acl&gt;.access</td>
+         <td>acl.&lt;acl&gt;.add</td>
+     </tr>
+     <tr><td>remove access &lt;acl&gt; &lt;principal&gt; </td>
+         <td>acl.&lt;acl&gt;.remove</td>
+     </tr>
+     <tr><td>let &lt;destinationAcl&gt; inheritfrom &lt;sourceAcl&gt; </td>
+         <td>acl.&lt;destinationAcl&gt;.modify</td>
      </tr>
      </table>
   </blockquote>
 <h3>Pvl Administration</h3>
+
   <blockquote>
+  <h4>Some Remarks  : </h4>
+     <ul>
+     <li>Eurogate only supports a single 'pvl'. The name of 
+         this pvl is always <i>pvl</i>. This may change in
+         the future. The 'acl' scheme already supports multiple
+         pvls, mainly to support the use of one pvr by multiple
+         pvls.
+     <li>It is assumed that the names of the pvrs are unique.
+         This must still be true in case multiple pvls are
+         supported.
+     </ul>
      <table border=1 bgcolor=#bbee33>
      <tr><th>Command</th><th>Acl</th></tr>
      <tr><td>create pvr &lt;pvrName&gt;</td>
-         <td>pvr.*.create</td>
-     </tr>
-     <tr><td>create drive -pvr=&lt;pvrName&gt; &lt;driveName&gt;</td>
-         <td>pvr.&lt;pvrName&gt;.modify</td>
-     </tr>
-     <tr><td>set drive -pvr=&lt;pvrName&gt; &lt;driveName&gt; ...</td>
-         <td>pvr.&lt;pvrName&gt;.modify</td>
+         <td>pvl.&lt;pvlName&gt;.admin</td>
      </tr>
      <tr><td>create cartridgeDescriptor &lt;name&gt;</td>
-         <td>pvl.*.modify</td>
+         <td>pvl.&lt;pvlName&gt;.admin</td>
      </tr>
      <tr><td>create volumeDescriptor &lt;name&gt;</td>
-         <td>pvl.*.modify</td>
+         <td>pvl.&lt;pvlName&gt;.admin</td>
+     </tr>
+     <tr><td>create volume -pvr=&lt;pvrName&gt; &lt;volumeName&gt;</td>
+         <td>pvl.&lt;pvlName&gt;.&lt;pvrName&gt;.support</td>
+     </tr>
+     <tr><td>set volume &lt;volumeName&gt;</td>
+         <td>pvl.&lt;pvlName&gt;.&lt;pvrName&gt;.operate</td>
+     </tr>
+     <tr><td>create volumeSet &lt;name&gt;</td>
+         <td>pvl.&lt;pvlName&gt;.support</td>
+     </tr>
+     <tr><td>add volume &lt;volumeName&gt; -vs=&lt;volumeSet&gt;</td>
+         <td>vs.&lt;pvlName&gt;.&lt;volumeSet&gt;.support</td>
+     </tr>
+     <tr><td>create drive -pvr=&lt;pvrName&gt; &lt;driveName&gt;</td>
+         <td>pvr.&lt;pvrName&gt;.admin</td>
+     </tr>
+     <tr><td>create cartridge -pvr=&lt;pvrName&gt; &lt;volumeName&gt;</td>
+         <td>pvr.&lt;pvrName&gt;.operate</td>
+     </tr>
+     <tr><td>set drive -pvr=&lt;pvrName&gt; &lt;driveName&gt; ...</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.support</td>
      </tr>
      <tr><td>enable/disable/dismount &lt;driveName&gt;</td>
-         <td>pvr.&lt;pvrName&gt;.manageDrives</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.operate</td>
+     </tr>
+     <tr><td>update</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.operate</td>
+     </tr>
+     </table>
+  </blockquote>
+<h3>Pvl Administration (DEBUG mode only)</h3>
+  <blockquote>
+     <table border=1 bgcolor=#bbee33>
+     <tr><th>Command</th><th>Acl</th></tr>
+     <tr><td>xdismount &lt;pvrName&gt; &lt;driveName&gt;</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+     </tr>
+     <tr><td>deallocate &lt;pvrName&gt; &lt;driveName&gt;</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+     </tr>
+     <tr><td>pvr mount &lt;pvrName&gt; &lt;driveName&gt; &lt;cartridge&gt;</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+     </tr>
+     <tr><td>pvr dismount &lt;pvrName&gt; &lt;driveName&gt;</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+     </tr>
+     <tr><td>pvr newdrive &lt;pvrName&gt; &lt;driveName&gt;</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
+     </tr>
+     <tr><td>pvr unload &lt;pvrName&gt; &lt;driveName&gt;</td>
+         <td>drive.&lt;pvrName&gt;.&lt;driveName&gt;.expert</td>
      </tr>
      </table>
   </blockquote>
