@@ -40,6 +40,8 @@ public class PvrStreamEngine implements StreamEngine {
    public String getPvrName(){ return _pvrName ; }
    public String getPvrType(){ return _pvrType ; }
    public InetAddress getInetAddress(){ return _socket.getInetAddress(); }
+   public InetAddress getLocalAddress(){ return _socket.getLocalAddress() ; }
+   public Socket      getSocket() { return _socket ; }
    public InputStream getInputStream(){ 
      try{
        return _socket.getInputStream(); 

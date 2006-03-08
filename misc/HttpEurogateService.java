@@ -19,9 +19,13 @@ public class HttpEurogateService implements HttpResponseEngine {
        _nucleus = nucleus ;
        _args    = args ;
    }
-   public void queryUrl( PrintWriter pw , String [] urlItems )
-          throws Exception {
-          
+   public void queryUrl( HttpRequest request )
+          throws HttpException {
+
+      PrintWriter pw     = request.getPrintWriter() ;
+      String [] urlItems = request.getRequestTokens() ;
+      int       offset   = request.getRequestTokenOffset() ;
+
       if( urlItems.length < 2 ){
          printDummyHttpHeader( pw ) ;
          printDirectory( pw ) ;
@@ -30,11 +34,15 @@ public class HttpEurogateService implements HttpResponseEngine {
       String      command = urlItems[1] ;
       if( command.equals( "drives" ) ){
          printDummyHttpHeader( pw ) ;
-         printPvrs( pw ) ;
+         try{
+            printPvrs( pw ) ;
+         }catch(Exception ee ){
+            throw new HttpException( 66 , ee.toString() );
+         }
          return ;
       }else
          throw new 
-         Exception( "Url : "+command+" not found on this server" ) ;
+         HttpException( 33 , "Url : "+command+" not found on this server" ) ;
    }
    private Object sendRequest( String path , String command )
            throws Exception {
@@ -90,7 +98,7 @@ public class HttpEurogateService implements HttpResponseEngine {
       }
       }catch( Exception eeee ){
          eeee.printStackTrace() ;
-         throw eeee ;
+         throw new HttpException( 35 , eeee.toString() ) ;
       }
       pw.println( "</font>") ;
       pw.println( "</body></html>" ) ;
