@@ -77,12 +77,12 @@ checkForSsh() {
      sshkeygen=`findBinary2 ssh-keygen sshkeygen /usr/bin`   
      if [ $? -ne 0 ] ; then echo "Couldn't find ssh-keygen" 1>&2 ; return 4 ; fi
      SSHKEYGEN=${sshkeygen}
-     $SSHKEYGEN -b  768 -f ${keyBase}/server_key -N "" 1>/dev/null
+     $SSHKEYGEN -b  768 -t rsa1 -f ${keyBase}/server_key -N "" 1>/dev/null
      if [ $? -ne 0 ] ; then
         echo "Keygen of server key failed" 1>&2
         return 4
      fi
-     $SSHKEYGEN -b 1024 -f ${keyBase}/host_key   -N "" 1>/dev/null
+     $SSHKEYGEN -b 1024 -t rsa1 -f ${keyBase}/host_key   -N "" 1>/dev/null
      if [ $? -ne 0 ] ; then
         echo "Keygen of host key failed" 1>&2
         return 4
@@ -476,7 +476,7 @@ eurogateHelp() {
    echo "        eurogate gui"
    return 0
 }
-eurogateSwitch() {
+simulationEurogateSwitch() {
    case $1 in
      *start)       eurogateStart $* ;;
      *gui)         eurogateGuiStart $* ;;
