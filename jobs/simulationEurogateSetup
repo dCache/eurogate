@@ -1,0 +1,158 @@
+#
+#   This is the master setup file for the configuration
+#   of the Eurostore HSM in simulation mode.
+#   It mainly defines the 
+#     - path of the binaries and logfiles.
+#     - path of the jar files and the java class directories
+#     - class names of optional or alternative cells.
+#     - portnumbers of services like ssh pvl telnet and the HSM client.
+#
+#  --------------------------------------------------
+#    - the binaries.
+#    -----------------
+# JAVA
+#
+#  Obviously we need a java virtual machine.
+#  The VM is not included in the distribution.
+#  We can run the 1.1(>.6) and the 1.2 version.
+#  If a specific VM should be used, the full path
+#  has to be specified with the 'java' variable. 
+#  If not defined we try to find it ourselfs.
+#
+#java=/usr/java/bin/java
+#
+# SSH
+#
+#  We need the ssh (versionI) binary for configuring
+#  and monitoring internal parts of eurostore.
+#  The ssh binary and the (sshI) keygen are
+#  included in this distribution ( which might be
+#  illegal. ). If you need to take your own ssh 
+#  redefine the 'ssh' variable accordingly.
+#  To make use of the ssh protocol, the server key
+#  and the hostKey are created the first time eurostore
+#  is started. 
+#  While we are running a test environment 
+#  we are not using the original /etc/ssh_host_key
+#  to avoid security leaks. So the hostkey and
+#  the server key are created somewhere and the
+#  variable 'keyBase' has to be set to this
+#  directory. This procedure simply satisfies the
+#  the protocol and has nothing to do with 
+#  security. 
+#
+#ssh=${thisDir}/../bin/ssh
+keyBase=${thisDir}
+#
+# must be the full path without /../
+#
+documents=/home/patricknew/cvs-eurogate/eurogate
+#
+#    - The database paths
+#    -----------------
+#
+#  The following services need a database to store
+#  permanent data :
+#       Store
+#       Pvr   ( in simulation mode only )
+#       Pvl
+#  We assume, that all these databases have a
+#  common root directory. ('databaseRoot').
+#  Below this root, the following structure
+#  is expected.
+#    <databaseRoot>/store/raw
+#    <databaseRoot>/store/dst
+#    <databaseRoot>/pvr/stk
+#    <databaseRoot>/pvl
+#
+#  !!! These directories must exist BEFORE eurogate
+#  !!! is started the first time. They all must be
+#  !!! empty at that time. The database are initiated
+#  !!! the first time the eurostore is started.
+#
+#     jobs/eurogate start
+#
+databaseRoot=${thisDir}/db
+#
+#   - The log directory
+#   -----------------
+#
+#  Whatever we have to say will end up here.
+#  If not defined or if it doesn't exist,
+#  everything will go to /dev/null.
+#
+logdir=/tmp
+#
+#    - The java classes
+#    -----------------
+#
+#  This eurogate implementation needs the cells.jar and
+#  the eurogate.jar file to run. They are searched for
+#  in the 'jardir'. Alternatively the eurogate classes
+#  may also be looked for in eurogateClasses. If the latter
+#  directory exist, these classes precede the ${jardir}/eurogate.jar
+#  file.
+#  
+jardir=${thisDir}/../bin
+eurogateClasses=${thisDir}/../..
+#
+#    - The movers
+#    -----------------
+#
+#  We currently provide two different simulation movers.
+#  A java only mover and the original EagleMover switched
+#  to 'simlulation mode'. The latter needs a SharedLibraryObject
+#  containing the necessary c-language code. Both need a
+#  directory where to simlutate the tape.
+#
+moverData=${databaseRoot}/mover
+javaOnly=true
+#
+#  sharedLibraries=${thisDir}/mover
+#  javaOnly=false
+#
+#
+#    - the java batchfile
+#    -----------------
+#
+#  The cell environment executes it's own batchfile
+#  when starting up. This batchfile mainly defines the
+#  cells with needs to be started. We provide a
+#  file which is suitable for simulation purposes
+#  and is steered by the variables in this Setupfile.
+#
+cellBatch=${thisDir}/simulationEurogate.batch
+#
+#  The storeClass determined the type of database
+#  the system should use for storing BfidData.
+#  ( Don't change this variable, without knowing
+#    what you are doing. )
+#
+storeClass=eurogate.store.sldb.SldbStoreV1
+master=yes
+mover=no
+mode=simulation
+#
+#
+#    - Tcp/Ip access ports
+#    -------------------------
+#
+#  Most of the services within eurogate are accessed by
+#  Tcp/Ip portnumbers. The most important one is the
+#  'clientPort' which accepts the actual PUT/GET/REMOVE
+#  requests. ( the agreed default is 28000 ).
+#  The 'telnetPort' is only required for debugPurposes.
+#  The 'sshPort' and the 'pvlDbPort' are required
+#  for the automatic configuration of the PvlDatabase and
+#  the system shutdown.
+#  The spyPort is used by the graphical interface.
+#  If the 'telnetPort' or the 'spyPort' are commented out,
+#  the corresponding service is not started. The other
+#  portnumbers are mandatory.
+#
+pvlDbPort=23124
+sshPort=23125
+aclPort=23126
+clientPort=28000
+#  telnetPort=23123
+#  spyPort=23222
