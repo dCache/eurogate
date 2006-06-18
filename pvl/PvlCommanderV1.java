@@ -277,6 +277,10 @@ public class PvlCommanderV1 {
       return sb.toString() ;
    
    }
+   public String hh_x_ls_request = "" ;
+   public Object ac_x_ls_request( Args args )throws Exception {
+      return _queue.getRequests() ;
+   }
    public String hh_xdismount = "<pvr> <drive>" ;
    
    public String ac_xdismount_$_2(Args args ) throws Exception {

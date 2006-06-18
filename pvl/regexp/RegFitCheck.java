@@ -32,7 +32,7 @@ public class RegFitCheck{
       return resolveDriveExpression( drvTree );
     }else{
       return drvTree;
-    };
+    }
   } 
 
 

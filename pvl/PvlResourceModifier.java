@@ -1,7 +1,7 @@
 package eurogate.pvl ;
 
 
-public class PvlResourceModifier {
+public class PvlResourceModifier  implements java.io.Serializable {
 
    private String _cartridge = null ;
    private String _drive     = null ;

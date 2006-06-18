@@ -309,6 +309,7 @@ public class PvlScheduler implements PvlResourceScheduler {
            }catch( Exception e ){
               esay( "Exception while checking : "+request ) ;
               esay( "Exception : "+e ) ;
+              e.printStackTrace();
               continue ;
            }
        
@@ -406,8 +407,13 @@ public class PvlScheduler implements PvlResourceScheduler {
          PvrInfo   pvr        = (PvrInfo)e.nextElement() ;
          Hashtable volumeHash = new Hashtable() ;
          pvrHash.put( pvr.getName() , volumeHash ) ;
-         PvrVolumeSubsetHandle subset = 
-              volumeSet.getPvrVolumeSubsetByName( pvr.getName() ) ;
+         PvrVolumeSubsetHandle subset =  null ;
+         try{    
+            subset = volumeSet.getPvrVolumeSubsetByName( pvr.getName() ) ;
+         }catch(Exception ee ){
+            say("Pvr="+pvr.getName()+" not found in subset : "+volumeSet.getName());
+            continue ;
+         }
          subset.open( CdbLockable.READ ) ;
             String [] volumeNames = subset.getVolumeNames() ;
          subset.close( CdbLockable.COMMIT ) ;

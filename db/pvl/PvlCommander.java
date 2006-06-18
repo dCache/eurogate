@@ -409,6 +409,54 @@ public class   PvlCommander  {
         sb.append( volsets[i] ).append( "\n" ) ;
      return sb.toString() ;
   }
+  public String hh_x_ls_volumes = "" ;
+  public Object ac_x_ls_volumes( Args args ) throws Exception {
+
+        String [] volsetNames = _pvlDb.getVolumeSetNames() ;
+
+        Map volumeSetMap = new HashMap() ; 
+        Map pvrMap       = null ;
+ 
+        for( int i = 0 ; i < volsetNames.length ; i++ ){
+     
+           volumeSetMap.put( volsetNames[i] , pvrMap = new HashMap() ) ;
+
+           VolumeSetHandle volSetHandle = _pvlDb.getVolumeSetByName(volsetNames[i]);
+           volSetHandle.open( CdbLockable.READ ) ;
+           String [] subsetNames = volSetHandle.getPvrVolumeSubsetNames() ;
+               
+           Map volumeMap = null ; 
+           for( int j = 0 ; j < subsetNames.length ; j++ ){
+
+              pvrMap.put( subsetNames[j] , volumeMap = new HashMap() ) ; 
+
+              PvrVolumeSubsetHandle vss = volSetHandle.getPvrVolumeSubsetByName( subsetNames[j] ) ;
+              vss.open( CdbLockable.READ ) ;
+              String [] volNames = vss.getVolumeNames() ;
+              vss.close( CdbLockable.COMMIT ) ;
+                   
+              for( int l = 0 ; l < volNames.length ; l++ ){
+                  VolumeHandle volume = _pvlDb.getVolumeByName( volNames[l] ) ;
+                  String [] info = new String[5] ;
+                  volume.open( CdbLockable.READ) ;
+                  info[0] = ""+volume.getFileCount();
+                  info[1] = volume.getEOR();
+                  info[2] = ""+volume.getResidualBytes();
+                  info[3] = volume.getCartridge();
+                  info[4] = volume.getVolumeDescriptor();
+                  volume.close( CdbLockable.COMMIT ) ;
+
+                  volumeMap.put( volNames[l] , info ) ;
+              }
+                      
+           }
+               
+           volSetHandle.close( CdbLockable.COMMIT ) ;
+        }
+
+        return volumeSetMap ;
+               
+  }
   public String hh_ls_volume = "[<volumeName>] [-vs=<volumeSet> -pvr=<pvrName>]" ;
   public String ac_ls_volume_$_0_1( Args args )throws Exception {
      if( _pvlDb == null )throw new IllegalArgumentException( "Database not open" ) ;
