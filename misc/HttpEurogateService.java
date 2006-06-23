@@ -29,13 +29,13 @@ public class HttpEurogateService implements HttpResponseEngine {
       int       offset   = request.getRequestTokenOffset() ;
 
       if( urlItems.length < 2 ){
-         printDummyHttpHeader( pw ) ;
+         request.printHttpHeader(0) ;
          printHtmlTop(pw,"Eurogate Online");
          pw.println("<center><h1><font color=gray>Eurogate</font></h1></center>");
          printMenu(pw);
          return ;
       }
-      printDummyHttpHeader( pw ) ;
+      request.printHttpHeader( 0 ) ;
       String      command = urlItems[1] ;
       if( command.equals( "drives" ) ){
          printHtmlTop(pw,"Eurogate Drives");
@@ -242,6 +242,7 @@ public class HttpEurogateService implements HttpResponseEngine {
       pw.println( "</font>") ;
       pw.println( "</body></html>" ) ;
    }
+/*
    private void printDummyHttpHeader( PrintWriter pw ){
       pw.println( "HTTP/1.0 200 Document follows" );
       pw.println( "MIME-Version: 1.0" ) ;
@@ -251,6 +252,7 @@ public class HttpEurogateService implements HttpResponseEngine {
       pw.println( "Content-Length: 10000" ) ;
       pw.println( "Last-Modified: Thursday, 03-Jul-97 10:01:00 GMT\n" ) ;
    }
+*/
    private static void printException( PrintWriter pw , Exception ee ){
       pw.println( "<h1><font color=red>"+
                    "An internal error occured"+

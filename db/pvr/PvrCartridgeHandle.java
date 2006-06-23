@@ -11,7 +11,7 @@ import java.io.* ;
   *   </table>
   */ 
  
-public class  PvrCartridgeHandle extends CdbFileRecordHandle {
+public class  PvrCartridgeHandle extends PvrObjectHandle {
 
    public PvrCartridgeHandle( String  name ,
                        CdbContainable container  ,

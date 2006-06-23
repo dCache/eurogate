@@ -12,7 +12,7 @@ import java.io.* ;
   *   </table>
   */ 
  
-public class  PvrDriveHandle extends CdbFileRecordHandle {
+public class  PvrDriveHandle extends PvrObjectHandle {
 
    public PvrDriveHandle( String  name ,
                        CdbContainable container  ,
