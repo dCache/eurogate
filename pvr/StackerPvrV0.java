@@ -40,10 +40,12 @@ public class      StackerPvrV0
        private PvrRequest  request = null ;
        private String      _command = null ;
        private int         _requestId = 0 ;
+       private long        _started   = 0 ;
        private Request( CellMessage msg , PvrRequest request ){
           this.message  = msg ;
           this.request  = request ;
           this._command = request.getActionCommand() ;
+          this._started = System.currentTimeMillis() ;
           synchronized( __idLock ){ _requestId = __requestId ++ ;}
        }
        public String toString(){
@@ -317,6 +319,26 @@ public class      StackerPvrV0
   }
   public void getInfo( PrintWriter pw ){
      pw.println( "Database : "+_dbName ) ;
+  }
+  public String hh_x_ls_queue = "" ;
+  public Object ac_x_ls_queue(Args args ){
+     List list = new ArrayList() ;
+     synchronized( _requestMap ){
+        
+        for( Iterator i = _requestMap.values().iterator() ; i.hasNext() ; ){
+           Request request = (Request)i.next() ;
+           PvrRequest pvr  = request.request ;
+           
+           Object [] reply = new Object[5] ;
+           reply[0] = ""+request._requestId ;
+           reply[1] = pvr.getActionCommand() ;
+           reply[2] = pvr.getSpecificDrive() ;
+           reply[3] = pvr.getCartridge() ;
+           reply[4] = new Long(request._started) ;
+           list.add( reply ) ;
+        }
+     }
+     return list ;
   }
   public String hh_ls_queue = "" ;
   public String ac_ls_queue(Args args ){
