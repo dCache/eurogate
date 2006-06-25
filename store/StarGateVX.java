@@ -404,6 +404,48 @@ public class StarGateVX extends CellAdapter implements Logable  {
       
       return sb.toString();
    }
+   public String hh_x_ls_volume = "<volume>" ;
+   public Object ac_x_ls_volume_$_1( Args args ) throws Exception {      
+
+      Session s = _sessionHandler.getSession(1) ;
+      String  volume  = args.argv(0) ;
+      long    cookie  = 0L ;
+      List    list    = new ArrayList() ;
+      try{
+         CookieEnumeration e = null ;
+         
+         while( true ){
+            StorageSessionable sessionable = s.get() ;
+            e = _eurostore.getBfidsByVolume( sessionable ,volume , cookie ) ;
+            int count = 0 ;
+            for( count = 0 ;  e.hasMoreElements() ; count ++ ){
+              String bfid = (String)e.nextElement() ;
+              BfRecordable bitfileid = _eurostore.getBitfileRecord(sessionable,bfid ) ;
+              Object [] result = new Object[8] ;
+
+              result[0] = bfid ;
+              result[1] = new Long( bitfileid.getFileSize() ) ;
+              result[2] = bitfileid.getCreationDate()  ;
+              result[3] = bitfileid.getStatus() ;
+              if( bitfileid.getStatus().startsWith("p") ){
+                 result[4] = new Long( bitfileid.getAccessCounter() ) ;
+                 result[5] = bitfileid.getVolume() ;
+                 result[6] = new Long( bitfileid.getFilePosition() ) ;
+                 result[7] = bitfileid.getLastAccessDate()  ;
+              }
+              list.add(result);
+            }
+            if( count == 0 )break ;
+            cookie = e.getCookie() ;
+         }
+      }catch(Exception t ){
+         esay(t);
+         throw t ;
+      }finally{
+         _sessionHandler.releaseSession(s) ;
+      }
+      return list ;
+   }
    public String hh_ls_volume = "[-l] <volume>" ;
    public String ac_ls_volume_$_1( Args args ) throws Exception {
       StringBuffer sb      = new StringBuffer();
