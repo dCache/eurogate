@@ -64,6 +64,45 @@ public class HttpEurogateService implements HttpResponseEngine {
             throw new HttpException( 66 , ee.toString() );
          }
          return ;
+      }else if( command.equals( "volume" ) ){
+      
+         printHtmlTop(pw,"Eurogate Volume");
+         printMenu(pw);
+         
+         if( urlItems.length < 3 ){
+            throw new HttpException( 67 , "Illegally formatted url for 'getVolume'" );
+         }
+         String volumeName = urlItems[2] ;
+         try{
+            printVolume( pw , volumeName) ;
+         }catch(Exception ee ){
+            throw new HttpException( 66 , ee.toString() );
+         }
+         return ;
+      }else if( command.equals( "pvrqueue" ) ){
+      
+         printHtmlTop(pw,"Eurogate Pvr Queue");
+         printMenu(pw);
+         
+         if( urlItems.length < 3 ){
+            throw new HttpException( 67 , "Illegally formatted url for 'Pvr Queue'" );
+         }
+         String pvrName = urlItems[2] ;
+         if( ( urlItems.length > 3 ) &&  urlItems[3].startsWith("action") ){
+            try{
+               pvrAction( pw , pvrName , createMap( urlItems[3] ) ) ;
+            }catch(Exception ee ){
+               throw new HttpException( 66 , ee.toString() );
+            }
+            
+         }else{
+            try{
+               printPvrQueues( pw , pvrName) ;
+            }catch(Exception ee ){
+               throw new HttpException( 66 , ee.toString() );
+            }
+         }
+         return ;
       }else{
          throw new 
          HttpException( 33 , "Url : "+command+" not found on this server" ) ;
@@ -81,6 +120,106 @@ public class HttpEurogateService implements HttpResponseEngine {
       return msg.getMessageObject() ;
       
            
+   }
+   private DateFormat  _df    = new SimpleDateFormat("MMM d, hh:mm:ss" ) ;
+   private void pvrAction( PrintWriter pw , String pvrName , Map options ) throws Exception {
+       String action = (String)options.get("action") ;
+       if( ( action != null ) && ( ! action.equals("") ) )sendRequest( pvrName , "do "+action) ;
+       printPvrQueues( pw , "*" ) ;
+   }
+   private void printPvrQueues( PrintWriter pw , String pvrName ) throws Exception {
+      if( ! pvrName.equals("*") ){ printPvrQueue( pw , pvrName ) ; return ; }
+      
+      Object obj = sendRequest( "pvl" , "ls pvr" ) ;
+      if( ! ( obj instanceof String ) ){
+         pw.println("<h3>No Manual Pvr Queues found</h3>");
+         return ;
+      }
+      StringTokenizer st = new StringTokenizer( obj.toString() , "\n") ;
+      pw.println( "<center><h1><font color=gray>The Eurogate Pvr Queues</font></h1></center>") ;
+      
+      while( st.hasMoreTokens() ){
+         String pvr = st.nextToken() ;
+         printPvrQueue( pw , pvr ) ;
+      }
+      
+   }
+   private void printPvrQueue( PrintWriter pw , String pvrName ) throws Exception {
+      Object obj = sendRequest( pvrName , "x ls queue" ) ;
+      
+      if( ! ( obj instanceof  List ) ){
+        // pw.println("<h3>Pvr "+pvrName+" doesn't have a queue</h3>");
+         return ;
+      }
+      pw.println( "<h1><font color=gray>The Eurogate Pvr Queue of "+pvrName+"</font></h1>") ;
+      List list = (List)obj ;
+      String prefix = "<td align=center>";
+      pw.println("<form action=\"/online/pvrqueue/"+pvrName+"/action\" method=\"get\">");
+      pw.println("<center><table border=1 cellspacing=0 cellpadding=2 width=\"90%\">");
+      pw.println("<tr>");
+      pw.println("<th>Action</th><th>ID</th><th>Command</th><th>Drive</th><th>Cartridge</th><th>Waiting/Min</th>");
+      pw.println("</tr>");
+      long now = System.currentTimeMillis() ;
+      for( Iterator i = list.iterator() ; i.hasNext() ; ){
+         Object [] o = (Object [])i.next() ;
+         
+         pw.println("<tr>");
+         String id = o[0].toString() ;
+         pw.print(prefix) ; 
+         pw.print("<input type=\"radio\" name=\"action\" value=\""+id+"\">") ;   
+         pw.println("</td>");
+         pw.print(prefix) ; pw.print(id); pw.println("</td>");
+         pw.print(prefix) ; pw.print(o[1].toString()); pw.println("</td>");
+         pw.print(prefix) ; pw.print(o[2].toString()); pw.println("</td>");
+         pw.print(prefix) ; pw.print(o[3].toString()); pw.println("</td>");
+         long diff = now - ((Long)o[4]).longValue() ;
+         pw.print(prefix) ; pw.print( diff/60000L ); pw.println("</td>");
+         pw.println("</tr>");      
+      }
+      pw.println("</table>");
+      pw.println("<br><br><input type=\"submit\" value=\"Perform Action\" name=\"command\"></center>");
+      pw.println("</form>");
+      
+   }
+   private void printVolume( PrintWriter pw , String volumeName ) throws Exception {
+      Object obj = sendRequest( "MAIN-store" , "x ls volume "+volumeName ) ;
+      pw.println( "<center><h1><font color=gray>The Eurogate Volume "+volumeName+"</font></h1></center>") ;
+      
+      if( ! ( obj instanceof  List ) ){
+         pw.println("<h3>Volume "+volumeName+" doesn't exist or is still empty</h3>");
+         pw.println("<br><br>The original error message was<br><br><hr>"+obj.toString()+"<br><hr>" ) ;
+         return ;
+      }
+   
+      List list = (List)obj ;
+      String prefix = "<td align=center>";
+      pw.println("<center><table border=1 cellspacing=0 cellpadding=2 width=\"90%\">");
+      pw.println("<tr>");
+      pw.println("<th>Bfid</th><th>Size/Bytes</th><th>Creation</th><th>Status</th>");
+      pw.println("<th>Access Count</th><th>Volume</th><th>Position</th>");
+      pw.println("<th>Last Access</th>");
+      pw.println("</tr>");
+      for( Iterator i = list.iterator() ; i.hasNext() ; ){
+         Object [] o = (Object [])i.next() ;
+         pw.println("<tr>");
+         
+         pw.print(prefix) ; pw.print(o[0].toString()); pw.println("</td>");
+         pw.print(prefix) ; pw.print(o[1].toString()); pw.println("</td>");
+         pw.print(prefix) ; pw.print( _df.format( (Date)o[2] ) ) ; pw.println("</td>");
+         String status = o[3].toString() ;
+         pw.print(prefix) ; pw.print(status); pw.println("</td>");
+         if( status.startsWith("p") ){
+            pw.print(prefix) ; pw.print(o[4].toString()); pw.println("</td>");
+            pw.print(prefix) ; pw.print(o[5].toString()); pw.println("</td>");
+            pw.print(prefix) ; pw.print(o[6].toString()); pw.println("</td>");
+            pw.print(prefix) ; pw.print(_df.format( (Date)o[7] ) ); pw.println("</td>");
+         }else{
+            pw.println("<td align=center colspan=4>Not yet known</td>");
+         }
+         
+         pw.println("<tr>");
+      }
+      pw.println("</table></center>");
    }
    private void printVolumes( PrintWriter pw ) throws Exception {
       Object obj = sendRequest( "pvl" , "x ls volumes" ) ;
@@ -108,8 +247,23 @@ public class HttpEurogateService implements HttpResponseEngine {
                Map.Entry v = (Map.Entry)volumes.next() ;
                String volumeName = v.getKey().toString() ;
                String [] info    = (String[])v.getValue() ;
+
+
+               int count = 0 ;
+               try{ count = Integer.parseInt( info[0] ) ; }catch(Exception ee ){}
+
                pw.print("<tr>");
-               pw.print(prefix);pw.print(volumeName);pw.println("</td>");
+               pw.print(prefix);                 
+               if( count > 0 ){
+                  pw.println("<a href=\"/online/volume/"+volumeName+"\">") ;
+                  pw.print(volumeName);
+                  pw.println("</a>");
+               }else{
+                  pw.print(volumeName);
+               }
+               pw.println("</td>");
+               
+               
                pw.print(prefix);pw.print(volumeSetName);pw.println("</td>");
                pw.print(prefix);pw.print(pvrName);pw.println("</td>");
                for( int l = 0 ; l < info.length ; l++ ){
@@ -229,6 +383,7 @@ public class HttpEurogateService implements HttpResponseEngine {
      pw.println("<th><a href=/online/drives>Drives</a></th>");
      pw.println("<th><a href=/online/requests>Requests</a></th>");
      pw.println("<th><a href=/online/setup>Setup</a></th>");
+     pw.println("<th><a href=/online/pvrqueue/*>Robotic Queues</a></th>");
      pw.println("</tr></table></center>");
    }
    private void printDirectory( PrintWriter pw ){
@@ -264,6 +419,36 @@ public class HttpEurogateService implements HttpResponseEngine {
       pw.println( ee.getMessage() ) ;
       pw.println( "</pre>" ) ;
    }
+   private Map createMap( String message ){
+       HashMap map = new HashMap() ;
+       int     pos = message.indexOf('?');
+       if( ( pos < 0 ) || ( pos == ( message.length() - 1 ) ) ){
+          map.put("$MAIN$",message);
+          return map ;
+       }
+       map.put("$MAIN$",message.substring(pos));
+       StringTokenizer st = new StringTokenizer(message.substring(pos+1),"&") ;
+       while( st.hasMoreTokens() ){
+          StringTokenizer ss = new StringTokenizer( st.nextToken() , "=" ) ;
+          try{
+              String key   = ss.nextToken() ;
+              String value = ss.hasMoreTokens() ? ss.nextToken() : "true" ;
+              Object o  = map.get(key) ;
+              if( o == null ){
+                  map.put( key , value ) ;
+              }else if( o instanceof List ){
+                 ((List)o).add(value) ;
+              }else if( o instanceof String ){
+                 List l = new ArrayList() ;
+                 l.add( o ) ;
+                 l.add( value ) ;
+                 map.put( key , l ) ;
+              }
+          }catch(NoSuchElementException nsee ){}
+       }
+       return map ;
+
+    }
 
 
 } 
