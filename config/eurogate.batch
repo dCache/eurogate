@@ -109,7 +109,7 @@ define context webHome endDefine
   </body>
   </html>
 endDefine
-copy file:${documents}/docs/home.html context:home
+#copy file:${documents}/docs/home.html context:home
 #
 define context HttpServerSetup endDefine
    set alias images directory ${documents}/docs/images 

@@ -34,21 +34,46 @@ if [ ! -z "${domain}" ] ; then
     if [ -z "$base" ] ; then base=${domainName} ; fi
     pidFile=${config}/lastPid.${base}
 fi
+#
+#  host key
+#
+sshHostKey=/etc/ssh/ssh_host_key
+if [ ! -f ${keyBase}/host_key ] ; then
+   if [ ! -r ${sshHostKey} ] ; then
+      echo " --- Configuration Error : no access to host key"
+      echo "      Host key (${sshHostKey}) either doesn't exist"
+      echo "      or is not accessible with our uid"
+      echo "      Or you may create a faked host key in my config"
+      echo "      directory by running :"
+      echo "      ( cd ../config ; ssh-keygen -b 1024 -t rsa1  -f ./host_key   -N \"\" )"
+      echo ""
+      exit 5
+   else
+      ln -s ${sshHostKey} ${keyBase}/host_key
+   fi
+fi
+#
 if [ -z  "${logfile}" ] ; then
    if [ -z "${logArea}" ] ; then
+     echo " -- Configuration Error : The log area ${logArea} doesn't exist."
+     echo "                          Please fix config/eurogateSetup"
+     exit 5
      logfile=/tmp/${domainName}.log 
    else
-     logfile=${logArea}/${domainName}.log 
+     logfile=${logArea}/${domainName}.log
    fi
 fi
 touch ${logfile} 2>/dev/null
 if [ $? -ne 0 ] ; then
-  echo "Couldn't write to logfile ${logfile}; using /dev/null" 1>&2
+     echo " -- Configuration Error : The log area ${logArea} is not writable for us."
+     echo "" 
+     exit 6
   logfile=/dev/null
 fi
 touch ${pidFile} 2>/dev/null
 if [ $? -ne 0 ] ; then
-   echo "Couldn't use pidFile ${pidFile}, can't startup !!" 1>&2
+     echo " -- Configuration Error : Can't write into my own config directory."
+     echo ""
    exit 4
 #   pidFile=/dev/null
 fi
@@ -60,12 +85,14 @@ fi
 prepareDbSimMode() {
 
    if [ -z "${databaseRoot}" ] ; then
-      echo "Database Root not specifed" 1>&2
-      return 2
+      echo " -- Configuration Error : Database Root not specifed" 1>&2
+      echo "        Please fix eurogateSetup (${databaseRoot})"
+      exit 2
    fi
    if [ ! -w "${databaseRoot}" ] ; then
-      echo "Database Root not writable" 1>&2
-      return 2
+      echo " -- Configuration Error : Database Root not writable or doesn't exist" 1>&2
+      echo "        Please fix this first (${databaseRoot})"
+      exit 2
    fi
    if [ -z "`ls ${databaseRoot}`" ] ; then
       echo " * Creating new Database"
@@ -191,7 +218,9 @@ procHelp() {
 
 procSwitch() {
    case "$1" in
-      *start)       prepareDbSimMode ; shift 1 ; procStart $* ;;
+      *start)       prepareDbSimMode
+                    shift 1 
+                    procStart $* ;;
       *stop)        procStop  ;;
       *) procHelp $*
       ;;

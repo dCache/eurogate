@@ -86,18 +86,18 @@ if [ ! -d classes ] ; then
   exit 4
 fi
 #
-printf "classes "
+#printf "classes "
 cp classes/cells.jar classes/eurogate.jar dist/eurogate/classes
-printf "jobs "
+#printf "jobs "
 cp jobs/eurogate.lib.sh jobs/wrapper2.sh jobs/needFulThings.sh  dist/eurogate/jobs
-printf "config "
+#printf "config "
 cp config/eurogateSetup config/eurogate.batch  dist/eurogate/config
 cd dist/eurogate/jobs
 [ ! -f eurogate ] && ln -s wrapper2.sh eurogate
 cd ../../..
-printf "docs "
+#printf "docs "
 ( tar cf - docs ) | ( cd dist/eurogate/eurogatedocs ; tar xf - )
-printf "bin "
+#printf "bin "
 cp capi/test capi/eucp dist/eurogate/bin
 ( cd dist/eurogate/bin ; [ ! -f eurm ] && ln -s eucp eurm )
 #
