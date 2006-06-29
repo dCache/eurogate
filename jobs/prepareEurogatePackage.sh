@@ -90,7 +90,7 @@ fi
 #
 #  we need the dcache.jar for the user admin cell.
 #
-cp classes/cells.jar classes/eurogate.jar classes/dcache.jar dist/eurogate/classes
+cp classes/cells.jar classes/eurogate.jar classes/dcache.jar classes/org.pcells.jar dist/eurogate/classes
 #printf "jobs "
 cp jobs/eurogate.lib.sh jobs/wrapper2.sh jobs/needFulThings.sh  dist/eurogate/jobs
 #printf "config "
