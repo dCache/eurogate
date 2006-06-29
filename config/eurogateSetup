@@ -1,0 +1,72 @@
+#
+#  --------------------------------------------------
+#
+#      Eurogate   config/eurogateSetup
+#
+#  --------------------------------------------------
+#
+#   This is the master setup file for the configuration
+#   of the Eurostore HSM in simulation mode.
+#   It mainly defines the 
+#     - path of the binaries and logfiles.
+#     - path of the jar files and the java class directories
+#     - class names of optional or alternative cells.
+#     - portnumbers of services like ssh pvl telnet and the HSM client.
+#
+#  --------------------------------------------------
+#
+#  --- the java VM
+#
+java=/usr/bin/java
+#
+#
+#  --- The filesystem location of the database
+#      This directory must exist before the system is started
+#      the first time. It needs to be empty at that time in 
+#      order to have it correctly configured.
+#
+databaseRoot=${ourHomeDir}/db-2
+#
+#  --- If the HSM simulated data shouldn't be placed in 
+#      the database tree, moverData has to point to this
+#      area. The directory must exists on the first start
+#      of the system.
+#
+moverData=${databaseRoot}/mover
+#
+#  --- the log area. Will contain the eurogateDomain.log file.
+#
+logArea=/tmp
+#
+#  --- some port numbers
+#
+#       the actual transfer client door port.
+#
+clientPort=28000
+#
+#       the admin door port.
+#
+sshPort=23125
+#
+#       the admin door port.
+#
+httpPort=23080
+#
+#  --- the following settings shouldn't be modified unless
+#      you know what you are doing.
+# 
+#
+config=${ourHomeDir}/config
+keyBase=${ourHomeDir}/config
+#classpath=${ourHomeDir}/classes/cells.jar:${ourHomeDir}/classes/eurogate.jar
+classpath=/home/patrick/cvs-eurogate:${ourHomeDir}/classes/cells.jar:${ourHomeDir}/classes/dcache.jar
+javaOnly=true
+documents=${ourHomeDir}/eurogatedocs
+storeClass=eurogate.store.sldb.SldbStoreV1
+master=yes
+mover=no
+mode=simulation
+#  pvlDbPort=23124
+#  telnetPort=23123
+#  spyPort=23222
+#  aclPort=23126
