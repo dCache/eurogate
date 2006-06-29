@@ -35,6 +35,57 @@ if [ ! -z "${domain}" ] ; then
     pidFile=${config}/lastPid.${base}
 fi
 #
+findJavaVM() {
+   PATH=/usr/java/bin:/usr/bin:/usr/lib/jvm/jre/bin:$PATH
+   javaLocation=`which java 2>/dev/null`
+   if [ $? -eq 0 ] ; then
+      echo ${javaLocation}
+      return 0
+   fi
+   echo "not found ${javaLocation}" >&2
+   find /usr -maxdepth 1 -type d -name "jdk*" | while  read dir ; do
+      javaloc=$dir/bin/java
+      if [ -f $javaloc ] ; then echo $javaloc ; return 0 ; fi
+   done
+   find /usr -maxdepth 1 -type d -name "j2sdk*" | while  read dir ; do
+      javaloc=$dir/bin/java
+      if [ -f $javaloc ] ; then echo $javaloc ; return 0 ; fi
+   done
+   find /opt -maxdepth 1 -type d -name "jdk*" | while  read dir ; do
+      javaloc=$dir/bin/java
+      if [ -f $javaloc ] ; then echo $javaloc ; return 0 ; fi
+   done
+   find /opt -maxdepth 1 -type d -name "j2sdk*" | while  read dir ; do
+      javaloc=$dir/bin/java
+      if [ -f $javaloc ] ; then echo $javaloc ; return 0 ; fi
+   done
+   return 1
+}
+checkJavaVM() {
+  if [ -z "${java}" ] ; then
+     findJavaVM
+     return $?
+  else
+     ${java} -version >/dev/null 2>&1
+     if [ $? -ne 0 ]  ; then
+         findJavaVM
+         return $?
+     fi
+     echo ${java}
+     return 0
+  fi
+}
+#
+java=`checkJavaVM 2>/dev/null`
+if [ -z "${java}" ] ; then
+  echo ""
+  echo " --- Configuration Problem : can't find java VM"
+  echo "        Please set the 'java' variable in"
+  echo "          config/eurogateSetup correctly"
+  echo ""
+  exit 5
+fi
+#
 #  host key
 #
 sshHostKey=/etc/ssh/ssh_host_key

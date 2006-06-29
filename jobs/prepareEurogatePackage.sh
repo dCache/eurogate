@@ -43,7 +43,7 @@ rm -rf ../spy
 #
 export CLASSPATH
 CLASSPATH=../classes/cells.jar:../..
-javac `find .. -name "*.java"`
+javac -source 1.4 -target 1.4 `find .. -name "*.java"`
 if [ $? -ne 0 ] ; then
   echo ""
   echo "  !!! Error in compiling dCache " 1>&2
@@ -102,4 +102,8 @@ cp capi/test capi/eucp dist/eurogate/bin
 ( cd dist/eurogate/bin ; [ ! -f eurm ] && ln -s eucp eurm )
 #
 echo "Done"
+printf " Preparing tar file .... "
+cd dist
+tar czf ../eurogate.tar.gz eurogate
+echo " -> ../eurogate.tar.gz"
 exit 0
