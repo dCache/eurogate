@@ -55,7 +55,7 @@ printf " Making eurogate.jar ... "
 (  goUp ;
    goUp ; 
   rm -rf eurogate/classes/eurogate.jar
-  jar cf eurogate/classes/eurogate.jar `find . -name "*.class"`
+  jar cf eurogate/classes/eurogate.jar `find eurogate -name "*.class"`
  )
 echo "Done" 
 #
@@ -65,7 +65,7 @@ cd ../capi
 make -f Makefile.linux >/dev/null 2>&1
 if [ $? -ne 0 ] ; then
    echo " Failed"
-   echo "    Please run the folling commands for deatils "
+   echo "    Please run the following commands for details "
    echo "    cd capi"
    echo "    make -f Makefile.linux"
    exit 5
@@ -87,11 +87,14 @@ if [ ! -d classes ] ; then
 fi
 #
 #printf "classes "
-cp classes/cells.jar classes/eurogate.jar dist/eurogate/classes
+#
+#  we need the dcache.jar for the user admin cell.
+#
+cp classes/cells.jar classes/eurogate.jar classes/dcache.jar dist/eurogate/classes
 #printf "jobs "
 cp jobs/eurogate.lib.sh jobs/wrapper2.sh jobs/needFulThings.sh  dist/eurogate/jobs
 #printf "config "
-cp config/eurogateSetup config/eurogate.batch  dist/eurogate/config
+cp config/eurogateSetup config/eurogate.batch config/server_key dist/eurogate/config
 cd dist/eurogate/jobs
 [ ! -f eurogate ] && ln -s wrapper2.sh eurogate
 cd ../../..
