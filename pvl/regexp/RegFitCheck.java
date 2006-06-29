@@ -165,7 +165,7 @@ public class RegFitCheck{
     
     try{
       Float lf = (Float)leftValue; 
-        if( lf.compareTo( rightValue) < 0 ) return FALSE; else return TRUE;      
+        if( lf.compareTo( (Float)rightValue) < 0 ) return FALSE; else return TRUE;      
     }
     catch( ClassCastException ec){}
     catch( NumberFormatException ef){}
@@ -194,7 +194,7 @@ public class RegFitCheck{
 
     try{
         Float lf = (Float)leftValue; 
-        if( lf.compareTo( rightValue ) > 0 ) return FALSE; else return TRUE;      
+        if( lf.compareTo( (Float)rightValue ) > 0 ) return FALSE; else return TRUE;      
     }
     catch( ClassCastException ec ){}
     catch( NumberFormatException ef){}
@@ -250,7 +250,7 @@ public class RegFitCheck{
 
     try{
       Float lf = (Float)leftValue; 
-      if( 0 == lf.compareTo( rightValue ) ) return TRUE; else return FALSE;      
+      if( 0 == lf.compareTo( (Float)rightValue ) ) return TRUE; else return FALSE;      
     }
     catch( ClassCastException ec){}
     catch( NumberFormatException ef){}
@@ -308,7 +308,7 @@ public class RegFitCheck{
 
    try{
      Float lf = (Float)leftValue; 
-     if( 0 == lf.compareTo( rightValue ) ) return FALSE; else return TRUE;      
+     if( 0 == lf.compareTo( (Float)rightValue ) ) return FALSE; else return TRUE;      
    }
    catch( ClassCastException ec){}
    catch( NumberFormatException ef){}
