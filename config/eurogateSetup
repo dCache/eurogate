@@ -58,8 +58,7 @@ httpPort=23080
 #
 config=${ourHomeDir}/config
 keyBase=${ourHomeDir}/config
-#classpath=${ourHomeDir}/classes/cells.jar:${ourHomeDir}/classes/eurogate.jar
-classpath=/home/patrick/cvs-eurogate:${ourHomeDir}/classes/cells.jar:${ourHomeDir}/classes/dcache.jar
+classpath=${ourHomeDir}/classes/cells.jar:${ourHomeDir}/classes/eurogate.jar
 javaOnly=true
 documents=${ourHomeDir}/eurogatedocs
 storeClass=eurogate.store.sldb.SldbStoreV1
