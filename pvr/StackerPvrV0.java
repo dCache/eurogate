@@ -4,7 +4,7 @@ import   eurogate.db.pvr.* ;
 
 import java.util.*;
 import java.io.* ;
-
+import java.lang.reflect.* ;
 import dmg.cells.nucleus.*; 
 import dmg.util.*;
 import dmg.util.cdb.* ;
@@ -28,19 +28,27 @@ public class      StackerPvrV0
    private PvrDb       _pvrDb   = null ;
    private int         _arms    = 0 ;
    private int         _activeArms        = 0 ;
+   private int         _availableArms     = 0 ;
    private Map         _requestMap        = new HashMap() ;
    private Map         _cartridgeLocation = new HashMap() ;
    private Map         _driveLocation     = new HashMap() ;
    private boolean     _isNewDatabase     = false ;
    private EasyStackable _stackable       = null ;
-   private static int __requestId = 0 ;
-   private static Object __idLock = new Object() ;
+   private Thread        _scheduler       = null ;
+   
+   private static int    __requestId = 0 ;
+   private static Object __idLock    = new Object() ;
+   
    private class Request {
        private CellMessage message = null ;
        private PvrRequest  request = null ;
+       private String      driveLocation     = null ;
+       private String      cartridgeLocation = null ;
        private String      _command = null ;
        private int         _requestId = 0 ;
        private long        _started   = 0 ;
+       private Thread      _worker    = null  ;
+       
        private Request( CellMessage msg , PvrRequest request ){
           this.message  = msg ;
           this.request  = request ;
@@ -53,24 +61,6 @@ public class      StackerPvrV0
        }
        public String getId(){ return ""+_requestId ; }
    }
-   public interface EasyStackable {
-       public void mount( String driveName , String driveLocation , 
-                          String cartridgeName , String cartridgeLocation ) ;
-       public void dismount( String driveName , String driveLocation , 
-                             String cartridgeName , String cartridgeLocation ) ;
-                          
-   }
-   private class EasyStackerAdapter implements EasyStackable {
-       public void mount( String driveName , String driveLocation , 
-                          String cartridgeName , String cartridgeLocation ){
-                          
-       }
-       public void dismount( String driveName , String driveLocation , 
-                             String cartridgeName , String cartridgeLocation ){
-                             
-       }
-    
-   }
    public StackerPvrV0( String name , String args ) throws Exception {
    
        super( name , args , false ) ;
@@ -80,7 +70,7 @@ public class      StackerPvrV0
           
           if( _args.argc() < 1 ) 
               throw new
-              IllegalArgumentException( "Usage : ... <pvrDbName>" ) ;
+              IllegalArgumentException( "Usage : ... <pvrDbName> [-stackerDriver=<className>]" ) ;
               
           _dbName = _args.argv(0) ;
                           
@@ -91,7 +81,20 @@ public class      StackerPvrV0
              _pvrDb = new PvrDb( new File( _dbName ) , true ) ;
              _isNewDatabase = true ;
           }
-          say( "Database ok." ) ;
+          say( "Database ok at "+_dbName ) ;
+          
+          String stackableName = _args.getOpt("stackerDriver") ;
+          if( ( stackableName != null ) && ( ! stackableName.equals("") ) ){
+              loadStackerDriver( stackableName ) ;
+              say( "Stacker Drive "+stackableName+" succesfully loaded");
+          }
+              
+              
+          if( _stackable != null ){
+             _scheduler = _nucleus.newThread( new Scheduler() , "scheduler" ) ;
+             _scheduler.start() ;
+          }
+          
        }catch( Exception e ){
           esay(e);
           start() ;
@@ -110,7 +113,128 @@ public class      StackerPvrV0
        }catch( Exception ee ){
            esay( "Problem executing : "+auto+" : "+ee ) ;
        }
-   }
+  }
+  private class Worker implements Runnable {
+     private Request _request = null ;
+     private Worker( Request request ){
+        _request = request ;
+     }
+     public void run(){
+        int errorCode = 0 ;
+        String errorMessage = null ;
+        try{
+           say("Starting worker for : "+_request);
+           processRequest( _request ) ;
+        }catch(InterruptedException ee ){
+           errorCode    = 1 ;
+           errorMessage = "Interrupted" ;
+        }catch(EurogatePvrException ee ){
+           errorCode    = ee.getErrorCode() ;
+           errorMessage = ee.getMessage() ;
+        }catch(Throwable te ){
+           errorMessage = te.toString() ;
+           errorCode    = 666 ;
+        }
+        say("Worker done for "+_request.getId()+" ["+errorCode+"] "+(errorMessage==null?"":errorMessage));
+        synchronized( _requestMap ){
+           _requestMap.remove( _request.getId() ) ;
+           commitRequest( _request , errorCode , errorMessage ) ;
+           _activeArms -- ;
+           _requestMap.notifyAll();
+        }
+     }
+  }
+  private void processRequest( Request _request ) throws InterruptedException , EurogatePvrException {
+  
+      String command           = _request.request.getActionCommand() ;
+      String cartridgeName     = _request.request.getCartridge() ;
+      String cartridgeLocation = _request.cartridgeLocation ;
+      String driveName         = _request.request.getGenericDrive() ;
+      String driveLocation     = _request.driveLocation ;
+      
+      if( command.equals("mount") ){
+         _stackable.mount( driveName , driveLocation , cartridgeName , cartridgeLocation ) ;
+      }else if( command.equals("dismount") ){
+         _stackable.dismount( driveName , driveLocation , cartridgeName , cartridgeLocation ) ;
+      }
+  }
+  private class Scheduler implements Runnable {
+  
+     public void run(){
+         say("Scheduler start delayed ..." );
+         try{
+            Thread.sleep(5000L) ;
+         }catch(InterruptedException ie ){
+            esay("Scheduler thread interrupted prematurely");
+            return;
+         }
+         say("Scheduler finally started");
+         try{
+             runScheduler() ;
+         }catch(Exception ee ){
+             esay("Scheduler got an exception and terminated : "+ee);
+             esay(ee);
+         }finally{
+             say("Scheduler finished");
+         }
+     }
+     
+  }
+  private void runScheduler() throws Exception {
+     synchronized( _requestMap ){
+        while( ! Thread.interrupted() ){
+           
+            _requestMap.wait() ;
+            
+            int size = _requestMap.size() ;
+            say("Scheduler woke up with "+size+" pending requests");
+            if( size <= 0 )continue ;
+            for( Iterator i = _requestMap.values().iterator() ; i.hasNext() ; ){
+                say("  "+i.next());
+            }            
+            if( _activeArms >= _availableArms ){
+               say("Scheduler : no arms available");
+               continue ;
+            }
+            Request request = (Request)_requestMap.values().iterator().next() ;
+            say("Scheduler processing request : "+request ) ;
+            request._worker = _nucleus.newThread(   new Worker(request) , "Worker-"+request.getId()  ) ;
+            request._worker.start() ; 
+        }
+     }
+  }
+  private Class [] _callClasses = {
+      java.lang.String.class ,
+      dmg.cells.nucleus.CellAdapter.class 
+  } ;
+  private Class [] _callClasses2 = {
+      java.lang.String.class ,
+  } ;
+  private void loadStackerDriver( String className ) throws Exception {
+      Class sc = Class.forName( className ) ;
+      Object stacker = null ;
+      try{
+          stacker =
+          sc.getConstructor( _callClasses ).newInstance( 
+              new Object[]{  this.getCellName() , this  }
+          ) ;
+      }catch(Exception eee ){
+          try{
+              stacker =
+              sc.getConstructor( _callClasses ).newInstance( 
+                  new Object[]{  this.getCellName() }
+              ) ;        
+          }catch(Exception ee ){
+              stacker = sc.newInstance();
+          }
+      }
+      if( ! ( stacker instanceof EasyStackable ) )
+         throw new
+         IllegalArgumentException(className+" is not eurogate.pvr.EasyStackable" ) ;
+         
+     _stackable = (EasyStackable)stacker ;
+     _availableArms = _stackable.getNumberOfArms() ;
+  }
   public void messageArrived( CellMessage msg ){
   
       Object req = msg.getMessageObject() ;
@@ -147,8 +271,8 @@ public class      StackerPvrV0
     String  actionCommand = newRequest.getActionCommand() ;
     String  newDriveName  = newRequest.getGenericDrive() ;
     String  newCartridge  = newRequest.getCartridge() ;
-    String error = null ;
-    
+    String  error         = null ;
+
     try{
     
        if( actionCommand.equals("newdrive") ){
@@ -166,25 +290,27 @@ public class      StackerPvrV0
             return  ;
        }
        say("Checking request : "+request) ;
-       for( Iterator i = _requestMap.values().iterator() ; i.hasNext() ; ){
+       synchronized( _requestMap ){
+          for( Iterator i = _requestMap.values().iterator() ; i.hasNext() ; ){
 
-          Request    cursor        = (Request)i.next() ;
-          PvrRequest requestCursor = cursor.request ;
+             Request    cursor        = (Request)i.next() ;
+             PvrRequest requestCursor = cursor.request ;
 
-          if( requestCursor.getActionCommand().equals( actionCommand ) ){
-             if( ( actionCommand.equals("mount") &&
-                   ( requestCursor.getCartridge().equals( newCartridge) ||
-                     requestCursor.getGenericDrive().equals( newDriveName ) )
-                 )||
-                 ( actionCommand.equals("dismount") &&
-                   requestCursor.getGenericDrive().equals( newDriveName ) ) 
-                ){
+             if( requestCursor.getActionCommand().equals( actionCommand ) ){
+                if( ( actionCommand.equals("mount") &&
+                      ( requestCursor.getCartridge().equals( newCartridge) ||
+                        requestCursor.getGenericDrive().equals( newDriveName ) )
+                    )||
+                    ( actionCommand.equals("dismount") &&
+                      requestCursor.getGenericDrive().equals( newDriveName ) ) 
+                   ){
 
-                //
-                // this is not correct
-                //   
-                throw new Exception(  "Similiar request already in queue" ) ;
-             }   
+                   //
+                   // this is not correct
+                   //   
+                   throw new Exception(  "Similiar request already in queue" ) ;
+                }   
+             }
           }
        }
        say("No similiar request found for : "+request);
@@ -202,12 +328,19 @@ public class      StackerPvrV0
        }
        drive.open(CdbLockable.WRITE) ;
        String cartridgeInDrive = drive.getCartridge() ;
+       request.driveLocation    = drive.getLocation() ;
        drive.close( CdbLockable.COMMIT );   
        PvrCartridgeHandle cartridge = null ;
        try{
           cartridge = _pvrDb.getCartridgeByName( newCartridge ) ;
        }catch(Exception ee ){
           throw new Exception("Cartridge not found : "+newCartridge ) ;
+       }
+       cartridge.open(CdbLockable.WRITE) ;
+       try{
+          request.cartridgeLocation = cartridge.getLocation() ;
+       }finally{
+          cartridge.close( CdbLockable.COMMIT ) ;
        }
        say("Drive and cartridge exists for : "+request);
        //
@@ -244,7 +377,7 @@ public class      StackerPvrV0
         synchronized( _requestMap ){
             _requestMap.put( request.getId() , request ) ;
             _requestMap.notifyAll() ;
-            requestCountChanged() ;
+            //requestCountChanged() ;
         }
     }catch(Exception ee ){
        esay( error = ee.getMessage() ) ;
@@ -252,6 +385,7 @@ public class      StackerPvrV0
        sendBack( request ) ;
     }
   }
+  /*
   private void requestCountChanged(){
  
      for( Iterator i = _requestMap.values().iterator() ; 
@@ -268,7 +402,7 @@ public class      StackerPvrV0
            _activeArms ++ ;
            new StackerHandler( request ) ;    
      }
-  }
+   }
   private class StackerHandler implements Runnable {
       private Request _request = null ;
       private StackerHandler( Request request ){
@@ -294,7 +428,8 @@ public class      StackerPvrV0
           }
       }
   } 
-  private void commitRequest( Request request ) {
+  */
+  private void commitRequest( Request request , int errorCode , String errorMessage ) {
   
      PvrRequest pvr = request.request ;
      String action = pvr.getActionCommand() ;
@@ -310,6 +445,7 @@ public class      StackerPvrV0
         }finally{
             drive.close( CdbLockable.COMMIT ) ;
         }
+        pvr.setReturnValue( errorCode , errorMessage ) ;
      }catch(Exception iie){
         String error = "Error in commit request : "+iie.getMessage() ;
         esay( error ) ;
@@ -353,6 +489,10 @@ public class      StackerPvrV0
   public String hh_do = "<requestId> [-failed]" ;
   public String ac_do_$_1( Args args ) throws Exception {
      String requestId = args.argv(0) ;
+     if( _stackable != null )
+        throw new
+        Exception("Not a manual library") ;
+        
      synchronized( _requestMap ){
         Request request = (Request)_requestMap.remove(requestId) ;
         if( request == null )
@@ -362,7 +502,7 @@ public class      StackerPvrV0
         if( args.getOpt("failed") != null ){
            request.request.setReturnValue( 41 , "Operator Intervention" ) ;
         }else{ 
-           commitRequest( request ) ;
+           commitRequest( request , 0 , null  ) ;
         }
         _requestMap.notifyAll();
      }
