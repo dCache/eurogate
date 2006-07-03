@@ -27,4 +27,5 @@ public interface EasyStackable {
               throws EurogatePvrException  , InterruptedException ;
     public boolean hasCapability( String capability ) ;
     public int getNumberOfArms() ;
+    public void getInfo( PrintWriter pw ) ;
 }

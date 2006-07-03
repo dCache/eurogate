@@ -29,6 +29,7 @@ public class      StackerPvrV0
    private int         _arms    = 0 ;
    private int         _activeArms        = 0 ;
    private int         _availableArms     = 0 ;
+   private int         _maxAvailableArms  = 0 ;
    private Map         _requestMap        = new HashMap() ;
    private Map         _cartridgeLocation = new HashMap() ;
    private Map         _driveLocation     = new HashMap() ;
@@ -182,26 +183,71 @@ public class      StackerPvrV0
   }
   private void runScheduler() throws Exception {
      synchronized( _requestMap ){
+     
+        ArrayList pendingRequests = new ArrayList() ;
+        Request   request = null ;
         while( ! Thread.interrupted() ){
            
-            _requestMap.wait() ;
-            
-            int size = _requestMap.size() ;
-            say("Scheduler woke up with "+size+" pending requests");
-            if( size <= 0 )continue ;
-            for( Iterator i = _requestMap.values().iterator() ; i.hasNext() ; ){
-                say("  "+i.next());
-            }            
+           
+            say( "Scheduler : pending : "+pendingRequests.size()+
+                 " ; arms = "+_availableArms+
+                 " ; active arms "+_activeArms ) ;
+
+            //
+            // if there is nothing to do we go to sleep.
+            //
+            if( ( pendingRequests.size() == 0   ) ||
+                ( _activeArms >= _availableArms )    )_requestMap.wait();            
+            //
+            // still no arms available ?
+            //
             if( _activeArms >= _availableArms ){
-               say("Scheduler : no arms available");
+               say("Scheduler : No arms available" ) ;
                continue ;
             }
-            Request request = (Request)_requestMap.values().iterator().next() ;
-            say("Scheduler processing request : "+request ) ;
-            request._worker = _nucleus.newThread(   new Worker(request) , "Worker-"+request.getId()  ) ;
-            request._worker.start() ; 
+            //
+            // count current requests and select the best
+            //
+            pendingRequests.clear();
+            
+            for( Iterator i = _requestMap.values().iterator() ; i.hasNext() ; ){
+                request = (Request)i.next() ;
+                if( request._worker != null )continue ; 
+                pendingRequests.add(request);
+            }
+            //
+            // no requests ?
+            //
+            if( pendingRequests.size() == 0 ){
+               say("Scheduler : no requests pending");
+               continue ;
+            }
+            say("Scheduler : chosing 1 out of "+pendingRequests.size() );
+            //
+            // find pending 'dismounts' first
+            //
+            int j = 0 , n = pendingRequests.size() ;
+            for(  ; j < n ; j++ ){
+               request = (Request)pendingRequests.get(j);
+               if( request.request.getActionCommand().equals("dismount") )break ;
+            }
+            if( j < n ){
+               process( (Request)pendingRequests.remove(j) ) ;
+               continue ;
+            }
+            //
+            // no dismount found, just take the first one in the row.
+            //
+            process( (Request)pendingRequests.remove(0) ) ;
+            
         }
      }
+  }
+  private void process( Request request ){
+     say("Scheduler processing request : "+request ) ;
+     request._worker = _nucleus.newThread(   new Worker(request) , "Worker-"+request.getId()  ) ;
+     _activeArms ++ ;
+     request._worker.start() ;
   }
   private Class [] _callClasses = {
       java.lang.String.class ,
@@ -233,7 +279,7 @@ public class      StackerPvrV0
          IllegalArgumentException(className+" is not eurogate.pvr.EasyStackable" ) ;
          
      _stackable = (EasyStackable)stacker ;
-     _availableArms = _stackable.getNumberOfArms() ;
+     _maxAvailableArms = _availableArms = _stackable.getNumberOfArms() ;
   }
   public void messageArrived( CellMessage msg ){
   
@@ -385,54 +431,16 @@ public class      StackerPvrV0
        sendBack( request ) ;
     }
   }
-  /*
-  private void requestCountChanged(){
- 
-     for( Iterator i = _requestMap.values().iterator() ; 
-          ( _activeArms < _arms ) && i.hasNext() ;       ){
-           Request request = (Request)i.next() ;
-           if( request.request.getActionCommand().equals("dismount") ){
-               _activeArms ++ ;
-               new StackerHandler( request ) ;    
-           }          
-     }
-     for( Iterator i = _requestMap.values().iterator() ; 
-          ( _activeArms < _arms ) && i.hasNext() ;       ){
-           Request request = (Request)i.next() ;
-           _activeArms ++ ;
-           new StackerHandler( request ) ;    
-     }
-   }
-  private class StackerHandler implements Runnable {
-      private Request _request = null ;
-      private StackerHandler( Request request ){
-         _request = request ;
-         _nucleus.newThread( this , "STACKER-"+request.getId() ).start() ;
-      }
-      public void run(){
-          //
-          //
-          try{ 
-          
-             Thread.sleep(10000L) ;
-             //
-             // do mount/dismount here
-             //
-          }catch(Exception ee){
-          
-          }finally{
-             synchronized( _requestMap ){
-                 _activeArms -- ;
-                 commitRequest( _request ) ;
-             }
-          }
-      }
-  } 
-  */
   private void commitRequest( Request request , int errorCode , String errorMessage ) {
   
      PvrRequest pvr = request.request ;
-     String action = pvr.getActionCommand() ;
+     String action  = pvr.getActionCommand() ;
+     
+     if( errorCode != 0 ){
+        pvr.setReturnValue( errorCode , errorMessage ) ;
+        sendBack( request ) ;
+        return ;
+     }
      try{
         PvrDriveHandle drive = _pvrDb.getDriveByName( pvr.getSpecificDrive() ) ;
         drive.open( CdbLockable.WRITE ) ;
@@ -454,7 +462,19 @@ public class      StackerPvrV0
      sendBack( request ) ;     
   }
   public void getInfo( PrintWriter pw ){
-     pw.println( "Database : "+_dbName ) ;
+     pw.println( "          Database : "+_dbName ) ;
+     pw.println( "Max Number of Arms : "+_maxAvailableArms ) ;
+     pw.println( "    Number of Arms : "+_availableArms ) ;
+     pw.println( "       Active Arms : "+_activeArms ) ;
+     if( _stackable == null ){
+        pw.println( "    Stacker Driver : None" ) ;
+     }else{
+        pw.println( "Stacker Driver");
+        pw.println( "  Driver  : "+_stackable.getClass().getName() ) ;
+        pw.println( "  Comment : "+_stackable.toString() ) ;
+        pw.println( "  Details") ;
+        _stackable.getInfo(pw);
+     }
   }
   public String hh_x_ls_queue = "" ;
   public Object ac_x_ls_queue(Args args ){
@@ -641,6 +661,19 @@ public class      StackerPvrV0
         }
         return sb.toString() ;
      }
+  }
+  public String hh_set_available_arms = "<numberOfArms>" ;
+  public String ac_set_available_arms_$_1( Args args ){
+     int arms = Integer.parseInt( args.argv(0) ) ;
+     if( ( arms < 0 ) || ( arms > _maxAvailableArms ) )
+       throw new
+       IllegalArgumentException("0 <= <arms> <= "+_maxAvailableArms ) ;
+       
+     synchronized( _requestMap ){
+         _availableArms = arms ;
+         _requestMap.notifyAll() ;
+     }
+     return "" ;
   }
   public String hh_ls_drive = "<driveName>" ;
   public String ac_ls_drive_$_0_1( Args args ) throws Exception {

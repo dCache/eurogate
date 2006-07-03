@@ -200,9 +200,22 @@ define context initPvlDatabase endDefine
    create volume VS004 -cart=S0004 -pvr=stacker -vd=vd-copan
    add volume VS001 -vs=stacker
    add volume VS002 -vs=stacker
-   add volume VS002 -vs=stacker
    add volume VS003 -vs=stacker
-
+   add volume VS004 -vs=stacker
+#
+   create pvr easy
+   create cartridge SE0001-SE0004 -cd=cd-copan -pvr=easy
+   create volumeSet easy
+   create drive easy-drive-0 -pvr=easy -dev=/easy/d00 -spec=easy-drive-0
+   create drive easy-drive-1 -pvr=easy -dev=/easy/d01 -spec=easy-drive-1
+   create volume VE001 -cart=SE0001 -pvr=easy -vd=vd-copan
+   create volume VE002 -cart=SE0002 -pvr=easy -vd=vd-copan
+   create volume VE003 -cart=SE0003 -pvr=easy -vd=vd-copan
+   create volume VE004 -cart=SE0004 -pvr=easy -vd=vd-copan
+   add volume VE001 -vs=easy
+   add volume VE002 -vs=easy
+   add volume VE003 -vs=easy
+   add volume VE004 -vs=easy
 #
 #            create the volume sets
 #
@@ -245,6 +258,14 @@ define context pvrStackerDbInstallation endDefine
    create cartridge S0004 0:4
    create drive st-drive-0 1:0 
    create drive st-drive-1 1:1 
+endDefine
+define context pvrEasyDbInstallation endDefine
+   create cartridge SE0001 0:1
+   create cartridge SE0002 0:2
+   create cartridge SE0003 0:3
+   create cartridge SE0004 0:4
+   create drive easy-drive-0 1:0 
+   create drive easy-drive-1 1:1 
 endDefine
 define context pvrStkDbInstallation endDefine
    create cartridge R01261 -pvr=stk
@@ -307,6 +328,13 @@ define context pvrSimulation endDefine
           -autoinstall=pvrStackerDbInstallation \
           "
 #
+   create eurogate.pvr.StackerPvrV0 easy     \
+          "${databaseRoot}/pvr/easy          \
+          -autoinstall=pvrEasyDbInstallation \
+          -stackerDriver=eurogate.pvr.EasyStackerExec \
+          -exec=${ourHomeDir}/jobs/stacker.sh \
+          "
+#
 ###################################################################
 #
 #  #####                          #     #
@@ -326,6 +354,8 @@ define context pvrSimulation endDefine
 #   create eurogate.mover.MoverV1 copan-1-1  "${pvlName} ${moverData}"
    create eurogate.mover.MoverV1 st-drive-0  "${pvlName} ${moverData}"
    create eurogate.mover.MoverV1 st-drive-1  "${pvlName} ${moverData}"
+   create eurogate.mover.MoverV1 easy-drive-0  "${pvlName} ${moverData}"
+   create eurogate.mover.MoverV1 easy-drive-1  "${pvlName} ${moverData}"
 #
 endDefine
 #

@@ -18,7 +18,7 @@ import eurogate.vehicles.* ;
   * @version 0.1, 20 June 2007
   * 
  */
- public class EasyStackerAdapter implements EasyStackable {
+ public class EasyStackerAdapter implements EasyStackable, Logable {
     private CellAdapter _adapter = null ;
     private String      _ourName = null ;
     public EasyStackerAdapter( String ourName , CellAdapter cellAdapter ){
@@ -43,6 +43,15 @@ import eurogate.vehicles.* ;
     public void esay( Throwable t ){
        if( _adapter != null )_adapter.esay(t) ;
     }
+    public void log( String message ){
+       if( _adapter != null )_adapter.say("["+_ourName+"] "+message) ;
+    }
+    public void elog( String message ){
+       if( _adapter != null )_adapter.esay("["+_ourName+"] "+message) ;
+    }
+    public void plog( String message ){
+       if( _adapter != null )_adapter.esay("["+_ourName+"] "+message) ;
+    }
     public void mount( String driveName , String driveLocation , 
                        String cartridgeName , String cartridgeLocation )
            throws InterruptedException, EurogatePvrException            {
@@ -61,4 +70,9 @@ import eurogate.vehicles.* ;
        return false ;
     } 
     public int getNumberOfArms(){ return 1 ; }
+    public void getInfo( PrintWriter pw ){
+        pw.println("      Easy Stacker Adapater (dummy, no implementation)");
+        return ;
+    }
+
  }

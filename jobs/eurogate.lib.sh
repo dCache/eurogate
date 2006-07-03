@@ -149,6 +149,7 @@ prepareDbSimMode() {
       echo " * Creating new Database"
       mkdir -p ${databaseRoot}/store
       mkdir -p ${databaseRoot}/pvr/stk
+      mkdir -p ${databaseRoot}/pvr/easy
 #      mkdir -p ${databaseRoot}/pvr/copan-0
 #      mkdir -p ${databaseRoot}/pvr/copan-1
       mkdir -p ${databaseRoot}/pvr/stacker

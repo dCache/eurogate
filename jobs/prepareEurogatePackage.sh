@@ -42,7 +42,7 @@ rm -rf ../store/bdb
 rm -rf ../spy
 #
 export CLASSPATH
-CLASSPATH=../classes/cells.jar:../..
+CLASSPATH=../classes/cells.jar:../classes/dcache.jar:../..
 javac -source 1.4 -target 1.4 `find .. -name "*.java"`
 if [ $? -ne 0 ] ; then
   echo ""
@@ -92,7 +92,7 @@ fi
 #
 cp classes/cells.jar classes/eurogate.jar classes/dcache.jar classes/org.pcells.jar dist/eurogate/classes
 #printf "jobs "
-cp jobs/eurogate.lib.sh jobs/wrapper2.sh jobs/needFulThings.sh  dist/eurogate/jobs
+cp jobs/eurogate.lib.sh jobs/stacker.sh jobs/wrapper2.sh jobs/needFulThings.sh  dist/eurogate/jobs
 #printf "config "
 cp config/eurogateSetup config/eurogate.batch config/server_key dist/eurogate/config
 cd dist/eurogate/jobs
