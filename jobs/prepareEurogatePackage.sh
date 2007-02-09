@@ -92,7 +92,7 @@ fi
 #
 cp classes/cells.jar classes/eurogate.jar classes/dcache.jar classes/org.pcells.jar dist/eurogate/classes
 #printf "jobs "
-cp jobs/eurogate.lib.sh jobs/stacker.sh jobs/wrapper2.sh jobs/needFulThings.sh  dist/eurogate/jobs
+cp jobs/eurogate.lib.sh jobs/stacker.sh jobs/wrapper2.sh jobs/needFulThings.sh jobs/euwrapper.sh dist/eurogate/jobs
 #printf "config "
 cp config/eurogateSetup config/eurogate.batch config/server_key dist/eurogate/config
 cd dist/eurogate/jobs
