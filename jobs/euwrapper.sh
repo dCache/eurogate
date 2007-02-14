@@ -11,7 +11,8 @@
 #
 #   hsm set osm -command=<fullPathToThisScript>	(e.g. -command=/opt/d-cache/jobs/euwrapper.sh )
 #   hsm set osm -eudir=<fullPathToEurogateHome>     (e.g -eudir=/opt/d-cache/eurogate )
-#   hsm set osm -eudoor=<EurogateDoor:Port>	(e.g. -eudoor=reagan.desy.de:28000 )
+#   hsm set osm -euhost=<EurogateHostname>	(e.g. -euhost=reagan.desy.de )
+#   hsm set osm -euport=<EurogatePortnumber>    (e.g. -euport=28000 )
 #   hsm set osm -pnfs=<fullPathToPnfsMountpoint>  (e.g. -pnfs=/pnfs/desy.de )
 #
 #   prerequisits
@@ -204,11 +205,8 @@ datasetPut() {
 ygroup=${1}
 yfilename=${2}
 
-#    echo "execute put : ${euclient} write ${yfilename} ${ygroup}" 1>&2
-#    ybfid=`${euclient} write ${yfilename} ${ygroup}`
-
-#    echo "hallo:ballo execute put : ${euclient} write ${yfilename} all" 1>&2
-    ybfid=`${euclient} write ${yfilename} all`
+#	echo " ${euclient} write ${yfilename} all"
+	ybfid=`${euclient} write ${yfilename} all`
 
 
    if [ $? -ne 0 ] ; then
@@ -261,13 +259,20 @@ storeStorageInfo() {
 
 #
 #
-# test for optional key '-eudoor'
-[ -z "${eudoor}" ] && problem 4 "key 'eudoor' not set"
+# test for optional key '-euhost'
+[ -z "${euhost}" ] && problem 4 "key 'euhost' not set"
+
+#
+#
+# test for optional key '-euport'
+[ -z "${euport}" ] && problem 5 "key 'euport' not set"
+
+
 
 
 # test for java
 $JAVA -version 2> /dev/null
-[ $? -ne 0 ] &&  problem 5 "no java in classpath"
+[ $? -ne 0 ] &&  problem 6 "no java in classpath"
 
 
 # test for the eurogate client classes
@@ -275,9 +280,7 @@ euclassesdir=$eudir/classes
 [ ! -f $euclassesdir/cells.jar -a ! -f $euclassesdir/eurogate.jar ] && problem 6 "cells.jar and/or eurogate.jar not in$euclassesdir"
 
 # the client execution command
-euclient="$JAVA -cp ${euclassesdir}/cells.jar:${euclassesdir}/eurogate.jar eurogate.gate.EuroSyncClient" 
-# this variable must be accessable by the eurogate-application
-export DOORADDR=${eudoor}
+euclient="$JAVA -cp ${euclassesdir}/cells.jar:${euclassesdir}/eurogate.jar eurogate.gate.EuroSyncClient -host=${euhost} -port=${euport} " 
 #
 #
 if [ -z "${waitTime}" ] ; then waitTime=1 ; fi
