@@ -69,3 +69,4 @@ pvlDbPort=23124
 #  telnetPort=23123
 #  spyPort=23222
 #  aclPort=23126
+# iodelay=0

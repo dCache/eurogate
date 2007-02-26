@@ -44,10 +44,13 @@ public class MoverV1 extends CellAdapter implements Runnable {
          start() ;
          kill() ;
          throw new 
-         IllegalArgumentException( "Usage : ... <pvlPath> <devBase>" ) ;
+         IllegalArgumentException( "Usage : ... <pvlPath> <devBase> <<iodelay>>" ) ;
       }
       _pvlPath = _args.argv(0) ;
       _devBase = _args.argv(1) ;
+      if (_args.argc() > 2) {
+    	  _delay = Integer.parseInt(_args.argv(2));
+      }
       _info    = new StateInfo( getCellName() , true ) ;
       _spray   = new StateInfoUpdater( _nucleus , 20 ) ;
 //      _spray.addTarget( _pvlPath ) ;
