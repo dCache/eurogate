@@ -1,0 +1,126 @@
+++++++++++++++++++++
++ Eurogate package +
+++++++++++++++++++++
+
+How to build
+============
+
+- cvs co eurogate
+- build requirements: cells.jar, dcache.jar
+
+- Cells version (cells.jar) and dcache version (dcache.jar) included/compiled against: production-1-7-0
+
+Some minor changes to make it compile:
+
+- build command: eurogate/jobs/prepareEurogatePackage.sh
+- for production-1-7-0: use javac version 1.4.2 (for compiling cells, dcache, eurogate)
+- cells.jar was compiled using the normal dCache build system (ant cells). But there was a change necessary in Build-System/modules-builds/cells-build.xml: The cells.selector must contain the additional line '<filename name="dmg/util/db/*" />'.
+- dcache.jar was builded the same way (ant dcache.bin) without changes.
+- eurogate code needed to be fixed: eurogate.mover.MoverEasy was deleted
+- some subclasses were broken due to a change of the cells superclass 'dmg.util.StreamEngine' -> fixed
+
+
+How to install a simulated HSM
+==============================
+
+- untar eurogate.tar.gz in /opt/d-cache
+- make sure that /opt/d-cache/eurogate/classes/cells.jar and eurogate/classes/dcache.jar are the same as in pcells (and probably in dcache to be on the safe side)
+- mkdir /opt/d-cache/eurogate/db-2	(place where the eurogate tape repository lives, needs lots of space)
+- set java path in /opt/d-cache/eurogate/config/eurogateSetup
+- set java path in /opt/d-cache/eurogate/jobs/euwrapper.sh
+- /opt/d-cache/eurogate/jobs/eurogate start -logArea=/var/log
+
+- server ports: 28000 (eurogate door awaiting store-/restore-/remove- requests), 23125 (ssh admin door), 23080 (webserver)
+
+- docs: http://<hostname>:23080/x/docs/EuroGuide.html
+- eurogate startpage: http://<hostname>:23080/online  (provides access to drives, request queues and setup)
+- admin interface: ssh -p 23125 -c blowfish -1 admin@<hostname>
+
+
+How to test eurogate using the eurogate client
+==============================================
+
+CLIENT="java -cp eurogate/classes/cells.jar:eurogate/classes/eurogate.jar  eurogate.gate.EuroSyncClient -host=<eurogateHost> -port=28000"
+
+$CLIENT write /bin/sh all
+	-> returns bitfile-id
+$CLIENT read <bitfile-id> /dev/null
+$CLIENT remove <bitfile-id>
+
+( the eurogate activities (drives mounting tapes, i/o) can be observed using the webinterface or the PCells GUI )
+
+
+Connecting dCache pools to Eurogate
+===================================
+
+- one eurogate server can serve many Pools
+- each poolnode must have the eurogate package installed ( EUHOME=/opt/d-cache/eurogate ), which contains the eurogate client
+  and the dCache HSM wrapper-script (euwrapper.sh)
+- each poolnode must have PNFS mounted in read-write mode (to store storageinfo while flushing)
+- each poolnode must be trusted by the pnfs-server (at the pnfs server machine, do : echo "15" > /pnfs/fs/admin/etc/exports/trusted/<ip-adressOfPoolMachine> )
+
+
+- connect each pool using the admin interface:
+
+cd <PoolName>
+hsm set osm -command=/opt/d-cache/eurogate/jobs/euwrapper.sh
+hsm set osm -eudir=/opt/d-cache/eurogate
+hsm set osm -euhost=<eurogateHost>
+hsm set osm -euport=28000
+hsm set osm -pnfs=/pnfs/desy.de
+st set max active 5 (maximale anzahl der flushes, default=0)
+rh set max active 5 (maximale anzahl der restores, default=0)
+save (save poolsetup to disk)
+
+
+Managing Flush/Restore in the dCache admin interface
+====================================================
+
+- Flushing Pools:
+
+cd <PoolName>
+flush a single file manually: flush pnfsid <pnfsid>
+queue ls queues -l (show flush queue)
+queue activate <pnfsid> (activates a previously failed and decactivated flush request)
+st ls (running flushes, one for each file, sorted by pnfsid)
+st jobs ls (running flushes sorted by jobid)
+
+- Restoring Files in Pools:
+
+cd <PoolName>
+stage in manually: rh restore <pnfsid>
+rh jobs ls (list restores sorted by jobid)
+
+
+- you can observe each flush/restore in pinboard (HSM_COMMAND followed by the command line which is executed, practical for debugging)
+- successful flushing/restore indicated by 'RSH : RunSystem. -> 0' (otherwise the error message is printed)
+- 'rep ls <pnfsid>' should show status 'Cached' after successful flushing/restore
+
+- how to enable auto-flushing of incoming files (status: precious -> cached)
+remove 'lfs=precious' from each line from $dCacheHome/config/<hostname>.poolist for all HSM-connected pools, restart pool(s)
+queue define class osm dteam:STATIC .. (set the flush policy per storage class, e.g. depending on the time since last flush, number of bytes or number of files pending)
+
+- how to enable auto-restore on read request (Pool Selection Unit will look for a appropriate readpool according to definied links)
+cd Poolmanager
+rc set stage on
+save
+
+- additional commands (Pool):
+rep set precious <pnfsid> -force' - set file precious (in case file is on status 'cached')
+set max diskspace 50m (for debugging: shrink pool capacity to trigger frequent garbage collecting of cached files)
+set gap (set expected standard file size which pool must have free or cached to be taken into account by PoolManager to serve a certain request)
+
+
+How to tweak euogate parameters for better demonstration
+========================================================
+
+- insert a delay to happen mount/dismount appear longer while observing
+in $eurogateHome/config/eurogate.batch:    create eurogate.pvr.DummyPvrCell stk     \
+          "${databaseRoot}/pvr/stk          \
+          -autoinstall=pvrStkDbInstallation \
+# set min and max delay in seconds for each mount/dismout here:
+#          -minWait=3 -maxWait=7"   
+
+- insert a delay for each mover start
+in $eurogateHome/config/eurogateSetup: iodelay=10 
+	(10 second delay)
