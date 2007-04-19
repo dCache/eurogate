@@ -5,7 +5,7 @@
 
 #set printout default all
 set printout CellGlue none
-set printout default 3
+set printout default 2
 #
 onerror shutdown
 ########################################################################
@@ -131,35 +131,241 @@ create dmg.cells.services.HttpServiceCell  HttpServer ${httpPort}
 #  @@@   is needed to initiate the pvr database ( simulation and cern )
 #
 define context initPvlDatabase endDefine
-    create volumeDescriptor  vd-9840    -size=20000000000
+    create volumeDescriptor  vd-9840    -size=${volSize}
     create cartridgeDescriptor cd-9840  -type=9840
 #
-    create volumeDescriptor  vd-copan    -size=1000000000
-    create cartridgeDescriptor cd-copan  -type=copan
+#    create volumeDescriptor  vd-copan    -size=1000000000
+#    create cartridgeDescriptor cd-copan  -type=copan
 #
     create pvr stk
 #
 #       create the cartridges
 #
-       create cartridge R01261-R01268  -cd=cd-9840  -pvr=stk
+       create cartridge R01200-R01399  -cd=cd-9840  -pvr=stk
 #
 #        define volumes on that cartridges
 #
-       create volume V001 -cart=R01261 -pvr=stk  -vd=vd-9840
-       create volume V002 -cart=R01262 -pvr=stk  -vd=vd-9840
-       create volume V003 -cart=R01263 -pvr=stk  -vd=vd-9840
-       create volume V004 -cart=R01264 -pvr=stk  -vd=vd-9840
-       create volume V005 -cart=R01265 -pvr=stk  -vd=vd-9840
-       create volume V006 -cart=R01266 -pvr=stk  -vd=vd-9840
-       create volume V007 -cart=R01267 -pvr=stk  -vd=vd-9840
-       create volume V008 -cart=R01268 -pvr=stk  -vd=vd-9840
+       create volume V0001 -cart=R01200 -pvr=stk -vd=vd-9840
+       create volume V0002 -cart=R01201 -pvr=stk -vd=vd-9840
+       create volume V0003 -cart=R01202 -pvr=stk -vd=vd-9840
+       create volume V0004 -cart=R01203 -pvr=stk -vd=vd-9840
+       create volume V0005 -cart=R01204 -pvr=stk -vd=vd-9840
+       create volume V0006 -cart=R01205 -pvr=stk -vd=vd-9840
+       create volume V0007 -cart=R01206 -pvr=stk -vd=vd-9840
+       create volume V0008 -cart=R01207 -pvr=stk -vd=vd-9840
+       create volume V0009 -cart=R01208 -pvr=stk -vd=vd-9840
+       create volume V0010 -cart=R01209 -pvr=stk -vd=vd-9840
+       create volume V0011 -cart=R01210 -pvr=stk -vd=vd-9840
+       create volume V0012 -cart=R01211 -pvr=stk -vd=vd-9840
+       create volume V0013 -cart=R01212 -pvr=stk -vd=vd-9840
+       create volume V0014 -cart=R01213 -pvr=stk -vd=vd-9840
+       create volume V0015 -cart=R01214 -pvr=stk -vd=vd-9840
+       create volume V0016 -cart=R01215 -pvr=stk -vd=vd-9840
+       create volume V0017 -cart=R01216 -pvr=stk -vd=vd-9840
+       create volume V0018 -cart=R01217 -pvr=stk -vd=vd-9840
+       create volume V0019 -cart=R01218 -pvr=stk -vd=vd-9840
+       create volume V0020 -cart=R01219 -pvr=stk -vd=vd-9840
+       create volume V0021 -cart=R01220 -pvr=stk -vd=vd-9840
+       create volume V0022 -cart=R01221 -pvr=stk -vd=vd-9840
+       create volume V0023 -cart=R01222 -pvr=stk -vd=vd-9840
+       create volume V0024 -cart=R01223 -pvr=stk -vd=vd-9840
+       create volume V0025 -cart=R01224 -pvr=stk -vd=vd-9840
+       create volume V0026 -cart=R01225 -pvr=stk -vd=vd-9840
+       create volume V0027 -cart=R01226 -pvr=stk -vd=vd-9840
+       create volume V0028 -cart=R01227 -pvr=stk -vd=vd-9840
+       create volume V0029 -cart=R01228 -pvr=stk -vd=vd-9840
+       create volume V0030 -cart=R01229 -pvr=stk -vd=vd-9840
+       create volume V0031 -cart=R01230 -pvr=stk -vd=vd-9840
+       create volume V0032 -cart=R01231 -pvr=stk -vd=vd-9840
+       create volume V0033 -cart=R01232 -pvr=stk -vd=vd-9840
+       create volume V0034 -cart=R01233 -pvr=stk -vd=vd-9840
+       create volume V0035 -cart=R01234 -pvr=stk -vd=vd-9840
+       create volume V0036 -cart=R01235 -pvr=stk -vd=vd-9840
+       create volume V0037 -cart=R01236 -pvr=stk -vd=vd-9840
+       create volume V0038 -cart=R01237 -pvr=stk -vd=vd-9840
+       create volume V0039 -cart=R01238 -pvr=stk -vd=vd-9840
+       create volume V0040 -cart=R01239 -pvr=stk -vd=vd-9840
+       create volume V0041 -cart=R01240 -pvr=stk -vd=vd-9840
+       create volume V0042 -cart=R01241 -pvr=stk -vd=vd-9840
+       create volume V0043 -cart=R01242 -pvr=stk -vd=vd-9840
+       create volume V0044 -cart=R01243 -pvr=stk -vd=vd-9840
+       create volume V0045 -cart=R01244 -pvr=stk -vd=vd-9840
+       create volume V0046 -cart=R01245 -pvr=stk -vd=vd-9840
+       create volume V0047 -cart=R01246 -pvr=stk -vd=vd-9840
+       create volume V0048 -cart=R01247 -pvr=stk -vd=vd-9840
+       create volume V0049 -cart=R01248 -pvr=stk -vd=vd-9840
+       create volume V0050 -cart=R01249 -pvr=stk -vd=vd-9840
+       create volume V0051 -cart=R01250 -pvr=stk -vd=vd-9840
+       create volume V0052 -cart=R01251 -pvr=stk -vd=vd-9840
+       create volume V0053 -cart=R01252 -pvr=stk -vd=vd-9840
+       create volume V0054 -cart=R01253 -pvr=stk -vd=vd-9840
+       create volume V0055 -cart=R01254 -pvr=stk -vd=vd-9840
+       create volume V0056 -cart=R01255 -pvr=stk -vd=vd-9840
+       create volume V0057 -cart=R01256 -pvr=stk -vd=vd-9840
+       create volume V0058 -cart=R01257 -pvr=stk -vd=vd-9840
+       create volume V0059 -cart=R01258 -pvr=stk -vd=vd-9840
+       create volume V0060 -cart=R01259 -pvr=stk -vd=vd-9840
+       create volume V0061 -cart=R01260 -pvr=stk -vd=vd-9840
+       create volume V0062 -cart=R01261 -pvr=stk -vd=vd-9840
+       create volume V0063 -cart=R01262 -pvr=stk -vd=vd-9840
+       create volume V0064 -cart=R01263 -pvr=stk -vd=vd-9840
+       create volume V0065 -cart=R01264 -pvr=stk -vd=vd-9840
+       create volume V0066 -cart=R01265 -pvr=stk -vd=vd-9840
+       create volume V0067 -cart=R01266 -pvr=stk -vd=vd-9840
+       create volume V0068 -cart=R01267 -pvr=stk -vd=vd-9840
+       create volume V0069 -cart=R01268 -pvr=stk -vd=vd-9840
+       create volume V0070 -cart=R01269 -pvr=stk -vd=vd-9840
+       create volume V0071 -cart=R01270 -pvr=stk -vd=vd-9840
+       create volume V0072 -cart=R01271 -pvr=stk -vd=vd-9840
+       create volume V0073 -cart=R01272 -pvr=stk -vd=vd-9840
+       create volume V0074 -cart=R01273 -pvr=stk -vd=vd-9840
+       create volume V0075 -cart=R01274 -pvr=stk -vd=vd-9840
+       create volume V0076 -cart=R01275 -pvr=stk -vd=vd-9840
+       create volume V0077 -cart=R01276 -pvr=stk -vd=vd-9840
+       create volume V0078 -cart=R01277 -pvr=stk -vd=vd-9840
+       create volume V0079 -cart=R01278 -pvr=stk -vd=vd-9840
+       create volume V0080 -cart=R01279 -pvr=stk -vd=vd-9840
+       create volume V0081 -cart=R01280 -pvr=stk -vd=vd-9840
+       create volume V0082 -cart=R01281 -pvr=stk -vd=vd-9840
+       create volume V0083 -cart=R01282 -pvr=stk -vd=vd-9840
+       create volume V0084 -cart=R01283 -pvr=stk -vd=vd-9840
+       create volume V0085 -cart=R01284 -pvr=stk -vd=vd-9840
+       create volume V0086 -cart=R01285 -pvr=stk -vd=vd-9840
+       create volume V0087 -cart=R01286 -pvr=stk -vd=vd-9840
+       create volume V0088 -cart=R01287 -pvr=stk -vd=vd-9840
+       create volume V0089 -cart=R01288 -pvr=stk -vd=vd-9840
+       create volume V0090 -cart=R01289 -pvr=stk -vd=vd-9840
+       create volume V0091 -cart=R01290 -pvr=stk -vd=vd-9840
+       create volume V0092 -cart=R01291 -pvr=stk -vd=vd-9840
+       create volume V0093 -cart=R01292 -pvr=stk -vd=vd-9840
+       create volume V0094 -cart=R01293 -pvr=stk -vd=vd-9840
+       create volume V0095 -cart=R01294 -pvr=stk -vd=vd-9840
+       create volume V0096 -cart=R01295 -pvr=stk -vd=vd-9840
+       create volume V0097 -cart=R01296 -pvr=stk -vd=vd-9840
+       create volume V0098 -cart=R01297 -pvr=stk -vd=vd-9840
+       create volume V0099 -cart=R01298 -pvr=stk -vd=vd-9840
+       create volume V0100 -cart=R01299 -pvr=stk -vd=vd-9840
+       create volume V0101 -cart=R01300 -pvr=stk -vd=vd-9840
+       create volume V0102 -cart=R01301 -pvr=stk -vd=vd-9840
+       create volume V0103 -cart=R01302 -pvr=stk -vd=vd-9840
+       create volume V0104 -cart=R01303 -pvr=stk -vd=vd-9840
+       create volume V0105 -cart=R01304 -pvr=stk -vd=vd-9840
+       create volume V0106 -cart=R01305 -pvr=stk -vd=vd-9840
+       create volume V0107 -cart=R01306 -pvr=stk -vd=vd-9840
+       create volume V0108 -cart=R01307 -pvr=stk -vd=vd-9840
+       create volume V0109 -cart=R01308 -pvr=stk -vd=vd-9840
+       create volume V0110 -cart=R01309 -pvr=stk -vd=vd-9840
+       create volume V0111 -cart=R01310 -pvr=stk -vd=vd-9840
+       create volume V0112 -cart=R01311 -pvr=stk -vd=vd-9840
+       create volume V0113 -cart=R01312 -pvr=stk -vd=vd-9840
+       create volume V0114 -cart=R01313 -pvr=stk -vd=vd-9840
+       create volume V0115 -cart=R01314 -pvr=stk -vd=vd-9840
+       create volume V0116 -cart=R01315 -pvr=stk -vd=vd-9840
+       create volume V0117 -cart=R01316 -pvr=stk -vd=vd-9840
+       create volume V0118 -cart=R01317 -pvr=stk -vd=vd-9840
+       create volume V0119 -cart=R01318 -pvr=stk -vd=vd-9840
+       create volume V0120 -cart=R01319 -pvr=stk -vd=vd-9840
+       create volume V0121 -cart=R01320 -pvr=stk -vd=vd-9840
+       create volume V0122 -cart=R01321 -pvr=stk -vd=vd-9840
+       create volume V0123 -cart=R01322 -pvr=stk -vd=vd-9840
+       create volume V0124 -cart=R01323 -pvr=stk -vd=vd-9840
+       create volume V0125 -cart=R01324 -pvr=stk -vd=vd-9840
+       create volume V0126 -cart=R01325 -pvr=stk -vd=vd-9840
+       create volume V0127 -cart=R01326 -pvr=stk -vd=vd-9840
+       create volume V0128 -cart=R01327 -pvr=stk -vd=vd-9840
+       create volume V0129 -cart=R01328 -pvr=stk -vd=vd-9840
+       create volume V0130 -cart=R01329 -pvr=stk -vd=vd-9840
+       create volume V0131 -cart=R01330 -pvr=stk -vd=vd-9840
+       create volume V0132 -cart=R01331 -pvr=stk -vd=vd-9840
+       create volume V0133 -cart=R01332 -pvr=stk -vd=vd-9840
+       create volume V0134 -cart=R01333 -pvr=stk -vd=vd-9840
+       create volume V0135 -cart=R01334 -pvr=stk -vd=vd-9840
+       create volume V0136 -cart=R01335 -pvr=stk -vd=vd-9840
+       create volume V0137 -cart=R01336 -pvr=stk -vd=vd-9840
+       create volume V0138 -cart=R01337 -pvr=stk -vd=vd-9840
+       create volume V0139 -cart=R01338 -pvr=stk -vd=vd-9840
+       create volume V0140 -cart=R01339 -pvr=stk -vd=vd-9840
+       create volume V0141 -cart=R01340 -pvr=stk -vd=vd-9840
+       create volume V0142 -cart=R01341 -pvr=stk -vd=vd-9840
+       create volume V0143 -cart=R01342 -pvr=stk -vd=vd-9840
+       create volume V0144 -cart=R01343 -pvr=stk -vd=vd-9840
+       create volume V0145 -cart=R01344 -pvr=stk -vd=vd-9840
+       create volume V0146 -cart=R01345 -pvr=stk -vd=vd-9840
+       create volume V0147 -cart=R01346 -pvr=stk -vd=vd-9840
+       create volume V0148 -cart=R01347 -pvr=stk -vd=vd-9840
+       create volume V0149 -cart=R01348 -pvr=stk -vd=vd-9840
+       create volume V0150 -cart=R01349 -pvr=stk -vd=vd-9840
+       create volume V0151 -cart=R01350 -pvr=stk -vd=vd-9840
+       create volume V0152 -cart=R01351 -pvr=stk -vd=vd-9840
+       create volume V0153 -cart=R01352 -pvr=stk -vd=vd-9840
+       create volume V0154 -cart=R01353 -pvr=stk -vd=vd-9840
+       create volume V0155 -cart=R01354 -pvr=stk -vd=vd-9840
+       create volume V0156 -cart=R01355 -pvr=stk -vd=vd-9840
+       create volume V0157 -cart=R01356 -pvr=stk -vd=vd-9840
+       create volume V0158 -cart=R01357 -pvr=stk -vd=vd-9840
+       create volume V0159 -cart=R01358 -pvr=stk -vd=vd-9840
+       create volume V0160 -cart=R01359 -pvr=stk -vd=vd-9840
+       create volume V0161 -cart=R01360 -pvr=stk -vd=vd-9840
+       create volume V0162 -cart=R01361 -pvr=stk -vd=vd-9840
+       create volume V0163 -cart=R01362 -pvr=stk -vd=vd-9840
+       create volume V0164 -cart=R01363 -pvr=stk -vd=vd-9840
+       create volume V0165 -cart=R01364 -pvr=stk -vd=vd-9840
+       create volume V0166 -cart=R01365 -pvr=stk -vd=vd-9840
+       create volume V0167 -cart=R01366 -pvr=stk -vd=vd-9840
+       create volume V0168 -cart=R01367 -pvr=stk -vd=vd-9840
+       create volume V0169 -cart=R01368 -pvr=stk -vd=vd-9840
+       create volume V0170 -cart=R01369 -pvr=stk -vd=vd-9840
+       create volume V0171 -cart=R01370 -pvr=stk -vd=vd-9840
+       create volume V0172 -cart=R01371 -pvr=stk -vd=vd-9840
+       create volume V0173 -cart=R01372 -pvr=stk -vd=vd-9840
+       create volume V0174 -cart=R01373 -pvr=stk -vd=vd-9840
+       create volume V0175 -cart=R01374 -pvr=stk -vd=vd-9840
+       create volume V0176 -cart=R01375 -pvr=stk -vd=vd-9840
+       create volume V0177 -cart=R01376 -pvr=stk -vd=vd-9840
+       create volume V0178 -cart=R01377 -pvr=stk -vd=vd-9840
+       create volume V0179 -cart=R01378 -pvr=stk -vd=vd-9840
+       create volume V0180 -cart=R01379 -pvr=stk -vd=vd-9840
+       create volume V0181 -cart=R01380 -pvr=stk -vd=vd-9840
+       create volume V0182 -cart=R01381 -pvr=stk -vd=vd-9840
+       create volume V0183 -cart=R01382 -pvr=stk -vd=vd-9840
+       create volume V0184 -cart=R01383 -pvr=stk -vd=vd-9840
+       create volume V0185 -cart=R01384 -pvr=stk -vd=vd-9840
+       create volume V0186 -cart=R01385 -pvr=stk -vd=vd-9840
+       create volume V0187 -cart=R01386 -pvr=stk -vd=vd-9840
+       create volume V0188 -cart=R01387 -pvr=stk -vd=vd-9840
+       create volume V0189 -cart=R01388 -pvr=stk -vd=vd-9840
+       create volume V0190 -cart=R01389 -pvr=stk -vd=vd-9840
+       create volume V0191 -cart=R01390 -pvr=stk -vd=vd-9840
+       create volume V0192 -cart=R01391 -pvr=stk -vd=vd-9840
+       create volume V0193 -cart=R01392 -pvr=stk -vd=vd-9840
+       create volume V0194 -cart=R01393 -pvr=stk -vd=vd-9840
+       create volume V0195 -cart=R01394 -pvr=stk -vd=vd-9840
+       create volume V0196 -cart=R01395 -pvr=stk -vd=vd-9840
+       create volume V0197 -cart=R01396 -pvr=stk -vd=vd-9840
+       create volume V0198 -cart=R01397 -pvr=stk -vd=vd-9840
+       create volume V0199 -cart=R01398 -pvr=stk -vd=vd-9840
+       create volume V0200 -cart=R01399 -pvr=stk -vd=vd-9840
 #
 #          define stk drives
 #
-       create drive stk-0 -pvr=stk  -dev=/eagle/d00 -spec=0:3:9:3
-       create drive stk-1 -pvr=stk  -dev=/eagle/d01 -spec=0:3:9:4
+       create drive stk-0 -pvr=stk  -dev=/eagle/d00 -spec=0:3:9:0
+       create drive stk-1 -pvr=stk  -dev=/eagle/d01 -spec=0:3:9:1
+       create drive stk-2 -pvr=stk  -dev=/eagle/d02 -spec=0:3:9:2
+       create drive stk-3 -pvr=stk  -dev=/eagle/d03 -spec=0:3:9:3
+       create drive stk-4 -pvr=stk  -dev=/eagle/d04 -spec=0:3:9:4
+       create drive stk-5 -pvr=stk  -dev=/eagle/d05 -spec=0:3:9:5
+       create drive stk-6 -pvr=stk  -dev=/eagle/d06 -spec=0:3:9:6
+       create drive stk-7 -pvr=stk  -dev=/eagle/d07 -spec=0:3:9:7
+       create drive stk-8 -pvr=stk  -dev=/eagle/d08 -spec=0:3:9:8
+       create drive stk-9 -pvr=stk  -dev=/eagle/d09 -spec=0:3:9:9
+
+
+
+
+
        set drive stk-0 -pvr=stk  -status=enabled
        set drive stk-1 -pvr=stk  -status=enabled
+       set drive stk-2 -pvr=stk  -status=enabled
 #
 #    create pvr copan-0
 #    create pvr copan-1
@@ -190,52 +396,245 @@ define context initPvlDatabase endDefine
 #       set drive copan-1-0 -pvr=copan-1  -status=enabled
 #       set drive copan-1-1 -pvr=copan-1  -status=enabled
 
-   create pvr stacker
-   create cartridge S0001-S0004 -cd=cd-copan -pvr=stacker
-   create volumeSet stacker
-   create drive st-drive-0 -pvr=stacker -dev=/stacker/d00 -spec=st-drive-0
-   create drive st-drive-1 -pvr=stacker -dev=/stacker/d01 -spec=st-drive-1
-   create volume VS001 -cart=S0001 -pvr=stacker -vd=vd-copan
-   create volume VS002 -cart=S0002 -pvr=stacker -vd=vd-copan
-   create volume VS003 -cart=S0003 -pvr=stacker -vd=vd-copan
-   create volume VS004 -cart=S0004 -pvr=stacker -vd=vd-copan
-   add volume VS001 -vs=stacker
-   add volume VS002 -vs=stacker
-   add volume VS003 -vs=stacker
-   add volume VS004 -vs=stacker
+#   create pvr stacker
+#   create cartridge S0001-S0004 -cd=cd-copan -pvr=stacker
+#   create volumeSet stacker
+#   create drive st-drive-0 -pvr=stacker -dev=/stacker/d00 -spec=st-drive-0
+#   create drive st-drive-1 -pvr=stacker -dev=/stacker/d01 -spec=st-drive-1
+#   create volume VS001 -cart=S0001 -pvr=stacker -vd=vd-copan
+#   create volume VS002 -cart=S0002 -pvr=stacker -vd=vd-copan
+#   create volume VS003 -cart=S0003 -pvr=stacker -vd=vd-copan
+#   create volume VS004 -cart=S0004 -pvr=stacker -vd=vd-copan
+#   add volume VS001 -vs=stacker
+#   add volume VS002 -vs=stacker
+#   add volume VS003 -vs=stacker
+#   add volume VS004 -vs=stacker
 #
-   create pvr easy
-   create cartridge SE0001-SE0004 -cd=cd-copan -pvr=easy
-   create volumeSet easy
-   create drive easy-drive-0 -pvr=easy -dev=/easy/d00 -spec=easy-drive-0
-   create drive easy-drive-1 -pvr=easy -dev=/easy/d01 -spec=easy-drive-1
-   create volume VE001 -cart=SE0001 -pvr=easy -vd=vd-copan
-   create volume VE002 -cart=SE0002 -pvr=easy -vd=vd-copan
-   create volume VE003 -cart=SE0003 -pvr=easy -vd=vd-copan
-   create volume VE004 -cart=SE0004 -pvr=easy -vd=vd-copan
-   add volume VE001 -vs=easy
-   add volume VE002 -vs=easy
-   add volume VE003 -vs=easy
-   add volume VE004 -vs=easy
+#   create pvr easy
+#   create cartridge SE0001-SE0004 -cd=cd-copan -pvr=easy
+#   create volumeSet easy
+#   create drive easy-drive-0 -pvr=easy -dev=/easy/d00 -spec=easy-drive-0
+#   create drive easy-drive-1 -pvr=easy -dev=/easy/d01 -spec=easy-drive-1
+#   create volume VE001 -cart=SE0001 -pvr=easy -vd=vd-copan
+#   create volume VE002 -cart=SE0002 -pvr=easy -vd=vd-copan
+#   create volume VE003 -cart=SE0003 -pvr=easy -vd=vd-copan
+#   create volume VE004 -cart=SE0004 -pvr=easy -vd=vd-copan
+#   add volume VE001 -vs=easy
+#   add volume VE002 -vs=easy
+#   add volume VE003 -vs=easy
+#   add volume VE004 -vs=easy
 #
 #            create the volume sets
 #
-    create volumeSet  raw
-    create volumeSet  dst
-    create volumeSet  virtual-raw
-    create volumeSet  virtual-dst
+#    create volumeSet  raw
+#    create volumeSet  dst
+#    create volumeSet  virtual-raw
+#    create volumeSet  virtual-dst
     create volumeSet  all
 #
 #       assign volumes to volume sets
 #
-    add volume V001 -vs=raw
-    add volume V002 -vs=raw
-    add volume V003 -vs=raw
-    add volume V004 -vs=raw
-    add volume V005 -vs=dst
-    add volume V006 -vs=dst
-    add volume V007 -vs=all
-    add volume V008 -vs=all
+    add volume V0001 -vs=all
+    add volume V0002 -vs=all
+    add volume V0003 -vs=all
+    add volume V0004 -vs=all
+    add volume V0005 -vs=all
+    add volume V0006 -vs=all
+    add volume V0007 -vs=all
+    add volume V0008 -vs=all
+    add volume V0009 -vs=all
+    add volume V0010 -vs=all
+    add volume V0011 -vs=all
+    add volume V0012 -vs=all
+    add volume V0013 -vs=all
+    add volume V0014 -vs=all
+    add volume V0015 -vs=all
+    add volume V0016 -vs=all
+    add volume V0017 -vs=all
+    add volume V0018 -vs=all
+    add volume V0019 -vs=all
+    add volume V0020 -vs=all
+    add volume V0021 -vs=all
+    add volume V0022 -vs=all
+    add volume V0023 -vs=all
+    add volume V0024 -vs=all
+    add volume V0025 -vs=all
+    add volume V0026 -vs=all
+    add volume V0027 -vs=all
+    add volume V0028 -vs=all
+    add volume V0029 -vs=all
+    add volume V0030 -vs=all
+    add volume V0031 -vs=all
+    add volume V0032 -vs=all
+    add volume V0033 -vs=all
+    add volume V0034 -vs=all
+    add volume V0035 -vs=all
+    add volume V0036 -vs=all
+    add volume V0037 -vs=all
+    add volume V0038 -vs=all
+    add volume V0039 -vs=all
+    add volume V0040 -vs=all
+    add volume V0041 -vs=all
+    add volume V0042 -vs=all
+    add volume V0043 -vs=all
+    add volume V0044 -vs=all
+    add volume V0045 -vs=all
+    add volume V0046 -vs=all
+    add volume V0047 -vs=all
+    add volume V0048 -vs=all
+    add volume V0049 -vs=all
+    add volume V0050 -vs=all
+    add volume V0051 -vs=all
+    add volume V0052 -vs=all
+    add volume V0053 -vs=all
+    add volume V0054 -vs=all
+    add volume V0055 -vs=all
+    add volume V0056 -vs=all
+    add volume V0057 -vs=all
+    add volume V0058 -vs=all
+    add volume V0059 -vs=all
+    add volume V0060 -vs=all
+    add volume V0061 -vs=all
+    add volume V0062 -vs=all
+    add volume V0063 -vs=all
+    add volume V0064 -vs=all
+    add volume V0065 -vs=all
+    add volume V0066 -vs=all
+    add volume V0067 -vs=all
+    add volume V0068 -vs=all
+    add volume V0069 -vs=all
+    add volume V0070 -vs=all
+    add volume V0071 -vs=all
+    add volume V0072 -vs=all
+    add volume V0073 -vs=all
+    add volume V0074 -vs=all
+    add volume V0075 -vs=all
+    add volume V0076 -vs=all
+    add volume V0077 -vs=all
+    add volume V0078 -vs=all
+    add volume V0079 -vs=all
+    add volume V0080 -vs=all
+    add volume V0081 -vs=all
+    add volume V0082 -vs=all
+    add volume V0083 -vs=all
+    add volume V0084 -vs=all
+    add volume V0085 -vs=all
+    add volume V0086 -vs=all
+    add volume V0087 -vs=all
+    add volume V0088 -vs=all
+    add volume V0089 -vs=all
+    add volume V0090 -vs=all
+    add volume V0091 -vs=all
+    add volume V0092 -vs=all
+    add volume V0093 -vs=all
+    add volume V0094 -vs=all
+    add volume V0095 -vs=all
+    add volume V0096 -vs=all
+    add volume V0097 -vs=all
+    add volume V0098 -vs=all
+    add volume V0099 -vs=all
+    add volume V0100 -vs=all
+    add volume V0101 -vs=all
+    add volume V0102 -vs=all
+    add volume V0103 -vs=all
+    add volume V0104 -vs=all
+    add volume V0105 -vs=all
+    add volume V0106 -vs=all
+    add volume V0107 -vs=all
+    add volume V0108 -vs=all
+    add volume V0109 -vs=all
+    add volume V0110 -vs=all
+    add volume V0111 -vs=all
+    add volume V0112 -vs=all
+    add volume V0113 -vs=all
+    add volume V0114 -vs=all
+    add volume V0115 -vs=all
+    add volume V0116 -vs=all
+    add volume V0117 -vs=all
+    add volume V0118 -vs=all
+    add volume V0119 -vs=all
+    add volume V0120 -vs=all
+    add volume V0121 -vs=all
+    add volume V0122 -vs=all
+    add volume V0123 -vs=all
+    add volume V0124 -vs=all
+    add volume V0125 -vs=all
+    add volume V0126 -vs=all
+    add volume V0127 -vs=all
+    add volume V0128 -vs=all
+    add volume V0129 -vs=all
+    add volume V0130 -vs=all
+    add volume V0131 -vs=all
+    add volume V0132 -vs=all
+    add volume V0133 -vs=all
+    add volume V0134 -vs=all
+    add volume V0135 -vs=all
+    add volume V0136 -vs=all
+    add volume V0137 -vs=all
+    add volume V0138 -vs=all
+    add volume V0139 -vs=all
+    add volume V0140 -vs=all
+    add volume V0141 -vs=all
+    add volume V0142 -vs=all
+    add volume V0143 -vs=all
+    add volume V0144 -vs=all
+    add volume V0145 -vs=all
+    add volume V0146 -vs=all
+    add volume V0147 -vs=all
+    add volume V0148 -vs=all
+    add volume V0149 -vs=all
+    add volume V0150 -vs=all
+    add volume V0151 -vs=all
+    add volume V0152 -vs=all
+    add volume V0153 -vs=all
+    add volume V0154 -vs=all
+    add volume V0155 -vs=all
+    add volume V0156 -vs=all
+    add volume V0157 -vs=all
+    add volume V0158 -vs=all
+    add volume V0159 -vs=all
+    add volume V0160 -vs=all
+    add volume V0161 -vs=all
+    add volume V0162 -vs=all
+    add volume V0163 -vs=all
+    add volume V0164 -vs=all
+    add volume V0165 -vs=all
+    add volume V0166 -vs=all
+    add volume V0167 -vs=all
+    add volume V0168 -vs=all
+    add volume V0169 -vs=all
+    add volume V0170 -vs=all
+    add volume V0171 -vs=all
+    add volume V0172 -vs=all
+    add volume V0173 -vs=all
+    add volume V0174 -vs=all
+    add volume V0175 -vs=all
+    add volume V0176 -vs=all
+    add volume V0177 -vs=all
+    add volume V0178 -vs=all
+    add volume V0179 -vs=all
+    add volume V0180 -vs=all
+    add volume V0181 -vs=all
+    add volume V0182 -vs=all
+    add volume V0183 -vs=all
+    add volume V0184 -vs=all
+    add volume V0185 -vs=all
+    add volume V0186 -vs=all
+    add volume V0187 -vs=all
+    add volume V0188 -vs=all
+    add volume V0189 -vs=all
+    add volume V0190 -vs=all
+    add volume V0191 -vs=all
+    add volume V0192 -vs=all
+    add volume V0193 -vs=all
+    add volume V0194 -vs=all
+    add volume V0195 -vs=all
+    add volume V0196 -vs=all
+    add volume V0197 -vs=all
+    add volume V0198 -vs=all
+    add volume V0199 -vs=all
+    add volume V0200 -vs=all
+
 #    add volume VV0001 -vs=virtual-raw
 #    add volume VV0002 -vs=virtual-raw
 #    add volume VV0003 -vs=virtual-raw
@@ -252,23 +651,84 @@ endDefine
 #
 #   the pvr simulation ( corresponds to the setup above )
 #
-define context pvrStackerDbInstallation endDefine
-   create cartridge S0001 0:1
-   create cartridge S0002 0:2
-   create cartridge S0003 0:3
-   create cartridge S0004 0:4
-   create drive st-drive-0 1:0 
-   create drive st-drive-1 1:1 
-endDefine
-define context pvrEasyDbInstallation endDefine
-   create cartridge SE0001 0:1
-   create cartridge SE0002 0:2
-   create cartridge SE0003 0:3
-   create cartridge SE0004 0:4
-   create drive easy-drive-0 1:0 
-   create drive easy-drive-1 1:1 
-endDefine
+#define context pvrStackerDbInstallation endDefine
+#   create cartridge S0001 0:1
+#   create cartridge S0002 0:2
+#   create cartridge S0003 0:3
+#   create cartridge S0004 0:4
+#   create drive st-drive-0 1:0 
+#   create drive st-drive-1 1:1 
+#endDefine
+#define context pvrEasyDbInstallation endDefine
+#   create cartridge SE0001 0:1
+#   create cartridge SE0002 0:2
+#   create cartridge SE0003 0:3
+#   create cartridge SE0004 0:4
+#   create drive easy-drive-0 1:0 
+#   create drive easy-drive-1 1:1 
+#endDefine
 define context pvrStkDbInstallation endDefine
+   create cartridge R01200 -pvr=stk
+   create cartridge R01201 -pvr=stk
+   create cartridge R01202 -pvr=stk
+   create cartridge R01203 -pvr=stk
+   create cartridge R01204 -pvr=stk
+   create cartridge R01205 -pvr=stk
+   create cartridge R01206 -pvr=stk
+   create cartridge R01207 -pvr=stk
+   create cartridge R01208 -pvr=stk
+   create cartridge R01209 -pvr=stk
+   create cartridge R01210 -pvr=stk
+   create cartridge R01211 -pvr=stk
+   create cartridge R01212 -pvr=stk
+   create cartridge R01213 -pvr=stk
+   create cartridge R01214 -pvr=stk
+   create cartridge R01215 -pvr=stk
+   create cartridge R01216 -pvr=stk
+   create cartridge R01217 -pvr=stk
+   create cartridge R01218 -pvr=stk
+   create cartridge R01219 -pvr=stk
+   create cartridge R01220 -pvr=stk
+   create cartridge R01221 -pvr=stk
+   create cartridge R01222 -pvr=stk
+   create cartridge R01223 -pvr=stk
+   create cartridge R01224 -pvr=stk
+   create cartridge R01225 -pvr=stk
+   create cartridge R01226 -pvr=stk
+   create cartridge R01227 -pvr=stk
+   create cartridge R01228 -pvr=stk
+   create cartridge R01229 -pvr=stk
+   create cartridge R01230 -pvr=stk
+   create cartridge R01231 -pvr=stk
+   create cartridge R01232 -pvr=stk
+   create cartridge R01233 -pvr=stk
+   create cartridge R01234 -pvr=stk
+   create cartridge R01235 -pvr=stk
+   create cartridge R01236 -pvr=stk
+   create cartridge R01237 -pvr=stk
+   create cartridge R01238 -pvr=stk
+   create cartridge R01239 -pvr=stk
+   create cartridge R01240 -pvr=stk
+   create cartridge R01241 -pvr=stk
+   create cartridge R01242 -pvr=stk
+   create cartridge R01243 -pvr=stk
+   create cartridge R01244 -pvr=stk
+   create cartridge R01245 -pvr=stk
+   create cartridge R01246 -pvr=stk
+   create cartridge R01247 -pvr=stk
+   create cartridge R01248 -pvr=stk
+   create cartridge R01249 -pvr=stk
+   create cartridge R01250 -pvr=stk
+   create cartridge R01251 -pvr=stk
+   create cartridge R01252 -pvr=stk
+   create cartridge R01253 -pvr=stk
+   create cartridge R01254 -pvr=stk
+   create cartridge R01255 -pvr=stk
+   create cartridge R01256 -pvr=stk
+   create cartridge R01257 -pvr=stk
+   create cartridge R01258 -pvr=stk
+   create cartridge R01259 -pvr=stk
+   create cartridge R01260 -pvr=stk
    create cartridge R01261 -pvr=stk
    create cartridge R01262 -pvr=stk
    create cartridge R01263 -pvr=stk
@@ -277,29 +737,168 @@ define context pvrStkDbInstallation endDefine
    create cartridge R01266 -pvr=stk
    create cartridge R01267 -pvr=stk
    create cartridge R01268 -pvr=stk
-   create drive  0:3:9:3  -pvr=stk   
-   create drive  0:3:9:4  -pvr=stk   
+   create cartridge R01269 -pvr=stk
+   create cartridge R01270 -pvr=stk
+   create cartridge R01271 -pvr=stk
+   create cartridge R01272 -pvr=stk
+   create cartridge R01273 -pvr=stk
+   create cartridge R01274 -pvr=stk
+   create cartridge R01275 -pvr=stk
+   create cartridge R01276 -pvr=stk
+   create cartridge R01277 -pvr=stk
+   create cartridge R01278 -pvr=stk
+   create cartridge R01279 -pvr=stk
+   create cartridge R01280 -pvr=stk
+   create cartridge R01281 -pvr=stk
+   create cartridge R01282 -pvr=stk
+   create cartridge R01283 -pvr=stk
+   create cartridge R01284 -pvr=stk
+   create cartridge R01285 -pvr=stk
+   create cartridge R01286 -pvr=stk
+   create cartridge R01287 -pvr=stk
+   create cartridge R01288 -pvr=stk
+   create cartridge R01289 -pvr=stk
+   create cartridge R01290 -pvr=stk
+   create cartridge R01291 -pvr=stk
+   create cartridge R01292 -pvr=stk
+   create cartridge R01293 -pvr=stk
+   create cartridge R01294 -pvr=stk
+   create cartridge R01295 -pvr=stk
+   create cartridge R01296 -pvr=stk
+   create cartridge R01297 -pvr=stk
+   create cartridge R01298 -pvr=stk
+   create cartridge R01299 -pvr=stk
+   create cartridge R01300 -pvr=stk
+   create cartridge R01301 -pvr=stk
+   create cartridge R01302 -pvr=stk
+   create cartridge R01303 -pvr=stk
+   create cartridge R01304 -pvr=stk
+   create cartridge R01305 -pvr=stk
+   create cartridge R01306 -pvr=stk
+   create cartridge R01307 -pvr=stk
+   create cartridge R01308 -pvr=stk
+   create cartridge R01309 -pvr=stk
+   create cartridge R01310 -pvr=stk
+   create cartridge R01311 -pvr=stk
+   create cartridge R01312 -pvr=stk
+   create cartridge R01313 -pvr=stk
+   create cartridge R01314 -pvr=stk
+   create cartridge R01315 -pvr=stk
+   create cartridge R01316 -pvr=stk
+   create cartridge R01317 -pvr=stk
+   create cartridge R01318 -pvr=stk
+   create cartridge R01319 -pvr=stk
+   create cartridge R01320 -pvr=stk
+   create cartridge R01321 -pvr=stk
+   create cartridge R01322 -pvr=stk
+   create cartridge R01323 -pvr=stk
+   create cartridge R01324 -pvr=stk
+   create cartridge R01325 -pvr=stk
+   create cartridge R01326 -pvr=stk
+   create cartridge R01327 -pvr=stk
+   create cartridge R01328 -pvr=stk
+   create cartridge R01329 -pvr=stk
+   create cartridge R01330 -pvr=stk
+   create cartridge R01331 -pvr=stk
+   create cartridge R01332 -pvr=stk
+   create cartridge R01333 -pvr=stk
+   create cartridge R01334 -pvr=stk
+   create cartridge R01335 -pvr=stk
+   create cartridge R01336 -pvr=stk
+   create cartridge R01337 -pvr=stk
+   create cartridge R01338 -pvr=stk
+   create cartridge R01339 -pvr=stk
+   create cartridge R01340 -pvr=stk
+   create cartridge R01341 -pvr=stk
+   create cartridge R01342 -pvr=stk
+   create cartridge R01343 -pvr=stk
+   create cartridge R01344 -pvr=stk
+   create cartridge R01345 -pvr=stk
+   create cartridge R01346 -pvr=stk
+   create cartridge R01347 -pvr=stk
+   create cartridge R01348 -pvr=stk
+   create cartridge R01349 -pvr=stk
+   create cartridge R01350 -pvr=stk
+   create cartridge R01351 -pvr=stk
+   create cartridge R01352 -pvr=stk
+   create cartridge R01353 -pvr=stk
+   create cartridge R01354 -pvr=stk
+   create cartridge R01355 -pvr=stk
+   create cartridge R01356 -pvr=stk
+   create cartridge R01357 -pvr=stk
+   create cartridge R01358 -pvr=stk
+   create cartridge R01359 -pvr=stk
+   create cartridge R01360 -pvr=stk
+   create cartridge R01361 -pvr=stk
+   create cartridge R01362 -pvr=stk
+   create cartridge R01363 -pvr=stk
+   create cartridge R01364 -pvr=stk
+   create cartridge R01365 -pvr=stk
+   create cartridge R01366 -pvr=stk
+   create cartridge R01367 -pvr=stk
+   create cartridge R01368 -pvr=stk
+   create cartridge R01369 -pvr=stk
+   create cartridge R01370 -pvr=stk
+   create cartridge R01371 -pvr=stk
+   create cartridge R01372 -pvr=stk
+   create cartridge R01373 -pvr=stk
+   create cartridge R01374 -pvr=stk
+   create cartridge R01375 -pvr=stk
+   create cartridge R01376 -pvr=stk
+   create cartridge R01377 -pvr=stk
+   create cartridge R01378 -pvr=stk
+   create cartridge R01379 -pvr=stk
+   create cartridge R01380 -pvr=stk
+   create cartridge R01381 -pvr=stk
+   create cartridge R01382 -pvr=stk
+   create cartridge R01383 -pvr=stk
+   create cartridge R01384 -pvr=stk
+   create cartridge R01385 -pvr=stk
+   create cartridge R01386 -pvr=stk
+   create cartridge R01387 -pvr=stk
+   create cartridge R01388 -pvr=stk
+   create cartridge R01389 -pvr=stk
+   create cartridge R01390 -pvr=stk
+   create cartridge R01391 -pvr=stk
+   create cartridge R01392 -pvr=stk
+   create cartridge R01393 -pvr=stk
+   create cartridge R01394 -pvr=stk
+   create cartridge R01395 -pvr=stk
+   create cartridge R01396 -pvr=stk
+   create cartridge R01397 -pvr=stk
+   create cartridge R01398 -pvr=stk
+   create cartridge R01399 -pvr=stk
+   create drive  0:3:9:0  -pvr=stk   
+   create drive  0:3:9:1  -pvr=stk
+   create drive  0:3:9:2  -pvr=stk
+   create drive  0:3:9:3  -pvr=stk
+   create drive  0:3:9:4  -pvr=stk
+   create drive  0:3:9:5  -pvr=stk
+   create drive  0:3:9:6  -pvr=stk
+   create drive  0:3:9:7  -pvr=stk
+   create drive  0:3:9:8  -pvr=stk
+   create drive  0:3:9:9  -pvr=stk
 endDefine
-define context pvrC0DbInstallation endDefine
-   create cartridge VR01000 -pvr=copan-0
-   create cartridge VR01001 -pvr=copan-0
-   create cartridge VR01002 -pvr=copan-0
-   create cartridge VR01003 -pvr=copan-0
-   create cartridge VR01004 -pvr=copan-0
-   create cartridge VR01005 -pvr=copan-0
-   create drive  C:0:0  -pvr=copan-0   
-   create drive  C:0:1  -pvr=copan-0   
-endDefine
-define context pvrC1DbInstallation endDefine
-   create cartridge VR02000 -pvr=copan-1
-   create cartridge VR02001 -pvr=copan-1
-   create cartridge VR02002 -pvr=copan-1
-   create cartridge VR02003 -pvr=copan-1
-   create cartridge VR02004 -pvr=copan-1
-   create cartridge VR02005 -pvr=copan-1
-   create drive  C:1:0  -pvr=copan-1   
-   create drive  C:1:1  -pvr=copan-1   
-endDefine
+#define context pvrC0DbInstallation endDefine
+#   create cartridge VR01000 -pvr=copan-0
+#   create cartridge VR01001 -pvr=copan-0
+#   create cartridge VR01002 -pvr=copan-0
+#   create cartridge VR01003 -pvr=copan-0
+#   create cartridge VR01004 -pvr=copan-0
+#   create cartridge VR01005 -pvr=copan-0
+#   create drive  C:0:0  -pvr=copan-0   
+#   create drive  C:0:1  -pvr=copan-0   
+#endDefine
+#define context pvrC1DbInstallation endDefine
+#   create cartridge VR02000 -pvr=copan-1
+#   create cartridge VR02001 -pvr=copan-1
+#   create cartridge VR02002 -pvr=copan-1
+#   create cartridge VR02003 -pvr=copan-1
+#   create cartridge VR02004 -pvr=copan-1
+#   create cartridge VR02005 -pvr=copan-1
+#   create drive  C:1:0  -pvr=copan-1   
+#   create drive  C:1:1  -pvr=copan-1   
+#endDefine
 #
 #
 define context pvrSimulation endDefine
@@ -312,8 +911,7 @@ define context pvrSimulation endDefine
    create eurogate.pvr.DummyPvrCell stk     \
           "${databaseRoot}/pvr/stk          \
           -autoinstall=pvrStkDbInstallation \
-#          -minWait=3 -maxWait=7"
-	  -minWait=20 -maxWait=22"
+          -minWait=3 -maxWait=7"
 #
 #   create eurogate.pvr.DummyPvrCell copan-0     \
 #          "${databaseRoot}/pvr/copan-0          \
@@ -325,17 +923,17 @@ define context pvrSimulation endDefine
 #          -autoinstall=pvrC1DbInstallation \
 #          -minWait=3 -maxWait=7"
 #
-   create eurogate.pvr.StackerPvrV0 stacker     \
-          "${databaseRoot}/pvr/stacker          \
-          -autoinstall=pvrStackerDbInstallation \
-          "
+#   create eurogate.pvr.StackerPvrV0 stacker     \
+#          "${databaseRoot}/pvr/stacker          \
+#          -autoinstall=pvrStackerDbInstallation \
+#          "
 #
-   create eurogate.pvr.StackerPvrV0 easy     \
-          "${databaseRoot}/pvr/easy          \
-          -autoinstall=pvrEasyDbInstallation \
-          -stackerDriver=eurogate.pvr.EasyStackerExec \
-          -exec=${ourHomeDir}/jobs/stacker.sh \
-          "
+#   create eurogate.pvr.StackerPvrV0 easy     \
+#          "${databaseRoot}/pvr/easy          \
+#          -autoinstall=pvrEasyDbInstallation \
+#          -stackerDriver=eurogate.pvr.EasyStackerExec \
+#          -exec=${ourHomeDir}/jobs/stacker.sh \
+#          "
 #
 ###################################################################
 #
@@ -350,14 +948,23 @@ define context pvrSimulation endDefine
 #
    create eurogate.mover.MoverV1 stk-0  "${pvlName} ${moverData} ${iodelay}"
    create eurogate.mover.MoverV1 stk-1  "${pvlName} ${moverData} ${iodelay}"
-#   create eurogate.mover.MoverV1 copan-0-0  "${pvlName} ${moverData}"
-#   create eurogate.mover.MoverV1 copan-0-1  "${pvlName} ${moverData}"
-#   create eurogate.mover.MoverV1 copan-1-0  "${pvlName} ${moverData}"
-#   create eurogate.mover.MoverV1 copan-1-1  "${pvlName} ${moverData}"
-   create eurogate.mover.MoverV1 st-drive-0  "${pvlName} ${moverData} ${iodelay}"
-   create eurogate.mover.MoverV1 st-drive-1  "${pvlName} ${moverData} ${iodelay}"
-   create eurogate.mover.MoverV1 easy-drive-0  "${pvlName} ${moverData} ${iodelay}"
-   create eurogate.mover.MoverV1 easy-drive-1  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-2  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-3  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-4  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-5  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-6  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-7  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-8  "${pvlName} ${moverData} ${iodelay}"
+   create eurogate.mover.MoverV1 stk-9  "${pvlName} ${moverData} ${iodelay}"
+
+#   create eurogate.mover.MoverV1 copan-0-0  "${pvlName} ${moverData} ${iodelay}"
+#   create eurogate.mover.MoverV1 copan-0-1  "${pvlName} ${moverData} ${iodelay}"
+#   create eurogate.mover.MoverV1 copan-1-0  "${pvlName} ${moverData} ${iodelay}"
+#   create eurogate.mover.MoverV1 copan-1-1  "${pvlName} ${moverData} ${iodelay}"
+#   create eurogate.mover.MoverV1 st-drive-0  "${pvlName} ${moverData} ${iodelay}"
+#   create eurogate.mover.MoverV1 st-drive-1  "${pvlName} ${moverData} ${iodelay}"
+#   create eurogate.mover.MoverV1 easy-drive-0  "${pvlName} ${moverData} ${iodelay}"
+#   create eurogate.mover.MoverV1 easy-drive-1  "${pvlName} ${moverData} ${iodelay}"
 #
 endDefine
 #

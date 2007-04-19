@@ -17,7 +17,7 @@
 #
 #  --- the java VM
 #
-java=/usr/bin/java
+java=/usr/java/jdk1.5.0_09/bin/java
 #
 #
 #  --- The filesystem location of the database
@@ -66,6 +66,7 @@ master=yes
 mover=no
 mode=simulation
 pvlDbPort=23124
+volSize=20000000000
 #  telnetPort=23123
 #  spyPort=23222
 #  aclPort=23126
